@@ -10,13 +10,27 @@
   <title>Security+ Study Hub</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
+    :root{--bg:#050d18;--bg2:#080f1a;--bg3:#0a1525;--bg4:#0d1f35;--border:#1e293b;--border2:#243552;--text:#f1f5f9;--text2:#94a3b8;--text3:#475569;--text4:#334155;--cyan:#00d4ff;--red:#ff4d6d;--green:#06d6a0;--yellow:#f9c74f;--purple:#a855f7;--card-shadow:0 4px 24px rgba(0,0,0,.45)}
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    body{background:#050d18;font-family:'DM Sans',sans-serif;color:#e2e8f0;overflow-x:hidden}
+    html,body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);overflow-x:hidden}
     ::-webkit-scrollbar{display:none}
-    button{transition:opacity .1s;cursor:pointer}
-    button:active{opacity:.7}
+    button{transition:all .18s ease;cursor:pointer}
+    button:active{transform:scale(.97);opacity:.85}
+    input:focus,select:focus{outline:none;border-color:var(--cyan)!important;box-shadow:0 0 0 2px rgba(0,212,255,.15)!important}
     .sx{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
     .sx::-webkit-scrollbar{display:none}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+    @keyframes glow{0%,100%{box-shadow:0 0 10px rgba(0,212,255,.15)}50%{box-shadow:0 0 22px rgba(0,212,255,.45)}}
+    @keyframes barIn{from{width:0}to{width:var(--w,0%)}}
+    .fu{animation:fadeUp .3s ease both}
+    .fu1{animation:fadeUp .3s .06s ease both}
+    .fu2{animation:fadeUp .3s .12s ease both}
+    .fu3{animation:fadeUp .3s .18s ease both}
+    .fu4{animation:fadeUp .3s .24s ease both}
+    .shimmer-btn{position:relative;overflow:hidden}
+    .shimmer-btn::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.1) 50%,transparent 60%);background-size:200% 100%;animation:shimmer 2.5s infinite}
+    .glass{background:rgba(10,21,37,.75);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06)}
   </style>
 </head>
 <body>
@@ -408,8 +422,12 @@ const MATCH_PAIRS=[
 ];
 
 // ── STYLES ────────────────────────────────────────────────────────────────────
-const C={card:{background:"#0a1525",border:"1px solid #1e293b",borderRadius:16,padding:"18px 16px"},primary:{background:"#00d4ff",color:"#000814",border:"none",borderRadius:12,padding:"14px 20px",fontWeight:700,fontFamily:"inherit",fontSize:15,width:"100%",minHeight:50,cursor:"pointer"},back:{background:"transparent",border:"none",color:"#64748b",fontFamily:"inherit",fontSize:14,padding:"0 0 16px 0",display:"flex",alignItems:"center",gap:6,cursor:"pointer"}};
-const chip=(on,col)=>({flexShrink:0,border:`1px solid ${on?col:"#1e293b"}`,background:on?col+"22":"#0a1525",color:on?col:"#64748b",borderRadius:20,padding:"6px 14px",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:600});
+const C={
+  card:{background:"linear-gradient(135deg,rgba(13,31,53,.9),rgba(10,21,37,.95))",border:"1px solid #1e293b",borderRadius:16,padding:"18px 16px",boxShadow:"0 4px 24px rgba(0,0,0,.4)"},
+  primary:{background:"linear-gradient(135deg,#00d4ff,#0099cc)",color:"#000814",border:"none",borderRadius:12,padding:"14px 20px",fontWeight:700,fontFamily:"inherit",fontSize:15,width:"100%",minHeight:50,cursor:"pointer",boxShadow:"0 4px 16px rgba(0,212,255,.3)",letterSpacing:.3},
+  back:{background:"transparent",border:"none",color:"#475569",fontFamily:"inherit",fontSize:13,padding:"0 0 16px 0",display:"flex",alignItems:"center",gap:6,cursor:"pointer"},
+};
+const chip=(on,col)=>({flexShrink:0,border:`1px solid ${on?col:"#1e293b"}`,background:on?col+"18":"rgba(10,21,37,.6)",color:on?col:"#475569",borderRadius:20,padding:"6px 14px",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:600,boxShadow:on?`0 0 10px ${col}33`:"none",transition:"all .2s"});
 
 // ── FLASHCARDS ────────────────────────────────────────────────────────────────
 function Flashcards(){
@@ -719,41 +737,85 @@ function Games(){
 // ── HOME ─────────────────────────────────────────────────────────────────────
 function Home(){
   return(
-    <div style={{padding:"16px 16px 100px"}}>
-      <div style={{marginBottom:24}}>
-        <div style={{fontSize:11,color:"#00d4ff",letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>CompTIA Security+</div>
-        <h1 style={{fontFamily:"Syne,sans-serif",fontSize:30,fontWeight:800,color:"#f1f5f9",lineHeight:1.2,marginBottom:6}}>Study Hub</h1>
-        <div style={{fontSize:13,color:"#475569"}}>SY0-701 · Interactive Exam Prep · Kulan Institute</div>
-      </div>
-      <div style={{...C.card,marginBottom:16}}>
-        <div style={{fontSize:11,color:"#475569",letterSpacing:1,textTransform:"uppercase",marginBottom:14}}>Exam Domain Weights</div>
-        {DOMAINS.map(d=>(
-          <div key={d.id} style={{marginBottom:12}}>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-              <span style={{fontSize:12,color:"#94a3b8"}}>D{d.id}: {d.name}</span>
-              <span style={{fontSize:12,fontWeight:700,color:d.color}}>{d.weight}%</span>
+    <div style={{padding:"0 0 100px",minHeight:"100vh"}}>
+      {/* Hero */}
+      <div style={{position:"relative",padding:"36px 20px 28px",overflow:"hidden",background:"linear-gradient(180deg,rgba(0,212,255,.07) 0%,transparent 100%)"}}>
+        <div style={{position:"absolute",top:-60,right:-40,width:200,height:200,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,212,255,.12) 0%,transparent 70%)",pointerEvents:"none"}}/>
+        <div style={{position:"absolute",bottom:-30,left:-60,width:160,height:160,borderRadius:"50%",background:"radial-gradient(circle,rgba(168,85,247,.1) 0%,transparent 70%)",pointerEvents:"none"}}/>
+        <div className="fu" style={{fontSize:10,color:"#00d4ff",letterSpacing:3,textTransform:"uppercase",marginBottom:10,display:"flex",alignItems:"center",gap:8}}>
+          <span style={{width:20,height:1,background:"linear-gradient(90deg,#00d4ff,transparent)",display:"inline-block"}}/>
+          CompTIA Security+ SY0-701
+          <span style={{width:20,height:1,background:"linear-gradient(90deg,transparent,#00d4ff)",display:"inline-block"}}/>
+        </div>
+        <h1 className="fu1" style={{fontFamily:"Syne,sans-serif",fontSize:34,fontWeight:800,background:"linear-gradient(135deg,#f1f5f9 30%,#00d4ff 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",lineHeight:1.15,marginBottom:8}}>Study Hub</h1>
+        <p className="fu2" style={{fontSize:13,color:"#475569",marginBottom:20}}>Interactive exam prep · Kulan Institute of Learning</p>
+        <div className="fu3" style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          {[["🃏","225 Cards"],["🎯","90 Questions"],["🧩","36 Pairs"],["🧪","5 PBQs"]].map(([ic,lb])=>(
+            <div key={lb} style={{display:"flex",alignItems:"center",gap:6,background:"rgba(0,212,255,.06)",border:"1px solid rgba(0,212,255,.15)",borderRadius:20,padding:"5px 12px"}}>
+              <span style={{fontSize:13}}>{ic}</span>
+              <span style={{fontSize:11,color:"#00d4ff",fontWeight:600}}>{lb}</span>
             </div>
-            <div style={{height:5,background:"#1e293b",borderRadius:3}}><div style={{height:"100%",width:`${d.weight*3}%`,background:d.color,borderRadius:3,opacity:.6}}/></div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-      <div style={{...C.card,marginBottom:16}}>
-        <div style={{fontSize:11,color:"#475569",letterSpacing:1,textTransform:"uppercase",marginBottom:12}}>Study Content</div>
-        {[["🃏 Flashcards",`${FLASHCARDS.length} terms across all 5 domains`],["🎯 Quiz Questions",`${QUIZ.length} scenario-based exam questions`],["🧩 Match Pairs",`${MATCH_PAIRS.length} term-definition pairs (3 sets)`],["🕹️ Order Games","IR phases, volatility, backups, NIST CSF"]].map(([k,v])=>(
-          <div key={k} style={{display:"flex",justifyContent:"space-between",paddingBottom:8,marginBottom:8,borderBottom:"1px solid #0f1929"}}>
-            <span style={{fontSize:13,color:"#475569"}}>{k}</span>
-            <span style={{fontSize:13,color:"#94a3b8",fontWeight:600}}>{v}</span>
+
+      <div style={{padding:"0 16px"}}>
+        {/* Domain weights */}
+        <div className="fu4" style={{...C.card,marginBottom:14}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+            <div style={{fontSize:11,color:"#475569",letterSpacing:1.5,textTransform:"uppercase"}}>Domain Weights</div>
+            <div style={{fontSize:10,color:"#334155"}}>SY0-701</div>
           </div>
-        ))}
-      </div>
-      <div style={{...C.card,background:"#0a0d1a",borderColor:"#1a1e2e"}}>
-        <div style={{fontSize:11,color:"#475569",letterSpacing:1,textTransform:"uppercase",marginBottom:12}}>Exam Info</div>
-        {[["Version","SY0-701 (Current — until ~Fall 2026)"],["Questions","Max 90 (MCQ + PBQ)"],["Time","90 minutes"],["Passing Score","750 / 900 (83%)"],["Domains","5 domains"]].map(([k,v])=>(
-          <div key={k} style={{display:"flex",justifyContent:"space-between",paddingBottom:8,marginBottom:8,borderBottom:"1px solid #0f1929"}}>
-            <span style={{fontSize:13,color:"#475569"}}>{k}</span>
-            <span style={{fontSize:12,color:"#94a3b8",fontWeight:600}}>{v}</span>
+          {DOMAINS.map((d,i)=>(
+            <div key={d.id} style={{marginBottom:i<DOMAINS.length-1?14:0}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:5,alignItems:"center"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <div style={{width:6,height:6,borderRadius:"50%",background:d.color,boxShadow:`0 0 6px ${d.color}`}}/>
+                  <span style={{fontSize:12,color:"#94a3b8"}}>D{d.id}: {d.name}</span>
+                </div>
+                <span style={{fontSize:12,fontWeight:700,color:d.color}}>{d.weight}%</span>
+              </div>
+              <div style={{height:5,background:"#0d1f35",borderRadius:3,overflow:"hidden"}}>
+                <div style={{height:"100%",width:`${d.weight*3.2}%`,background:`linear-gradient(90deg,${d.color}99,${d.color})`,borderRadius:3,boxShadow:`0 0 8px ${d.color}44`,transition:"width .8s ease"}}/>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Study modes grid */}
+        <div style={{fontSize:11,color:"#475569",letterSpacing:1.5,textTransform:"uppercase",marginBottom:12}}>Study Modes</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+          {[
+            {icon:"🃏",label:"Flashcards",sub:"225 terms",color:"#00d4ff",tab:"cards"},
+            {icon:"🎯",label:"Quiz",sub:"90 questions",color:"#ff4d6d",tab:"quiz"},
+            {icon:"🧩",label:"Match",sub:"36 pairs",color:"#f9c74f",tab:"match"},
+            {icon:"🧪",label:"PBQ Sims",sub:"5 simulations",color:"#a855f7",tab:"pbq"},
+          ].map(m=>(
+            <div key={m.tab} style={{...C.card,cursor:"pointer",padding:"16px 14px",display:"flex",flexDirection:"column",gap:8,border:`1px solid ${m.color}22`,position:"relative",overflow:"hidden"}}
+              onClick={()=>document.dispatchEvent(new CustomEvent("navtab",{detail:m.tab}))}>
+              <div style={{position:"absolute",top:-20,right:-20,width:70,height:70,borderRadius:"50%",background:`radial-gradient(circle,${m.color}15 0%,transparent 70%)`}}/>
+              <div style={{fontSize:26}}>{m.icon}</div>
+              <div>
+                <div style={{fontFamily:"Syne,sans-serif",fontSize:14,fontWeight:700,color:m.color,marginBottom:2}}>{m.label}</div>
+                <div style={{fontSize:11,color:"#475569"}}>{m.sub}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Exam info */}
+        <div style={{...C.card,background:"linear-gradient(135deg,rgba(8,12,26,.95),rgba(10,15,32,.9))",borderColor:"#0f1929"}}>
+          <div style={{fontSize:11,color:"#475569",letterSpacing:1.5,textTransform:"uppercase",marginBottom:14}}>Exam Info</div>
+          {[["Version","SY0-701 (Current until ~Fall 2026)","#00d4ff"],["Questions","Max 90 — MCQ + PBQ","#f1f5f9"],["Time","90 minutes","#f1f5f9"],["Passing Score","750 / 900 — 83%","#22c55e"],["Domains","5 domains","#f1f5f9"]].map(([k,v,vc])=>(
+            <div key={k} style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingBottom:10,marginBottom:10,borderBottom:"1px solid #0d1829"}}>
+              <span style={{fontSize:13,color:"#475569"}}>{k}</span>
+              <span style={{fontSize:12,color:vc,fontWeight:600,textAlign:"right",maxWidth:"55%"}}>{v}</span>
+            </div>
+          ))}
+          <div style={{marginTop:4,padding:"10px 12px",background:"rgba(0,212,255,.04)",border:"1px solid rgba(0,212,255,.1)",borderRadius:10,textAlign:"center"}}>
+            <div style={{fontSize:11,color:"#00d4ff",letterSpacing:1}}>study.kulaninstitute.org</div>
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );
@@ -1373,23 +1435,45 @@ const TABS=[{id:"home",icon:"🏠",label:"Home"},{id:"cards",icon:"🃏",label:"
 
 function App(){
   const [tab,setTab]=useState("home");
+
+  useEffect(()=>{
+    const handler=(e)=>setTab(e.detail);
+    document.addEventListener("navtab",handler);
+    return()=>document.removeEventListener("navtab",handler);
+  },[]);
+
   return(
-    <div style={{fontFamily:"'DM Sans',sans-serif",background:"#050d18",minHeight:"100vh",color:"#e2e8f0",display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",position:"relative"}}>
-      <div style={{flex:1}}>
+    <div style={{fontFamily:"'DM Sans',sans-serif",background:"#050d18",minHeight:"100vh",color:"#f1f5f9",display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",position:"relative"}}>
+      {/* Ambient background */}
+      <div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,height:"100%",pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
+        <div style={{position:"absolute",top:-100,left:"50%",transform:"translateX(-50%)",width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,212,255,.05) 0%,transparent 70%)"}}/>
+        <div style={{position:"absolute",bottom:100,right:-50,width:200,height:200,borderRadius:"50%",background:"radial-gradient(circle,rgba(168,85,247,.04) 0%,transparent 70%)"}}/>
+      </div>
+
+      <div style={{flex:1,position:"relative",zIndex:1}}>
         {tab==="home"&&<Home/>}
         {tab==="cards"&&<Flashcards/>}
         {tab==="quiz"&&<Quiz/>}
         {tab==="match"&&<Match/>}
         {tab==="pbq"&&<PBQ/>}
       </div>
-      <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#080f1a",borderTop:"1px solid #1e293b",display:"flex",paddingBottom:"env(safe-area-inset-bottom,8px)",zIndex:100}}>
-        {TABS.map(t=>(
-          <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,background:"transparent",border:"none",cursor:"pointer",padding:"10px 4px 8px",display:"flex",flexDirection:"column",alignItems:"center",gap:3,fontFamily:"inherit"}}>
-            <span style={{fontSize:20}}>{t.icon}</span>
-            <span style={{fontSize:10,color:tab===t.id?"#00d4ff":"#334155",fontWeight:tab===t.id?700:400}}>{t.label}</span>
-            {tab===t.id&&<div style={{width:4,height:4,borderRadius:"50%",background:"#00d4ff"}}/>}
-          </button>
-        ))}
+
+      {/* Premium bottom nav */}
+      <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,zIndex:100}}>
+        <div style={{background:"rgba(8,15,26,.92)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderTop:"1px solid rgba(255,255,255,.06)",paddingBottom:"env(safe-area-inset-bottom,10px)",paddingTop:2}}>
+          <div style={{display:"flex"}}>
+            {TABS.map(t=>{
+              const active=tab===t.id;
+              return(
+                <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,background:"transparent",border:"none",cursor:"pointer",padding:"10px 4px 8px",display:"flex",flexDirection:"column",alignItems:"center",gap:2,fontFamily:"inherit",position:"relative"}}>
+                  {active&&<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:"40%",height:2,borderRadius:"0 0 4px 4px",background:"linear-gradient(90deg,transparent,#00d4ff,transparent)"}}/>}
+                  <span style={{fontSize:20,filter:active?"drop-shadow(0 0 6px rgba(0,212,255,.6))":"none",transition:"filter .2s"}}>{t.icon}</span>
+                  <span style={{fontSize:9,letterSpacing:.5,textTransform:"uppercase",color:active?"#00d4ff":"#334155",fontWeight:active?700:500,transition:"color .2s"}}>{t.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
