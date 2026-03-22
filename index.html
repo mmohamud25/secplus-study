@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#050d18" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Sec+ Study" />
+  <title>Security+ Study Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { background: #050d18; font-family: 'DM Sans', sans-serif; color: #e2e8f0; overflow-x: hidden; }
+    ::-webkit-scrollbar { display: none; }
+    button { transition: opacity 0.1s; cursor: pointer; }
+    button:active { opacity: 0.7; }
+    .scroll-x { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none; }
+    .scroll-x::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ─── DATA ────────────────────────────────────────────────────────────────────
+
+const DOMAINS = [
+  { id: 1, name: "General Security Concepts", weight: 12, color: "#00d4ff" },
+  { id: 2, name: "Threats, Vulnerabilities & Mitigations", weight: 22, color: "#ff4d6d" },
+  { id: 3, name: "Security Architecture", weight: 18, color: "#06d6a0" },
+  { id: 4, name: "Security Operations", weight: 28, color: "#f9c74f" },
+  { id: 5, name: "Security Program Management", weight: 20, color: "#a855f7" },
+];
+
+const FLASHCARDS = [
+  { term: "CIA Triad", def: "Confidentiality, Integrity, Availability — the three core security principles", domain: 1 },
+  { term: "Least Privilege", def: "Users get only the minimum access needed to perform their job duties", domain: 1 },
+  { term: "Separation of Duties", def: "Critical tasks split across multiple people to prevent fraud or abuse", domain: 1 },
+  { term: "Dual Control", def: "Two people must be physically present simultaneously for sensitive actions", domain: 1 },
+  { term: "Need to Know", def: "Access only if required for a specific task — even with clearance", domain: 1 },
+  { term: "Zero Trust", def: "Never trust, always verify — no implicit trust based on network location", domain: 1 },
+  { term: "MFA", def: "Multi-Factor Authentication — requires 2+ different factor types", domain: 1 },
+  { term: "Symmetric Encryption", def: "One shared key encrypts and decrypts — fast, used for bulk data (AES, 3DES)", domain: 1 },
+  { term: "Asymmetric Encryption", def: "Public/private key pair — slow, used for key exchange and signatures (RSA, ECC)", domain: 1 },
+  { term: "Hashing", def: "One-way transformation producing a fixed-length digest — cannot be reversed", domain: 1 },
+  { term: "Salting", def: "Adding random data before hashing — defeats rainbow table attacks", domain: 1 },
+  { term: "Digital Signature", def: "Hash encrypted with sender's PRIVATE key — proves authenticity and integrity", domain: 1 },
+  { term: "Perfect Forward Secrecy", def: "Unique session keys per session — past sessions stay secure if key is compromised", domain: 1 },
+  { term: "PKI", def: "Public Key Infrastructure — manages digital certificates and certificate authorities", domain: 1 },
+  { term: "Kerberos", def: "Ticket-based auth using Key Distribution Center (KDC) — used in Active Directory", domain: 1 },
+  { term: "SAML", def: "XML-based SSO for enterprise federation between organizations", domain: 1 },
+  { term: "OAuth 2.0", def: "Delegated authorization — allows 'Login with Google/Facebook' type flows", domain: 1 },
+  { term: "RADIUS", def: "Centralized auth for VPN and Wi-Fi — uses UDP", domain: 1 },
+  { term: "TACACS+", def: "Cisco AAA protocol separating authn/authz/accounting — uses TCP", domain: 1 },
+  { term: "RBAC", def: "Role-Based Access Control — access granted based on job role", domain: 1 },
+  { term: "ABAC", def: "Attribute-Based Access Control — access based on attributes (location, dept, time)", domain: 1 },
+  { term: "DAC", def: "Discretionary Access Control — data OWNER decides who gets access (NTFS)", domain: 1 },
+  { term: "MAC", def: "Mandatory Access Control — labels and clearances enforced by the SYSTEM (military)", domain: 1 },
+  { term: "Non-repudiation", def: "Sender cannot deny sending — provided by digital signatures", domain: 1 },
+  { term: "HSM", def: "Hardware Security Module — dedicated hardware for cryptographic key storage", domain: 1 },
+  { term: "Phishing", def: "Mass email impersonating trusted entity — generic, untargeted", domain: 2 },
+  { term: "Spear Phishing", def: "Targeted phishing at a specific individual using personal details", domain: 2 },
+  { term: "Whaling", def: "Spear phishing targeting executives — CEO, CFO, board members", domain: 2 },
+  { term: "Vishing", def: "Voice/phone-based phishing — impersonates IT support, bank, IRS", domain: 2 },
+  { term: "Smishing", def: "SMS-based phishing — text messages with malicious links", domain: 2 },
+  { term: "Pretexting", def: "Creating a fake scenario to extract info — impersonating IT support", domain: 2 },
+  { term: "Typosquatting", def: "Registering misspelled domains to catch URL typos (arnazon.com)", domain: 2 },
+  { term: "Watering Hole", def: "Compromising a website frequently visited by the target group", domain: 2 },
+  { term: "Rootkit", def: "Hides deep in OS/kernel — evades AV, survives reboots, requires reimaging", domain: 2 },
+  { term: "Ransomware", def: "Encrypts files and demands payment — restore from clean verified backup", domain: 2 },
+  { term: "Cryptojacking", def: "Uses victim CPU to mine cryptocurrency — 100% CPU + mining pool connections", domain: 2 },
+  { term: "Logic Bomb", def: "Triggers malicious action on a condition or date — often planted by insiders", domain: 2 },
+  { term: "APT", def: "Advanced Persistent Threat — sophisticated, long-term stealthy attack (nation-state)", domain: 2 },
+  { term: "SYN Flood", def: "DoS sending half-open TCP connections to exhaust server connection table", domain: 2 },
+  { term: "Evil Twin", def: "Fake AP mimicking legitimate SSID — intercepts connecting users' credentials", domain: 2 },
+  { term: "Rogue Access Point", def: "Unauthorized AP physically connected to internal network — creates backdoor", domain: 2 },
+  { term: "SQL Injection", def: "Malicious SQL in input fields to manipulate database — look for ' or OR 1=1", domain: 2 },
+  { term: "XSS", def: "Cross-Site Scripting — injects malicious scripts into pages viewed by other users", domain: 2 },
+  { term: "CSRF", def: "Tricks authenticated user into making unwanted requests — fixed with CSRF tokens", domain: 2 },
+  { term: "MitM", def: "Man-in-the-Middle — intercepts, reads, re-encrypts, forwards live communication", domain: 2 },
+  { term: "Replay Attack", def: "Captures valid auth token and retransmits it LATER — not a live session", domain: 2 },
+  { term: "Pass-the-Hash", def: "Reuses stolen NTLM hash to authenticate without cracking the password", domain: 2 },
+  { term: "DMZ", def: "Demilitarized Zone — buffer network hosting public-facing servers between internet and LAN", domain: 3 },
+  { term: "IDS vs IPS", def: "IDS monitors and ALERTS only (passive) — IPS monitors and BLOCKS (active, inline)", domain: 3 },
+  { term: "WAF", def: "Web Application Firewall — filters HTTP/HTTPS, protects against SQLi and XSS", domain: 3 },
+  { term: "RTO", def: "Recovery Time Objective — maximum acceptable system downtime after an incident", domain: 3 },
+  { term: "RPO", def: "Recovery Point Objective — maximum acceptable data loss measured in time", domain: 3 },
+  { term: "Hot Site", def: "Fully operational backup site with real-time sync — fastest recovery, highest cost", domain: 3 },
+  { term: "Warm Site", def: "Partially equipped backup — restore from backup needed, medium cost and speed", domain: 3 },
+  { term: "Cold Site", def: "Empty facility, equipment must be installed — cheapest, slowest (days to weeks)", domain: 3 },
+  { term: "VM Escape", def: "Attacker breaks out of virtual machine to access host or other VMs", domain: 3 },
+  { term: "IaaS", def: "Infrastructure as a Service — provider owns hardware; customer owns OS, apps, data", domain: 3 },
+  { term: "PaaS", def: "Platform as a Service — provider owns OS/runtime; customer owns apps and data", domain: 3 },
+  { term: "SaaS", def: "Software as a Service — provider owns everything; customer owns data and config", domain: 3 },
+  { term: "IR Phases", def: "Preparation → Detection → Containment → Eradication → Recovery → Lessons Learned", domain: 4 },
+  { term: "Order of Volatility", def: "CPU cache → RAM → Swap files → Hard drive → Archived logs (most to least volatile)", domain: 4 },
+  { term: "Chain of Custody", def: "Documented record of who handled evidence and when — maintains forensic integrity", domain: 4 },
+  { term: "SIEM", def: "Security Information and Event Management — collects and correlates logs centrally", domain: 4 },
+  { term: "SOAR", def: "Security Orchestration, Automation & Response — automates IR playbooks", domain: 4 },
+  { term: "UEBA", def: "User Entity Behavior Analytics — baselines normal behavior, flags anomalies", domain: 4 },
+  { term: "EDR", def: "Endpoint Detection and Response — monitors, detects, investigates endpoint threats", domain: 4 },
+  { term: "Privilege Creep", def: "Accumulation of permissions over time beyond current role — fixed by access reviews", domain: 4 },
+  { term: "JIT Access", def: "Just-in-Time — temporary elevated access granted only when needed, auto-revoked after", domain: 4 },
+  { term: "Risk Formula", def: "Risk = Likelihood × Impact", domain: 5 },
+  { term: "ALE", def: "Annual Loss Expectancy = SLE × ARO — expected yearly financial loss from a risk", domain: 5 },
+  { term: "NIST CSF", def: "Cybersecurity Framework: Identify, Protect, Detect, Respond, Recover", domain: 5 },
+  { term: "GDPR", def: "EU regulation giving citizens rights over personal data — includes right to be forgotten", domain: 5 },
+  { term: "Supply Chain Attack", def: "Compromising a vendor or software update to attack downstream targets (SolarWinds)", domain: 5 },
+  { term: "Risk Transference", def: "Shift risk to third party — cyber insurance is the classic example", domain: 5 },
+  { term: "Due Diligence", def: "Investigation and research BEFORE entering a business relationship", domain: 5 },
+  { term: "Due Care", def: "Ongoing steps to MAINTAIN security after due diligence is performed", domain: 5 },
+];
+
+const QUIZ = [
+  { q: "Which principle ensures no single person can approve AND deploy a critical change?", opts: ["Least Privilege", "Job Rotation", "Separation of Duties", "Dual Control"], a: 2, d: 1, exp: "Separation of Duties splits critical tasks across multiple people to prevent fraud or abuse." },
+  { q: "Which tool MOST likely detects a user logging in from New York and Tokyo within 30 minutes?", opts: ["Signature-based IDS", "UEBA", "DLP", "WAF"], a: 1, d: 4, exp: "UEBA baselines normal behavior and flags anomalies like impossible travel." },
+  { q: "Which algorithm is symmetric?", opts: ["RSA", "ECC", "Diffie-Hellman", "AES"], a: 3, d: 1, exp: "AES is symmetric — one shared key. RSA, ECC, and Diffie-Hellman are asymmetric." },
+  { q: "An attacker registers 'arnazon.com' to catch users who mistype 'amazon.com'. Which attack is this?", opts: ["Pharming", "Typosquatting", "DNS Poisoning", "Watering Hole"], a: 1, d: 2, exp: "Typosquatting registers deliberately misspelled domain names to catch URL typos." },
+  { q: "Which IR phase comes BEFORE recovery?", opts: ["Preparation", "Detection", "Eradication", "Lessons Learned"], a: 2, d: 4, exp: "Eradication (remove threat) must happen before Recovery (restore systems) to prevent reinfection." },
+  { q: "Which backup type requires a full backup PLUS all subsequent backups to restore?", opts: ["Full", "Differential", "Incremental", "Mirror"], a: 2, d: 3, exp: "Incremental saves changes since the last backup of any type — restore needs the full plus the entire chain." },
+  { q: "A server receives millions of half-open TCP connections and becomes unavailable. Which attack?", opts: ["Smurf Attack", "SYN Flood", "Ping of Death", "DNS Amplification"], a: 1, d: 2, exp: "SYN Flood sends SYN packets but never completes the handshake, exhausting the connection table." },
+  { q: "A public-facing web server belongs in which network zone?", opts: ["Internal LAN", "Secure Zone", "DMZ", "Air-gapped network"], a: 2, d: 3, exp: "DMZ is the buffer zone between internet and internal network — all public-facing servers go here." },
+  { q: "Which BEST describes Perfect Forward Secrecy?", opts: ["Encrypts all sessions with same key", "Unique session keys so past sessions stay secure if key is later compromised", "Uses asymmetric encryption only", "Stores keys in HSM"], a: 1, d: 1, exp: "PFS generates unique session keys per session — past sessions stay safe even if the server key is stolen." },
+  { q: "An employee changes roles but keeps permissions from their old position. Which term is this?", opts: ["Insider Threat", "Separation of Duties violation", "Privilege Creep", "Need-to-Know violation"], a: 2, d: 1, exp: "Privilege creep is accumulation of permissions beyond current role — fixed by periodic access reviews." },
+  { q: "In IaaS cloud, who is responsible for patching the OS?", opts: ["Cloud provider", "Shared equally", "Customer", "Third-party vendor"], a: 2, d: 3, exp: "In IaaS the provider manages hardware — the customer owns and must patch the OS, apps, and data." },
+  { q: "In forensics, what evidence should be collected FIRST?", opts: ["Hard drive image", "Archived logs", "CPU cache and registers", "Swap files"], a: 2, d: 4, exp: "CPU cache and registers are lost immediately on power off — always collect most volatile evidence first." },
+  { q: "Which authentication factor is 'something you are'?", opts: ["Smart card", "PIN", "Fingerprint scan", "Hardware token"], a: 2, d: 1, exp: "Fingerprint is biometric — 'something you are'. Smart card/token = 'something you have'. PIN = 'something you know'." },
+  { q: "Before restoring from backup after ransomware, what must happen FIRST?", opts: ["Notify law enforcement", "Restore critical systems immediately", "Identify and remediate the attack vector", "Run a full vulnerability scan"], a: 2, d: 4, exp: "The attack vector must be closed before restoring — restoring into a vulnerable environment causes immediate reinfection." },
+  { q: "Which protocol uses tickets issued by a Key Distribution Center?", opts: ["RADIUS", "LDAP", "SAML", "Kerberos"], a: 3, d: 1, exp: "Kerberos uses a KDC to issue Ticket Granting Tickets (TGTs) for accessing internal resources." },
+  { q: "An attacker steals a session cookie and immediately takes over while the victim is still logged in. Which attack?", opts: ["Replay Attack", "Pass-the-Hash", "Session Hijacking", "MitM"], a: 2, d: 2, exp: "Session Hijacking takes over an ACTIVE live session. Replay Attack reuses tokens LATER after the session ends." },
+  { q: "Which pen test type gives the tester NO prior knowledge of the environment?", opts: ["White Box", "Gray Box", "Black Box", "Red Team"], a: 2, d: 2, exp: "Black Box = no knowledge, simulates external attacker. Gray Box = partial knowledge. White Box = full knowledge." },
+  { q: "Which control type GUIDES behavior through policy and instruction?", opts: ["Preventive", "Detective", "Corrective", "Directive"], a: 3, d: 1, exp: "Directive controls guide behavior through policies. Preventive controls technically stop attacks automatically." },
+  { q: "Which BEST describes non-repudiation?", opts: ["Encrypts data in transit", "Proves sender cannot deny sending a message", "Verifies identity before access", "Ensures data availability"], a: 1, d: 1, exp: "Non-repudiation means the sender cannot deny sending — provided by digital signatures using the sender's private key." },
+  { q: "Which access control model uses sensitivity labels enforced by the SYSTEM?", opts: ["DAC", "RBAC", "MAC", "ABAC"], a: 2, d: 1, exp: "MAC (Mandatory Access Control) uses labels and clearances enforced by the system — used in military/government." },
+  { q: "An attacker sets up an AP with the same SSID as the corporate Wi-Fi to steal credentials. Which attack?", opts: ["Rogue Access Point", "Deauthentication Attack", "Evil Twin", "Jamming"], a: 2, d: 2, exp: "Evil Twin mimics a legitimate SSID. Rogue AP is an unauthorized AP plugged into the internal network." },
+  { q: "Which risk response involves purchasing cyber insurance?", opts: ["Avoidance", "Mitigation", "Acceptance", "Transference"], a: 3, d: 5, exp: "Risk Transference shifts the financial risk to a third party — cyber insurance is the classic example." },
+  { q: "Which formula calculates Annual Loss Expectancy?", opts: ["ALE = Asset Value × ARO", "ALE = SLE × ARO", "ALE = SLE × Exposure Factor", "ALE = MTBF × MTTR"], a: 1, d: 5, exp: "ALE = SLE × ARO. SLE is the loss per incident, ARO is how many times it occurs per year." },
+  { q: "A developer commits AWS keys to a public GitHub repo. What should happen FIRST?", opts: ["Scan codebase for other credentials", "Remove keys from repo", "Revoke and rotate the compromised keys immediately", "Notify the developer's manager"], a: 2, d: 4, exp: "Bots scan GitHub within seconds. Revoke the keys immediately — containment before cleanup." },
+  { q: "Which protocol separates AAA into three functions and uses TCP?", opts: ["RADIUS", "Kerberos", "TACACS+", "LDAP"], a: 2, d: 1, exp: "TACACS+ separates all three AAA functions and uses TCP. RADIUS combines auth/authorization and uses UDP." },
+  { q: "To ensure cloud data is unreadable even if the provider is compromised, which control is BEST?", opts: ["Provider's default encryption at rest", "TLS for data in transit", "Client-side encryption with customer-managed keys", "CASB to monitor access"], a: 2, d: 3, exp: "Client-side encryption means the customer holds the keys — a compromised provider cannot decrypt what they never held keys for." },
+  { q: "Which attack uses precomputed hash lookup tables to crack passwords?", opts: ["Brute Force", "Rainbow Table", "Dictionary Attack", "Credential Stuffing"], a: 1, d: 2, exp: "Rainbow tables are precomputed hash-to-plaintext tables. Salting passwords defeats this by making each hash unique." },
+  { q: "Which BEST describes a supply chain attack?", opts: ["Exploiting an unpatched server", "Compromising a vendor or software update to attack downstream targets", "Using stolen credentials on internal systems", "Physical theft from a data center"], a: 1, d: 5, exp: "Supply chain attacks compromise a trusted vendor or software update to reach the real target — SolarWinds is the example." },
+  { q: "A company stores customer data. A new employee is given access to ALL systems on day one 'just in case'. Which principle is violated?", opts: ["Separation of Duties", "Dual Control", "Non-repudiation", "Least Privilege"], a: 3, d: 1, exp: "Least Privilege — users should only have the minimum access needed for their specific role, nothing more." },
+  { q: "Which type of malware hides its presence in the OS kernel and causes antivirus to report the system as clean?", opts: ["Trojan", "Spyware", "Rootkit", "Logic Bomb"], a: 2, d: 2, exp: "Rootkits operate at kernel level, intercepting system calls and hiding from security tools — AV reporting clean is the giveaway." },
+];
+
+const MATCH_PAIRS = [
+  { term: "SYN Flood", match: "Half-open TCP connections exhaust server" },
+  { term: "Evil Twin", match: "Fake AP with identical SSID to real network" },
+  { term: "Rootkit", match: "Hides in kernel, evades antivirus" },
+  { term: "Cryptojacking", match: "Uses your CPU to mine cryptocurrency" },
+  { term: "Whaling", match: "Phishing targeting executives" },
+  { term: "RTO", match: "Maximum acceptable downtime" },
+  { term: "RPO", match: "Maximum acceptable data loss in time" },
+  { term: "UEBA", match: "Detects impossible travel anomalies" },
+  { term: "Kerberos", match: "Ticket-based auth using KDC" },
+  { term: "SAML", match: "Enterprise SSO federation between orgs" },
+  { term: "IDS", match: "Monitors and alerts — does NOT block" },
+  { term: "IPS", match: "Monitors and BLOCKS inline traffic" },
+];
+
+// ─── STYLES ───────────────────────────────────────────────────────────────────
+
+const card = { background: "#0a1525", border: "1px solid #1e293b", borderRadius: 16, padding: "18px 16px" };
+const primaryBtn = { background: "#00d4ff", color: "#000814", border: "none", borderRadius: 12, padding: "14px 20px", fontWeight: 700, fontFamily: "inherit", fontSize: 15, width: "100%", minHeight: 50, cursor: "pointer" };
+const backBtn = { background: "transparent", border: "none", color: "#64748b", fontFamily: "inherit", fontSize: 14, padding: "0 0 16px 0", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" };
+
+function chipStyle(active, color) {
+  return { flexShrink: 0, border: `1px solid ${active ? color : "#1e293b"}`, background: active ? color + "22" : "#0a1525", color: active ? color : "#64748b", borderRadius: 20, padding: "6px 14px", fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 };
+}
+
+// ─── FLASHCARDS ───────────────────────────────────────────────────────────────
+
+function Flashcards() {
+  const [domain, setDomain] = useState(0);
+  const [idx, setIdx] = useState(0);
+  const [flipped, setFlipped] = useState(false);
+  const [known, setKnown] = useState([]);
+  const [review, setReview] = useState([]);
+
+  const cards = domain === 0 ? FLASHCARDS : FLASHCARDS.filter(c => c.domain === domain);
+  const card_ = cards[idx];
+  const done = known.length + review.length === cards.length;
+  const reset = () => { setIdx(0); setFlipped(false); setKnown([]); setReview([]); };
+
+  const next = (result) => {
+    if (result === "know") setKnown(p => [...p, card_.term]);
+    else setReview(p => [...p, card_.term]);
+    setFlipped(false);
+    setTimeout(() => { if (idx + 1 < cards.length) setIdx(i => i + 1); }, 100);
+  };
+
+  return (
+    <div style={{ padding: "16px 16px 100px" }}>
+      <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, marginBottom: 16, color: "#f1f5f9" }}>🃏 Flashcards</h2>
+      <div className="scroll-x" style={{ marginBottom: 16 }}>
+        {[{ id: 0, name: "All", color: "#00d4ff" }, ...DOMAINS.map(d => ({ ...d, name: `D${d.id}` }))].map(d => (
+          <button key={d.id} onClick={() => { setDomain(d.id); reset(); }} style={chipStyle(domain === d.id, d.color)}>{d.name}</button>
+        ))}
+      </div>
+
+      {!done ? (
+        <>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 12, color: "#475569" }}>
+            <span>{idx + 1} / {cards.length}</span>
+            <span><span style={{ color: "#22c55e" }}>✓ {known.length}</span> · <span style={{ color: "#ef4444" }}>✗ {review.length}</span></span>
+          </div>
+          <div style={{ height: 4, background: "#1e293b", borderRadius: 2, marginBottom: 20 }}>
+            <div style={{ height: "100%", width: `${((known.length + review.length) / cards.length) * 100}%`, background: "#00d4ff", borderRadius: 2, transition: "width 0.3s" }} />
+          </div>
+          <div onClick={() => setFlipped(f => !f)} style={{
+            ...card, minHeight: 220, display: "flex", flexDirection: "column", alignItems: "center",
+            justifyContent: "center", textAlign: "center", cursor: "pointer", userSelect: "none",
+            background: flipped ? "linear-gradient(135deg,#0d2d1a,#0a1f2d)" : "linear-gradient(135deg,#0a1f2d,#0d1f35)",
+            borderColor: flipped ? "#06d6a0" : "#00d4ff", transition: "all 0.25s",
+          }}>
+            <div style={{ fontSize: 11, color: flipped ? "#06d6a0" : "#00d4ff", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>
+              {flipped ? "Definition" : "Tap to reveal"}
+            </div>
+            <div style={{ fontSize: flipped ? 14 : 22, fontWeight: flipped ? 400 : 700, color: "#f1f5f9", lineHeight: 1.7, fontFamily: flipped ? "inherit" : "Syne, sans-serif" }}>
+              {flipped ? card_.def : card_.term}
+            </div>
+            {!flipped && <div style={{ marginTop: 12, fontSize: 11, color: "#334155" }}>Domain {card_.domain}</div>}
+          </div>
+          {flipped ? (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 16 }}>
+              <button onClick={() => next("review")} style={{ background: "#2d0a0a", border: "1px solid #ef4444", borderRadius: 12, padding: 14, color: "#fca5a5", fontFamily: "inherit", fontSize: 14, fontWeight: 700, minHeight: 52, cursor: "pointer" }}>✗ Still Learning</button>
+              <button onClick={() => next("know")} style={{ background: "#052e16", border: "1px solid #22c55e", borderRadius: 12, padding: 14, color: "#86efac", fontFamily: "inherit", fontSize: 14, fontWeight: 700, minHeight: 52, cursor: "pointer" }}>✓ Got It!</button>
+            </div>
+          ) : <p style={{ textAlign: "center", color: "#334155", fontSize: 13, marginTop: 16 }}>Tap card to flip</p>}
+        </>
+      ) : (
+        <div style={{ ...card, textAlign: "center", padding: 32 }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>🎯</div>
+          <div style={{ fontFamily: "Syne, sans-serif", fontSize: 22, color: "#f1f5f9", marginBottom: 8 }}>Deck Complete!</div>
+          <div style={{ fontSize: 14, color: "#64748b", marginBottom: 24 }}><span style={{ color: "#22c55e" }}>{known.length} known</span> · <span style={{ color: "#ef4444" }}>{review.length} to review</span></div>
+          {review.length > 0 && <div style={{ background: "#0d0a14", border: "1px solid #2d1a1a", borderRadius: 12, padding: 14, marginBottom: 20, textAlign: "left" }}>
+            <div style={{ fontSize: 11, color: "#ef4444", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Review These</div>
+            {review.map(t => <div key={t} style={{ fontSize: 13, color: "#94a3b8", marginBottom: 4 }}>• {t}</div>)}
+          </div>}
+          <button onClick={reset} style={primaryBtn}>Study Again</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── QUIZ ─────────────────────────────────────────────────────────────────────
+
+function Quiz() {
+  const [dFilter, setDFilter] = useState(0);
+  const [cur, setCur] = useState(0);
+  const [sel, setSel] = useState(null);
+  const [answers, setAnswers] = useState([]);
+  const [done, setDone] = useState(false);
+
+  const questions = dFilter === 0 ? QUIZ : QUIZ.filter(q => q.d === dFilter);
+  const q = questions[cur];
+  const score = answers.filter(a => a.correct).length;
+
+  const pick = (i) => {
+    if (sel !== null) return;
+    setSel(i);
+    setAnswers(a => [...a, { correct: i === q.a, domain: q.d }]);
+  };
+
+  const next = () => {
+    setSel(null);
+    if (cur + 1 < questions.length) setCur(c => c + 1);
+    else setDone(true);
+  };
+
+  const reset = () => { setCur(0); setSel(null); setAnswers([]); setDone(false); };
+
+  if (done) {
+    const pct = Math.round((score / questions.length) * 100);
+    return (
+      <div style={{ padding: "16px 16px 100px" }}>
+        <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, marginBottom: 20, color: "#f1f5f9" }}>Results</h2>
+        <div style={{ ...card, textAlign: "center", marginBottom: 16 }}>
+          <div style={{ fontSize: 52, marginBottom: 8 }}>{pct >= 80 ? "🏆" : pct >= 60 ? "💪" : "📚"}</div>
+          <div style={{ fontFamily: "Syne, sans-serif", fontSize: 36, fontWeight: 800, color: pct >= 80 ? "#22c55e" : pct >= 60 ? "#f9c74f" : "#ef4444" }}>{pct}%</div>
+          <div style={{ fontSize: 14, color: "#64748b", marginTop: 4 }}>{score} / {questions.length} correct</div>
+          <div style={{ fontSize: 13, color: "#334155", marginTop: 6 }}>{pct >= 80 ? "Exam ready! 🎯" : pct >= 60 ? "Getting there — keep drilling 💪" : "Review notes and try again 📚"}</div>
+        </div>
+        <div style={{ ...card, marginBottom: 16 }}>
+          <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>By Domain</div>
+          {DOMAINS.map(d => {
+            const da = answers.filter(a => a.domain === d.id);
+            if (!da.length) return null;
+            const dc = da.filter(a => a.correct).length;
+            const dp = Math.round((dc / da.length) * 100);
+            return (
+              <div key={d.id} style={{ marginBottom: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                  <span style={{ fontSize: 12, color: "#94a3b8" }}>D{d.id}: {d.name.split(",")[0]}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: dp >= 70 ? "#22c55e" : dp >= 50 ? "#f9c74f" : "#ef4444" }}>{dp}%</span>
+                </div>
+                <div style={{ height: 4, background: "#1e293b", borderRadius: 2 }}>
+                  <div style={{ height: "100%", width: `${dp}%`, background: d.color, borderRadius: 2, transition: "width 0.5s" }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <button onClick={reset} style={primaryBtn}>Try Again</button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: "16px 16px 100px" }}>
+      <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, marginBottom: 16, color: "#f1f5f9" }}>🎯 Practice Quiz</h2>
+      <div className="scroll-x" style={{ marginBottom: 16 }}>
+        {[{ id: 0, name: "All", color: "#00d4ff" }, ...DOMAINS.map(d => ({ ...d, name: `D${d.id}` }))].map(d => (
+          <button key={d.id} onClick={() => { setDFilter(d.id); reset(); }} style={chipStyle(dFilter === d.id, d.color)}>{d.name}</button>
+        ))}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 12, color: "#475569" }}>
+        <span>Q {cur + 1} / {questions.length}</span>
+        <span style={{ color: "#22c55e" }}>{score} correct</span>
+      </div>
+      <div style={{ height: 4, background: "#1e293b", borderRadius: 2, marginBottom: 16 }}>
+        <div style={{ height: "100%", width: `${(cur / questions.length) * 100}%`, background: "#00d4ff", borderRadius: 2, transition: "width 0.3s" }} />
+      </div>
+      <div style={{ ...card, marginBottom: 14 }}>
+        <div style={{ fontSize: 11, color: DOMAINS.find(d => d.id === q.d)?.color || "#00d4ff", letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Domain {q.d}</div>
+        <div style={{ fontSize: 15, fontWeight: 600, color: "#f1f5f9", lineHeight: 1.65, fontFamily: "Syne, sans-serif" }}>{q.q}</div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 14 }}>
+        {q.opts.map((opt, i) => {
+          let bg = "#080f1a", bdr = "#1e293b", clr = "#94a3b8";
+          if (sel !== null) {
+            if (i === q.a) { bg = "#052e16"; bdr = "#22c55e"; clr = "#86efac"; }
+            else if (i === sel) { bg = "#2d0a0a"; bdr = "#ef4444"; clr = "#fca5a5"; }
+          }
+          return (
+            <button key={i} onClick={() => pick(i)} style={{ background: bg, border: `1px solid ${bdr}`, borderRadius: 12, padding: "14px 16px", textAlign: "left", cursor: sel !== null ? "default" : "pointer", color: clr, fontSize: 14, fontFamily: "inherit", display: "flex", alignItems: "center", gap: 12, minHeight: 52, transition: "all 0.2s" }}>
+              <span style={{ width: 26, height: 26, borderRadius: 6, background: bdr + "33", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: bdr, flexShrink: 0 }}>{["A","B","C","D"][i]}</span>
+              <span style={{ lineHeight: 1.4 }}>{opt}</span>
+              {sel !== null && i === q.a && <span style={{ marginLeft: "auto" }}>✓</span>}
+              {sel !== null && i === sel && i !== q.a && <span style={{ marginLeft: "auto" }}>✗</span>}
+            </button>
+          );
+        })}
+      </div>
+      {sel !== null && (
+        <div style={{ ...card, borderLeft: "3px solid #22c55e", background: "#060f0a", marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: "#22c55e", letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>Explanation</div>
+          <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.7, marginBottom: 14 }}>{q.exp}</div>
+          <button onClick={next} style={primaryBtn}>{cur + 1 < questions.length ? "Next →" : "See Results"}</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── MATCH ────────────────────────────────────────────────────────────────────
+
+function Match() {
+  const [selTerm, setSelTerm] = useState(null);
+  const [selMatch, setSelMatch] = useState(null);
+  const [matched, setMatched] = useState([]);
+  const [wrong, setWrong] = useState(false);
+  const [done, setDone] = useState(false);
+  const [moves, setMoves] = useState(0);
+  const [shuffled] = useState(() => [...MATCH_PAIRS.map(p => p.match)].sort(() => Math.random() - 0.5));
+
+  useEffect(() => {
+    if (selTerm && selMatch) {
+      setMoves(m => m + 1);
+      const pair = MATCH_PAIRS.find(p => p.term === selTerm && p.match === selMatch);
+      if (pair) {
+        const next = [...matched, selTerm];
+        setMatched(next);
+        if (next.length === MATCH_PAIRS.length) setDone(true);
+        setSelTerm(null); setSelMatch(null);
+      } else {
+        setWrong(true);
+        setTimeout(() => { setSelTerm(null); setSelMatch(null); setWrong(false); }, 700);
+      }
+    }
+  }, [selTerm, selMatch]);
+
+  const reset = () => { setSelTerm(null); setSelMatch(null); setMatched([]); setWrong(false); setDone(false); setMoves(0); };
+  const isTermMatched = t => matched.includes(t);
+  const isMatchMatched = m => matched.some(t => MATCH_PAIRS.find(p => p.term === t)?.match === m);
+
+  return (
+    <div style={{ padding: "16px 16px 100px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, color: "#f1f5f9" }}>🧩 Match Game</h2>
+        <div style={{ fontSize: 12, color: "#475569" }}>{matched.length}/{MATCH_PAIRS.length} · {moves} moves</div>
+      </div>
+      {done ? (
+        <div style={{ ...card, textAlign: "center", padding: 40 }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>🎉</div>
+          <div style={{ fontFamily: "Syne, sans-serif", fontSize: 22, color: "#f1f5f9", marginBottom: 8 }}>All Matched!</div>
+          <div style={{ fontSize: 14, color: "#64748b", marginBottom: 24 }}>Completed in {moves} moves</div>
+          <button onClick={reset} style={primaryBtn}>Play Again</button>
+        </div>
+      ) : (
+        <>
+          <p style={{ fontSize: 12, color: "#475569", marginBottom: 14 }}>Tap a term, then tap its matching definition</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ fontSize: 10, color: "#475569", letterSpacing: 1, textTransform: "uppercase", marginBottom: 2 }}>Terms</div>
+              {MATCH_PAIRS.map(({ term: t }) => {
+                const isSel = selTerm === t, isM = isTermMatched(t), isW = wrong && isSel;
+                return (
+                  <button key={t} onClick={() => !isM && setSelTerm(t)} style={{ background: isM ? "#052e16" : isSel ? "#0d2d40" : isW ? "#2d0a0a" : "#0a1525", border: `1px solid ${isM ? "#22c55e" : isSel ? "#00d4ff" : isW ? "#ef4444" : "#1e293b"}`, borderRadius: 10, padding: "10px", textAlign: "left", cursor: isM ? "default" : "pointer", color: isM ? "#86efac" : isSel ? "#00d4ff" : "#94a3b8", fontSize: 12, fontFamily: "inherit", fontWeight: 600, minHeight: 44, lineHeight: 1.3, transition: "all 0.15s" }}>
+                    {isM ? "✓ " : ""}{t}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ fontSize: 10, color: "#475569", letterSpacing: 1, textTransform: "uppercase", marginBottom: 2 }}>Definitions</div>
+              {shuffled.map(m => {
+                const isSel = selMatch === m, isM = isMatchMatched(m), isW = wrong && isSel;
+                return (
+                  <button key={m} onClick={() => !isM && setSelMatch(m)} style={{ background: isM ? "#052e16" : isSel ? "#0d2d40" : isW ? "#2d0a0a" : "#0a1525", border: `1px solid ${isM ? "#22c55e" : isSel ? "#00d4ff" : isW ? "#ef4444" : "#1e293b"}`, borderRadius: 10, padding: "10px", textAlign: "left", cursor: isM ? "default" : "pointer", color: isM ? "#86efac" : isSel ? "#00d4ff" : "#94a3b8", fontSize: 11, fontFamily: "inherit", minHeight: 44, lineHeight: 1.4, transition: "all 0.15s" }}>
+                    {isM ? "✓ " : ""}{m}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── ORDER GAME ───────────────────────────────────────────────────────────────
+
+function OrderGame({ title, items, description, color }) {
+  const [order, setOrder] = useState(() => [...items].sort(() => Math.random() - 0.5));
+  const [checked, setChecked] = useState(false);
+  const [correct, setCorrect] = useState(false);
+
+  const moveUp = i => { if (i === 0) return; const n = [...order]; [n[i-1], n[i]] = [n[i], n[i-1]]; setOrder(n); };
+  const moveDown = i => { if (i === order.length-1) return; const n = [...order]; [n[i], n[i+1]] = [n[i+1], n[i]]; setOrder(n); };
+  const check = () => { setChecked(true); setCorrect(order.every((p, i) => p === items[i])); };
+  const reset = () => { setOrder([...items].sort(() => Math.random() - 0.5)); setChecked(false); setCorrect(false); };
+
+  return (
+    <div>
+      <p style={{ fontSize: 13, color: "#64748b", marginBottom: 16 }}>{description}</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+        {order.map((item, i) => {
+          let bdr = "#1e293b", bg = "#0a1525", tc = "#94a3b8";
+          if (checked) { if (item === items[i]) { bdr = "#22c55e"; bg = "#052e16"; tc = "#86efac"; } else { bdr = "#ef4444"; bg = "#2d0a0a"; tc = "#fca5a5"; } }
+          return (
+            <div key={item} style={{ background: bg, border: `1px solid ${bdr}`, borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ width: 28, height: 28, borderRadius: 8, background: (checked ? bdr : color) + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: checked ? bdr : color, flexShrink: 0 }}>{i+1}</span>
+              <span style={{ fontSize: 13, color: tc, fontWeight: 500, flex: 1, lineHeight: 1.4 }}>{item}</span>
+              {checked && <span style={{ fontSize: 16 }}>{item === items[i] ? "✓" : "✗"}</span>}
+              {!checked && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  <button onClick={() => moveUp(i)} disabled={i === 0} style={{ background: "transparent", border: "none", color: i === 0 ? "#1e293b" : "#475569", cursor: i === 0 ? "default" : "pointer", fontSize: 16, padding: "2px 8px" }}>▲</button>
+                  <button onClick={() => moveDown(i)} disabled={i === order.length-1} style={{ background: "transparent", border: "none", color: i === order.length-1 ? "#1e293b" : "#475569", cursor: i === order.length-1 ? "default" : "pointer", fontSize: 16, padding: "2px 8px" }}>▼</button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {!checked ? <button onClick={check} style={primaryBtn}>Check Order</button> : (
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 36, marginBottom: 8 }}>{correct ? "🏆" : "📚"}</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: correct ? "#22c55e" : "#ef4444", marginBottom: 16, fontFamily: "Syne, sans-serif" }}>{correct ? "Perfect!" : "Not quite — check the numbers above"}</div>
+          {!correct && <div style={{ ...card, textAlign: "left", marginBottom: 16 }}>
+            <div style={{ fontSize: 11, color, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Correct Order</div>
+            {items.map((p, i) => <div key={p} style={{ fontSize: 13, color: "#94a3b8", marginBottom: 6 }}>{i+1}. {p}</div>)}
+          </div>}
+          <button onClick={reset} style={primaryBtn}>Try Again</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Games() {
+  const [game, setGame] = useState(null);
+  const IR = ["Preparation", "Detection & Analysis", "Containment", "Eradication", "Recovery", "Lessons Learned"];
+  const VOL = ["CPU Cache & Registers", "RAM / Running Processes", "Swap Files / Temp Files", "Hard Drive Image", "Archived Logs / Backups"];
+  const BACKUP = ["Full Backup — slowest to create, fastest restore", "Differential — changes since last full backup", "Incremental — fastest to create, slowest restore"];
+  const gameList = [
+    { id: "ir", emoji: "🔁", label: "IR Phase Order", desc: "Sequence the 6 incident response phases", color: "#a855f7" },
+    { id: "vol", emoji: "⚡", label: "Volatility Order", desc: "Most volatile → least volatile evidence", color: "#f9c74f" },
+    { id: "backup", emoji: "💾", label: "Backup Speed", desc: "Order backup types by creation speed", color: "#06d6a0" },
+  ];
+  return (
+    <div style={{ padding: "16px 16px 100px" }}>
+      <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, marginBottom: 16, color: "#f1f5f9" }}>🕹️ Games</h2>
+      {!game ? gameList.map(g => (
+        <button key={g.id} onClick={() => setGame(g.id)} style={{ ...card, width: "100%", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 16, minHeight: 72, marginBottom: 12, fontFamily: "inherit" }}>
+          <div style={{ fontSize: 32 }}>{g.emoji}</div>
+          <div>
+            <div style={{ fontFamily: "Syne, sans-serif", fontSize: 16, fontWeight: 700, color: g.color, marginBottom: 4 }}>{g.label}</div>
+            <div style={{ fontSize: 12, color: "#475569" }}>{g.desc}</div>
+          </div>
+        </button>
+      )) : (
+        <>
+          <button onClick={() => setGame(null)} style={backBtn}>← Back</button>
+          {game === "ir" && <OrderGame items={IR} description="Use ▲▼ to put the 6 Incident Response phases in correct order" color="#a855f7" />}
+          {game === "vol" && <OrderGame items={VOL} description="Order from MOST volatile (collect first) to LEAST volatile" color="#f9c74f" />}
+          {game === "backup" && <OrderGame items={BACKUP} description="Order backup types from fastest to create (top) to slowest (bottom)" color="#06d6a0" />}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── HOME ─────────────────────────────────────────────────────────────────────
+
+function Home() {
+  return (
+    <div style={{ padding: "16px 16px 100px" }}>
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ fontSize: 11, color: "#00d4ff", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>CompTIA Security+</div>
+        <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: 30, fontWeight: 800, color: "#f1f5f9", lineHeight: 1.2, marginBottom: 6 }}>Study Hub</h1>
+        <div style={{ fontSize: 13, color: "#475569" }}>SY0-701 · Interactive Exam Prep · Kulan Institute</div>
+      </div>
+
+      <div style={{ ...card, marginBottom: 16 }}>
+        <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>Exam Domain Weights</div>
+        {DOMAINS.map(d => (
+          <div key={d.id} style={{ marginBottom: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ fontSize: 12, color: "#94a3b8" }}>D{d.id}: {d.name}</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: d.color }}>{d.weight}%</span>
+            </div>
+            <div style={{ height: 5, background: "#1e293b", borderRadius: 3 }}>
+              <div style={{ height: "100%", width: `${d.weight * 3}%`, background: d.color, borderRadius: 3, opacity: 0.6 }} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ ...card, marginBottom: 16 }}>
+        <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Content Available</div>
+        {[["Flashcards", `${FLASHCARDS.length} terms across all 5 domains`], ["Quiz Questions", `${QUIZ.length} scenario-based questions`], ["Match Pairs", `${MATCH_PAIRS.length} term-definition pairs`], ["Order Games", "IR phases, volatility, backup types"]].map(([k, v]) => (
+          <div key={k} style={{ display: "flex", justifyContent: "space-between", paddingBottom: 8, marginBottom: 8, borderBottom: "1px solid #0f1929" }}>
+            <span style={{ fontSize: 13, color: "#475569" }}>{k}</span>
+            <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 600 }}>{v}</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ ...card, background: "#0a0d1a", borderColor: "#1a1e2e" }}>
+        <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Exam Info</div>
+        {[["Version", "SY0-701 (Current)"], ["Questions", "Max 90 (MCQ + PBQ)"], ["Time", "90 minutes"], ["Passing Score", "750 / 900 (83%)"], ["Valid Until", "~Fall 2026"]].map(([k, v]) => (
+          <div key={k} style={{ display: "flex", justifyContent: "space-between", paddingBottom: 8, marginBottom: 8, borderBottom: "1px solid #0f1929" }}>
+            <span style={{ fontSize: 13, color: "#475569" }}>{k}</span>
+            <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 600 }}>{v}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── APP ──────────────────────────────────────────────────────────────────────
+
+const TABS = [
+  { id: "home", icon: "🏠", label: "Home" },
+  { id: "flashcards", icon: "🃏", label: "Cards" },
+  { id: "quiz", icon: "🎯", label: "Quiz" },
+  { id: "match", icon: "🧩", label: "Match" },
+  { id: "games", icon: "🕹️", label: "Games" },
+];
+
+function App() {
+  const [tab, setTab] = useState("home");
+  return (
+    <div style={{ fontFamily: "'DM Sans', sans-serif", background: "#050d18", minHeight: "100vh", color: "#e2e8f0", display: "flex", flexDirection: "column", maxWidth: 480, margin: "0 auto", position: "relative" }}>
+      <div style={{ flex: 1 }}>
+        {tab === "home" && <Home />}
+        {tab === "flashcards" && <Flashcards />}
+        {tab === "quiz" && <Quiz />}
+        {tab === "match" && <Match />}
+        {tab === "games" && <Games />}
+      </div>
+      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 480, background: "#080f1a", borderTop: "1px solid #1e293b", display: "flex", paddingBottom: "env(safe-area-inset-bottom, 8px)", zIndex: 100 }}>
+        {TABS.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)} style={{ flex: 1, background: "transparent", border: "none", cursor: "pointer", padding: "10px 4px 8px", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, fontFamily: "inherit" }}>
+            <span style={{ fontSize: 20 }}>{t.icon}</span>
+            <span style={{ fontSize: 10, color: tab === t.id ? "#00d4ff" : "#334155", fontWeight: tab === t.id ? 700 : 400 }}>{t.label}</span>
+            {tab === t.id && <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#00d4ff" }} />}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
