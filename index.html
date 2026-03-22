@@ -759,8 +759,617 @@ function Home(){
   );
 }
 
+// ── PBQ SIMULATIONS ───────────────────────────────────────────────────────────
+
+// PBQ 1: Firewall Rule Configuration
+function PBQ_Firewall(){
+  const scenario=`A company's web server (192.168.10.5) sits in the DMZ. The internal network is 10.0.0.0/24. You must configure firewall rules to:
+• Allow HTTPS traffic from the internet to the web server
+• Allow the web server to query the internal database (port 3306)
+• Block all other traffic from the DMZ to the internal network
+• Allow internal users to browse the internet (HTTP/HTTPS)`;
+
+  const correctRules=[
+    {src:"ANY",dst:"192.168.10.5",port:"443",action:"ALLOW",reason:"Internet HTTPS to web server"},
+    {src:"192.168.10.5",dst:"10.0.0.0/24",port:"3306",action:"ALLOW",reason:"Web server to DB"},
+    {src:"192.168.10.5",dst:"10.0.0.0/24",port:"ANY",action:"DENY",reason:"Block all other DMZ→Internal"},
+    {src:"10.0.0.0/24",dst:"ANY",port:"80,443",action:"ALLOW",reason:"Internal users browse internet"},
+  ];
+
+  const [rules,setRules]=useState([
+    {src:"",dst:"",port:"",action:"ALLOW"},
+    {src:"",dst:"",port:"",action:"ALLOW"},
+    {src:"",dst:"",port:"",action:"ALLOW"},
+    {src:"",dst:"",port:"",action:"ALLOW"},
+  ]);
+  const [checked,setChecked]=useState(false);
+  const [results,setResults]=useState([]);
+
+  const update=(i,field,val)=>{
+    const n=[...rules];n[i]={...n[i],[field]:val};setRules(n);
+  };
+
+  const check=()=>{
+    const res=rules.map((r,i)=>{
+      const c=correctRules[i];
+      const srcOk=r.src.trim().toLowerCase()===c.src.toLowerCase()||r.src.includes(c.src.split(".")[0]);
+      const dstOk=r.dst.trim().toLowerCase()===c.dst.toLowerCase()||r.dst.includes(c.dst.split(".")[0]);
+      const portOk=r.port.trim()===c.port||r.port.includes(c.port.split(",")[0]);
+      const actOk=r.action===c.action;
+      return {correct:srcOk&&dstOk&&portOk&&actOk,reason:c.reason,expected:c};
+    });
+    setResults(res);setChecked(true);
+  };
+
+  const score=results.filter(r=>r.correct).length;
+
+  const inp=(i,field,ph,w="80px")=>(
+    <input value={rules[i][field]} onChange={e=>update(i,field,e.target.value)} placeholder={ph}
+      style={{background:"#0a1525",border:"1px solid #1e3a5f",borderRadius:6,padding:"6px 8px",color:"#e2e8f0",fontSize:11,fontFamily:"inherit",width:w,outline:"none"}}/>
+  );
+
+  return(
+    <div>
+      <div style={{background:"#0a1020",border:"1px solid #1e3a5f",borderRadius:12,padding:"14px",marginBottom:20,fontSize:13,color:"#94a3b8",lineHeight:1.7,whiteSpace:"pre-line"}}>{scenario}</div>
+
+      <div style={{fontSize:11,color:"#f9c74f",letterSpacing:1,textTransform:"uppercase",marginBottom:12}}>Configure Firewall Rules</div>
+
+      <div style={{overflowX:"auto",marginBottom:16}}>
+        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+          <thead>
+            <tr style={{background:"#0f172a"}}>
+              {["#","Source","Destination","Port","Action","Status"].map(h=>(
+                <th key={h} style={{padding:"8px 6px",textAlign:"left",color:"#64748b",fontWeight:600,whiteSpace:"nowrap",borderBottom:"1px solid #1e293b"}}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rules.map((r,i)=>(
+              <tr key={i} style={{background:checked?(results[i]?.correct?"#052e16":"#2d0a0a"):"#080f1a",borderBottom:"1px solid #0f1929"}}>
+                <td style={{padding:"8px 6px",color:"#475569",fontWeight:700}}>{i+1}</td>
+                <td style={{padding:"6px 4px"}}>{inp(i,"src","e.g. ANY","90px")}</td>
+                <td style={{padding:"6px 4px"}}>{inp(i,"dst","IP/subnet","90px")}</td>
+                <td style={{padding:"6px 4px"}}>{inp(i,"port","e.g. 443","60px")}</td>
+                <td style={{padding:"6px 4px"}}>
+                  <select value={r.action} onChange={e=>update(i,"action",e.target.value)}
+                    style={{background:"#0a1525",border:"1px solid #1e3a5f",borderRadius:6,padding:"6px 4px",color:r.action==="ALLOW"?"#22c55e":"#ef4444",fontSize:11,fontFamily:"inherit",cursor:"pointer"}}>
+                    <option value="ALLOW">ALLOW</option>
+                    <option value="DENY">DENY</option>
+                  </select>
+                </td>
+                <td style={{padding:"6px 4px",fontSize:14}}>
+                  {checked?(results[i]?.correct?"✅":"❌"):"—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {checked&&(
+        <div style={{background:"#080f1a",border:"1px solid #1e293b",borderRadius:12,padding:14,marginBottom:16}}>
+          <div style={{fontSize:11,color:score===4?"#22c55e":"#f9c74f",letterSpacing:1,textTransform:"uppercase",marginBottom:10}}>Score: {score}/4</div>
+          {results.map((r,i)=>(
+            <div key={i} style={{marginBottom:10,paddingBottom:10,borderBottom:"1px solid #0f1929"}}>
+              <div style={{fontSize:12,color:r.correct?"#86efac":"#fca5a5",fontWeight:600,marginBottom:4}}>Rule {i+1}: {r.reason}</div>
+              {!r.correct&&<div style={{fontSize:11,color:"#64748b"}}>Expected: {r.expected.src} → {r.expected.dst} Port:{r.expected.port} {r.expected.action}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button onClick={check} style={{...C.primary,marginBottom:10}}>Submit Rules</button>
+      <button onClick={()=>{setRules([{src:"",dst:"",port:"",action:"ALLOW"},{src:"",dst:"",port:"",action:"ALLOW"},{src:"",dst:"",port:"",action:"ALLOW"},{src:"",dst:"",port:"",action:"ALLOW"}]);setChecked(false);setResults([]);}} style={{background:"transparent",border:"1px solid #1e293b",borderRadius:12,padding:"12px",color:"#64748b",fontFamily:"inherit",fontSize:14,width:"100%",cursor:"pointer"}}>Reset</button>
+    </div>
+  );
+}
+
+// PBQ 2: Log Analysis
+function PBQ_Logs(){
+  const scenarios=[
+    {
+      title:"Web Server Log Analysis",
+      log:`192.168.1.45 - - [15/Mar/2025:02:14:33] "GET /index.php?id=1 HTTP/1.1" 200 4521
+192.168.1.45 - - [15/Mar/2025:02:14:34] "GET /index.php?id=1' HTTP/1.1" 500 234
+192.168.1.45 - - [15/Mar/2025:02:14:35] "GET /index.php?id=1' OR '1'='1 HTTP/1.1" 200 18420
+192.168.1.45 - - [15/Mar/2025:02:14:36] "GET /index.php?id=1 UNION SELECT username,password,3 FROM users-- HTTP/1.1" 200 9821
+192.168.1.45 - - [15/Mar/2025:02:14:37] "GET /index.php?id=1; DROP TABLE users;-- HTTP/1.1" 200 156`,
+      questions:[
+        {q:"What attack type is being performed?",opts:["XSS Attack","SQL Injection","Directory Traversal","Buffer Overflow"],a:1,exp:"The payloads ' OR '1'='1, UNION SELECT, and DROP TABLE are classic SQL injection — the attacker is probing and then exploiting the database query."},
+        {q:"What indicator in line 2 shows the attacker is probing?",opts:["The 200 response code","The single quote ' causing a 500 error","The IP address","The timestamp"],a:1,exp:"Adding a single quote ' to the input caused a 500 server error — this tells the attacker the parameter is vulnerable to SQL injection (unhandled error = poor input validation)."},
+        {q:"What is the attacker attempting in line 4?",opts:["Creating a new admin account","Extracting usernames and passwords from the users table","Deleting the database","Uploading a webshell"],a:1,exp:"UNION SELECT username,password,3 FROM users-- is a UNION-based SQL injection attempting to retrieve credential data from the users table."},
+      ]
+    },
+    {
+      title:"Authentication Log Analysis",
+      log:`2025-03-15 03:22:11 FAILED LOGIN user: admin from 45.33.32.156
+2025-03-15 03:22:12 FAILED LOGIN user: admin from 45.33.32.156
+2025-03-15 03:22:13 FAILED LOGIN user: admin from 45.33.32.156
+[... 847 more failed attempts over 4 minutes ...]
+2025-03-15 03:26:44 FAILED LOGIN user: admin from 45.33.32.156
+2025-03-15 03:26:45 SUCCESS LOGIN user: admin from 45.33.32.156
+2025-03-15 03:26:47 NEW ADMIN ACCOUNT CREATED: svcbackup01
+2025-03-15 03:26:52 ANTIVIRUS SERVICE STOPPED
+2025-03-15 03:26:58 SCHEDULED TASK CREATED: C:\\Windows\\Temp\\update.exe /silent`,
+      questions:[
+        {q:"What attack preceded the successful login?",opts:["Credential Stuffing","Phishing","Brute Force Attack","Pass-the-Hash"],a:2,exp:"850 failed attempts against a single account in 4 minutes = brute force. Credential stuffing would use different username/password pairs from a breach, not repeat the same username."},
+        {q:"What does creating svcbackup01 immediately after login indicate?",opts:["The admin is setting up backup services","The attacker is establishing persistence via a backdoor account","A legitimate automated task ran","The system is running scheduled maintenance"],a:1,exp:"Creating a new admin account immediately after unauthorized access is a classic persistence technique — the attacker creates a backdoor account to maintain access even if the original password is changed."},
+        {q:"Stopping AV and creating a scheduled task in %TEMP% most likely indicates:",opts:["Ransomware preparation — disabling defenses before encryption","A legitimate software update","The admin is testing security controls","A vulnerability scanner is running"],a:0,exp:"Disabling AV + creating a scheduled task running an executable from %TEMP% is ransomware/malware staging — the attacker is preparing to deploy a payload with defenses disabled."},
+      ]
+    },
+    {
+      title:"Network Traffic Analysis",
+      log:`14:02:33 SRC:10.0.0.45 DST:185.220.101.47 PORT:443 BYTES:127
+14:02:38 SRC:10.0.0.45 DST:185.220.101.47 PORT:443 BYTES:134
+14:02:43 SRC:10.0.0.45 DST:185.220.101.47 PORT:443 BYTES:129
+14:02:48 SRC:10.0.0.45 DST:185.220.101.47 PORT:443 BYTES:131
+[Pattern repeats every 5 seconds for 6 hours...]
+14:47:22 SRC:10.0.0.45 DST:185.220.101.47 PORT:443 BYTES:4,847,293
+14:47:38 SRC:10.0.0.45 DST:185.220.101.47 PORT:443 BYTES:3,922,104`,
+      questions:[
+        {q:"The regular 5-second pattern of small packets most likely indicates:",opts:["A scheduled backup running","C2 beaconing — malware checking in with its command-and-control server","An HTTPS health check","A load balancer heartbeat"],a:1,exp:"Regular interval small outbound packets to an external IP = C2 beaconing. The malware 'phones home' at set intervals to receive commands or signal it's alive."},
+        {q:"What do the large transfers at 14:47 most likely represent?",opts:["A software update being downloaded","Data exfiltration — sensitive data being sent to the attacker","Backup synchronization","Video streaming traffic"],a:1,exp:"After hours of small beaconing packets, large outbound transfers (4.8MB + 3.9MB) to the same external IP strongly indicate data exfiltration — the attacker is sending stolen data out."},
+        {q:"Which security control would MOST effectively detect this traffic pattern?",opts:["Antivirus software","Full Disk Encryption","UEBA or NetFlow analysis with behavioral baselines","Password complexity policy"],a:2,exp:"UEBA or NetFlow analysis with behavioral baselines would flag the unusual outbound pattern — regular beaconing and large data transfers to an unknown external IP deviate from normal behavior."},
+      ]
+    },
+  ];
+
+  const [scIdx,setScIdx]=useState(0);
+  const [answers,setAnswers]=useState({});
+  const [checked,setChecked]=useState(false);
+  const sc=scenarios[scIdx];
+
+  const pick=(qi,ai)=>{
+    if(checked)return;
+    setAnswers(p=>({...p,[qi]:ai}));
+  };
+
+  const checkAll=()=>setChecked(true);
+  const score=sc.questions.filter((q,i)=>answers[i]===q.a).length;
+
+  const reset=()=>{setAnswers({});setChecked(false);};
+
+  return(
+    <div>
+      <div className="sx" style={{marginBottom:16}}>
+        {scenarios.map((s,i)=>(
+          <button key={i} onClick={()=>{setScIdx(i);reset();}} style={{...chip(scIdx===i,"#ff4d6d"),whiteSpace:"nowrap"}}>Scenario {i+1}</button>
+        ))}
+      </div>
+
+      <div style={{fontSize:13,fontWeight:700,color:"#f9c74f",marginBottom:10}}>{sc.title}</div>
+
+      <div style={{background:"#020810",border:"1px solid #0f2a1a",borderRadius:10,padding:"12px",marginBottom:20,fontFamily:"'Courier New',monospace",fontSize:11,color:"#22c55e",lineHeight:1.8,overflowX:"auto",whiteSpace:"pre"}}>
+        {sc.log}
+      </div>
+
+      {sc.questions.map((q,qi)=>{
+        const sel=answers[qi];
+        return(
+          <div key={qi} style={{...C.card,marginBottom:14}}>
+            <div style={{fontSize:12,color:"#64748b",marginBottom:8}}>Question {qi+1} of {sc.questions.length}</div>
+            <div style={{fontSize:14,fontWeight:600,color:"#f1f5f9",lineHeight:1.6,marginBottom:12,fontFamily:"Syne,sans-serif"}}>{q.q}</div>
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {q.opts.map((opt,oi)=>{
+                let bg="#080f1a",bd="#1e293b",cl="#94a3b8";
+                if(checked){if(oi===q.a){bg="#052e16";bd="#22c55e";cl="#86efac";}else if(oi===sel){bg="#2d0a0a";bd="#ef4444";cl="#fca5a5";}}
+                else if(oi===sel){bg="#0d2d40";bd="#00d4ff";cl="#00d4ff";}
+                return(
+                  <button key={oi} onClick={()=>pick(qi,oi)} style={{background:bg,border:`1px solid ${bd}`,borderRadius:10,padding:"11px 14px",textAlign:"left",cursor:checked?"default":"pointer",color:cl,fontSize:13,fontFamily:"inherit",display:"flex",alignItems:"center",gap:10,transition:"all .2s"}}>
+                    <span style={{width:22,height:22,borderRadius:5,background:bd+"33",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:bd,flexShrink:0}}>{["A","B","C","D"][oi]}</span>
+                    {opt}
+                    {checked&&oi===q.a&&<span style={{marginLeft:"auto"}}>✓</span>}
+                    {checked&&oi===sel&&oi!==q.a&&<span style={{marginLeft:"auto"}}>✗</span>}
+                  </button>
+                );
+              })}
+            </div>
+            {checked&&(
+              <div style={{marginTop:10,padding:"10px 12px",background:"#060f0a",border:"1px solid #0d2a0d",borderLeft:"3px solid #22c55e",borderRadius:8}}>
+                <div style={{fontSize:11,color:"#22c55e",letterSpacing:1,textTransform:"uppercase",marginBottom:4}}>Explanation</div>
+                <div style={{fontSize:12,color:"#94a3b8",lineHeight:1.6}}>{q.exp}</div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {!checked?(
+        <button onClick={checkAll} disabled={Object.keys(answers).length<sc.questions.length} style={{...C.primary,opacity:Object.keys(answers).length<sc.questions.length?.5:1}}>Submit Answers</button>
+      ):(
+        <div style={{...C.card,textAlign:"center",marginBottom:12}}>
+          <div style={{fontSize:36,marginBottom:8}}>{score===sc.questions.length?"🏆":score>0?"💪":"📚"}</div>
+          <div style={{fontFamily:"Syne,sans-serif",fontSize:24,fontWeight:800,color:score===sc.questions.length?"#22c55e":score>0?"#f9c74f":"#ef4444",marginBottom:6}}>{score}/{sc.questions.length}</div>
+          <button onClick={reset} style={{...C.primary,marginTop:10}}>Try Again</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// PBQ 3: Network Diagram — place devices in correct zones
+function PBQ_Network(){
+  const devices=["Firewall","WAF","IDS","Web Server","Database","VPN Gateway","NGFW","Honeypot"];
+  const zones=[
+    {id:"internet",label:"🌐 Internet Zone",color:"#ef4444",desc:"Untrusted — public internet",accepts:[]},
+    {id:"dmz",label:"🟡 DMZ",color:"#f9c74f",desc:"Public-facing services",accepts:["Web Server","WAF","Honeypot"]},
+    {id:"firewall",label:"🔵 Perimeter Firewall",color:"#00d4ff",desc:"Between internet and DMZ",accepts:["Firewall","NGFW"]},
+    {id:"internal",label:"🟢 Internal Network",color:"#22c55e",desc:"Trusted corporate network",accepts:["IDS","VPN Gateway"]},
+    {id:"secure",label:"🟣 Secure Zone",color:"#a855f7",desc:"Highly restricted — sensitive data",accepts:["Database"]},
+  ];
+
+  const [placed,setPlaced]=useState({});
+  const [checked,setChecked]=useState(false);
+  const [dragging,setDragging]=useState(null);
+
+  const placeDevice=(zoneId,device)=>{
+    setPlaced(p=>{
+      const n={...p};
+      Object.keys(n).forEach(k=>{if(n[k]===device)delete n[k];});
+      n[`${zoneId}-${device}`]=device;
+      return n;
+    });
+  };
+
+  const getZoneDevices=(zoneId)=>Object.entries(placed).filter(([k])=>k.startsWith(zoneId+"-")).map(([,v])=>v);
+
+  const unplaced=devices.filter(d=>!Object.values(placed).includes(d));
+
+  const check=()=>setChecked(true);
+  const reset=()=>{setPlaced({});setChecked(false);};
+
+  const getDeviceResult=(device,zoneId)=>{
+    const zone=zones.find(z=>z.id===zoneId);
+    return zone?.accepts.includes(device);
+  };
+
+  const totalCorrect=Object.entries(placed).filter(([k,v])=>{
+    const zoneId=k.split("-")[0];
+    return getDeviceResult(v,zoneId);
+  }).length;
+
+  return(
+    <div>
+      <div style={{background:"#0a1020",border:"1px solid #1e3a5f",borderRadius:12,padding:"14px",marginBottom:20,fontSize:13,color:"#94a3b8",lineHeight:1.7}}>
+        <strong style={{color:"#00d4ff"}}>Task:</strong> Place each security device into the correct network zone. Tap a device from the tray, then tap the zone where it belongs.
+      </div>
+
+      {/* Device tray */}
+      <div style={{fontSize:11,color:"#475569",letterSpacing:1,textTransform:"uppercase",marginBottom:8}}>Available Devices ({unplaced.length} remaining)</div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:20,minHeight:44,background:"#080f1a",borderRadius:12,padding:"10px",border:"1px solid #1e293b"}}>
+        {unplaced.length===0?<div style={{fontSize:12,color:"#334155",alignSelf:"center"}}>All devices placed</div>:
+        unplaced.map(d=>(
+          <button key={d} onClick={()=>setDragging(dragging===d?null:d)} style={{background:dragging===d?"#0d2d40":"#0a1525",border:`1px solid ${dragging===d?"#00d4ff":"#1e293b"}`,borderRadius:8,padding:"7px 12px",color:dragging===d?"#00d4ff":"#94a3b8",fontSize:12,fontFamily:"inherit",fontWeight:600,cursor:"pointer",transition:"all .15s"}}>
+            {dragging===d?"📌 ":""}{d}
+          </button>
+        ))}
+      </div>
+
+      {/* Zones */}
+      <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
+        {zones.map(z=>{
+          const zd=getZoneDevices(z.id);
+          return(
+            <div key={z.id} onClick={()=>{if(dragging&&z.id!=="internet"){placeDevice(z.id,dragging);setDragging(null);}}}
+              style={{background:"#0a1525",border:`2px solid ${dragging&&z.id!=="internet"?z.color+"66":"#1e293b"}`,borderRadius:12,padding:"12px",cursor:dragging&&z.id!=="internet"?"pointer":"default",transition:"border .15s"}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                <span style={{fontSize:13,fontWeight:700,color:z.color}}>{z.label}</span>
+                <span style={{fontSize:11,color:"#334155"}}>{z.desc}</span>
+              </div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:6,minHeight:32}}>
+                {zd.length===0?<span style={{fontSize:11,color:"#1e293b"}}>Drop here</span>:
+                zd.map(d=>{
+                  const ok=checked?getDeviceResult(d,z.id):null;
+                  return(
+                    <span key={d} onClick={e=>{e.stopPropagation();if(!checked){setPlaced(p=>{const n={...p};delete n[`${z.id}-${d}`];return n;});}}}
+                      style={{background:ok===null?"#0d1f35":ok?"#052e16":"#2d0a0a",border:`1px solid ${ok===null?z.color:ok?"#22c55e":"#ef4444"}`,borderRadius:6,padding:"5px 10px",fontSize:11,fontWeight:600,color:ok===null?z.color:ok?"#86efac":"#fca5a5",cursor:"pointer"}}>
+                      {checked?(ok?"✓":"✗"):""} {d}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {checked&&(
+        <div style={{...C.card,marginBottom:12}}>
+          <div style={{fontSize:14,fontWeight:700,color:totalCorrect>=6?"#22c55e":"#f9c74f",marginBottom:12,fontFamily:"Syne,sans-serif"}}>Score: {totalCorrect}/{devices.length-1} ✓</div>
+          <div style={{fontSize:12,color:"#64748b",lineHeight:1.7}}>
+            <div style={{marginBottom:6,color:"#94a3b8"}}>Correct placements:</div>
+            <div>🟡 DMZ: Web Server, WAF, Honeypot</div>
+            <div>🔵 Perimeter: Firewall or NGFW</div>
+            <div>🟢 Internal: IDS, VPN Gateway</div>
+            <div>🟣 Secure Zone: Database only</div>
+          </div>
+        </div>
+      )}
+
+      {!checked?(
+        <button onClick={check} disabled={unplaced.length>0} style={{...C.primary,opacity:unplaced.length>0?.5:1}}>Check Placement</button>
+      ):(
+        <button onClick={reset} style={C.primary}>Try Again</button>
+      )}
+    </div>
+  );
+}
+
+// PBQ 4: Port/Protocol Matching
+function PBQ_Ports(){
+  const pairs=[
+    {protocol:"HTTPS",port:"443"},
+    {protocol:"SSH",port:"22"},
+    {protocol:"RDP",port:"3389"},
+    {protocol:"DNS",port:"53"},
+    {protocol:"SMTP",port:"25"},
+    {protocol:"LDAP",port:"389"},
+    {protocol:"SNMP",port:"161"},
+    {protocol:"Kerberos",port:"88"},
+    {protocol:"RADIUS",port:"1812"},
+    {protocol:"FTP",port:"21"},
+    {protocol:"HTTP",port:"80"},
+    {protocol:"SFTP/SSH",port:"22"},
+    {protocol:"LDAPS",port:"636"},
+    {protocol:"FTPS",port:"990"},
+    {protocol:"IMAP",port:"143"},
+  ];
+
+  const [selected,setSelected]=useState(null);
+  const [matched,setMatched]=useState([]);
+  const [wrong,setWrong]=useState(null);
+  const [done,setDone]=useState(false);
+  const [moves,setMoves]=useState(0);
+
+  const PAGE=8;
+  const [page,setPage]=useState(0);
+  const pagePairs=pairs.slice(page*PAGE,(page+1)*PAGE);
+  const [shuffledPorts,setShuffledPorts]=useState(()=>[...pagePairs.map(p=>p.port)].sort(()=>Math.random()-.5));
+
+  const resetPage=(p)=>{
+    const pp=pairs.slice(p*PAGE,(p+1)*PAGE);
+    setShuffledPorts([...pp.map(x=>x.port)].sort(()=>Math.random()-.5));
+    setSelected(null);setMatched([]);setWrong(null);setDone(false);setMoves(0);
+  };
+
+  const isProtoMatched=proto=>matched.some(m=>m.protocol===proto);
+  const isPortMatched=port=>matched.some(m=>m.port===port);
+
+  const selectProto=(proto)=>{
+    if(isProtoMatched(proto))return;
+    if(selected?.type==="proto"&&selected.value===proto){setSelected(null);return;}
+    if(selected?.type==="port"){
+      const correct=pagePairs.find(p=>p.protocol===proto&&p.port===selected.value);
+      setMoves(m=>m+1);
+      if(correct){
+        const n=[...matched,correct];setMatched(n);
+        if(n.length===pagePairs.length)setDone(true);
+        setSelected(null);
+      }else{setWrong({proto,port:selected.value});setTimeout(()=>{setWrong(null);setSelected(null);},700);}
+    }else{setSelected({type:"proto",value:proto});}
+  };
+
+  const selectPort=(port)=>{
+    if(isPortMatched(port))return;
+    if(selected?.type==="port"&&selected.value===port){setSelected(null);return;}
+    if(selected?.type==="proto"){
+      const correct=pagePairs.find(p=>p.protocol===selected.value&&p.port===port);
+      setMoves(m=>m+1);
+      if(correct){
+        const n=[...matched,correct];setMatched(n);
+        if(n.length===pagePairs.length)setDone(true);
+        setSelected(null);
+      }else{setWrong({proto:selected.value,port});setTimeout(()=>{setWrong(null);setSelected(null);},700);}
+    }else{setSelected({type:"port",value:port});}
+  };
+
+  const totalPages=Math.ceil(pairs.length/PAGE);
+
+  if(done)return(
+    <div style={{...C.card,textAlign:"center",padding:32}}>
+      <div style={{fontSize:48,marginBottom:12}}>🎉</div>
+      <div style={{fontFamily:"Syne,sans-serif",fontSize:20,color:"#f1f5f9",marginBottom:8}}>Set {page+1} Complete!</div>
+      <div style={{fontSize:14,color:"#64748b",marginBottom:24}}>Matched in {moves} moves</div>
+      <div style={{display:"flex",gap:10}}>
+        <button onClick={()=>resetPage(page)} style={{...C.primary,flex:1}}>Again</button>
+        {page+1<totalPages&&<button onClick={()=>{setPage(p=>p+1);resetPage(page+1);}} style={{...C.primary,flex:1,background:"#06d6a0",color:"#000"}}>Next Set →</button>}
+      </div>
+    </div>
+  );
+
+  return(
+    <div>
+      <div className="sx" style={{marginBottom:14}}>
+        {Array.from({length:totalPages},(_,i)=>(
+          <button key={i} onClick={()=>{setPage(i);resetPage(i);}} style={{...chip(page===i,"#06d6a0"),whiteSpace:"nowrap"}}>Set {i+1}</button>
+        ))}
+      </div>
+      <p style={{fontSize:12,color:"#475569",marginBottom:14}}>Tap a protocol then tap its matching port number · {matched.length}/{pagePairs.length} matched · {moves} moves</p>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+        <div style={{display:"flex",flexDirection:"column",gap:6}}>
+          <div style={{fontSize:10,color:"#475569",letterSpacing:1,textTransform:"uppercase",marginBottom:2}}>Protocols</div>
+          {pagePairs.map(({protocol:p})=>{
+            const isM=isProtoMatched(p),isSel=selected?.value===p,isW=wrong?.proto===p;
+            return(<button key={p} onClick={()=>selectProto(p)} style={{background:isM?"#052e16":isW?"#2d0a0a":isSel?"#0d2d40":"#0a1525",border:`1px solid ${isM?"#22c55e":isW?"#ef4444":isSel?"#06d6a0":"#1e293b"}`,borderRadius:10,padding:"11px 10px",textAlign:"left",cursor:isM?"default":"pointer",color:isM?"#86efac":isW?"#fca5a5":isSel?"#06d6a0":"#94a3b8",fontSize:13,fontFamily:"inherit",fontWeight:600,minHeight:44,transition:"all .15s"}}>
+              {isM?"✓ ":""}{p}
+            </button>);
+          })}
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:6}}>
+          <div style={{fontSize:10,color:"#475569",letterSpacing:1,textTransform:"uppercase",marginBottom:2}}>Ports</div>
+          {shuffledPorts.map(port=>{
+            const isM=isPortMatched(port),isSel=selected?.value===port,isW=wrong?.port===port;
+            return(<button key={port} onClick={()=>selectPort(port)} style={{background:isM?"#052e16":isW?"#2d0a0a":isSel?"#0d2d40":"#0a1525",border:`1px solid ${isM?"#22c55e":isW?"#ef4444":isSel?"#06d6a0":"#1e293b"}`,borderRadius:10,padding:"11px 10px",textAlign:"left",cursor:isM?"default":"pointer",color:isM?"#86efac":isW?"#fca5a5":isSel?"#06d6a0":"#94a3b8",fontSize:16,fontFamily:"'Courier New',monospace",fontWeight:700,minHeight:44,transition:"all .15s"}}>
+              {isM?"✓ ":""}{port}
+            </button>);
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// PBQ 5: Incident Response Triage
+function PBQ_Triage(){
+  const scenario=`Your SOC receives the following simultaneous alerts at 2:47 AM. You have limited resources and must prioritize which to investigate FIRST and sequence your response actions correctly.`;
+
+  const alerts=[
+    {id:"A",severity:"CRITICAL",title:"Ransomware activity detected on FS-SERVER-01",detail:"847 files encrypted in the last 4 minutes. Shadow copies being deleted.",color:"#ef4444"},
+    {id:"B",severity:"HIGH",title:"Multiple failed logins on ADMIN account",detail:"342 failed attempts from 91.108.4.12 in last 10 minutes.",color:"#f97316"},
+    {id:"C",severity:"MEDIUM",title:"Outdated SSL certificate on web server",detail:"Certificate expires in 14 days.",color:"#f9c74f"},
+    {id:"D",severity:"HIGH",title:"Large outbound transfer detected",detail:"3.2GB sent to 185.220.101.47 from WORKSTATION-14 at 2:43 AM.",color:"#f97316"},
+    {id:"E",severity:"LOW",title:"Failed backup job on BACKUP-SRV-02",detail:"Scheduled backup at 2:00 AM did not complete. Error: disk space.",color:"#22c55e"},
+  ];
+
+  const [priority,setPriority]=useState([]);
+  const [checked,setChecked]=useState(false);
+  const correctPriority=["A","D","B","E","C"];
+
+  const toggle=(id)=>{
+    if(checked)return;
+    if(priority.includes(id))setPriority(p=>p.filter(x=>x!==id));
+    else if(priority.length<alerts.length)setPriority(p=>[...p,id]);
+  };
+
+  const correct=priority.every((id,i)=>id===correctPriority[i]);
+  const score=priority.filter((id,i)=>id===correctPriority[i]).length;
+
+  const actions=[
+    "Isolate FS-SERVER-01 from the network immediately",
+    "Check if other systems are also encrypting files",
+    "Restore from last known good backup after eradication",
+    "Block 91.108.4.12 at the firewall",
+    "Identify what data was sent to 185.220.101.47",
+    "Collect volatile memory from affected systems",
+    "Notify incident response team and management",
+    "Renew the SSL certificate",
+  ];
+
+  const correctActions=[0,5,1,4,6,2,3,7];
+  const [actionOrder,setActionOrder]=useState(()=>[...actions].sort(()=>Math.random()-.5));
+  const [actChecked,setActChecked]=useState(false);
+
+  const moveUp=i=>{if(i===0)return;const n=[...actionOrder];[n[i-1],n[i]]=[n[i],n[i-1]];setActionOrder(n);};
+  const moveDown=i=>{if(i===actionOrder.length-1)return;const n=[...actionOrder];[n[i],n[i+1]]=[n[i+1],n[i]];setActionOrder(n);};
+
+  return(
+    <div>
+      <div style={{background:"#0a1020",border:"1px solid #1e3a5f",borderRadius:12,padding:"14px",marginBottom:20,fontSize:13,color:"#94a3b8",lineHeight:1.7}}>{scenario}</div>
+
+      <div style={{fontSize:11,color:"#f9c74f",letterSpacing:1,textTransform:"uppercase",marginBottom:12}}>
+        Step 1: Tap alerts in order of priority (1st = most urgent)
+      </div>
+
+      {alerts.map(a=>{
+        const rank=priority.indexOf(a.id)+1;
+        const isSelected=priority.includes(a.id);
+        const isCorrectRank=checked&&priority[correctPriority.indexOf(a.id)]===a.id;
+        return(
+          <div key={a.id} onClick={()=>toggle(a.id)} style={{...C.card,marginBottom:10,cursor:"pointer",borderColor:isSelected?a.color:"#1e293b",background:isSelected?"#0a1525":"#080f1a",display:"flex",alignItems:"flex-start",gap:12,transition:"all .2s"}}>
+            <div style={{width:28,height:28,borderRadius:8,background:a.color+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,color:a.color,flexShrink:0}}>
+              {isSelected?rank:a.id}
+            </div>
+            <div style={{flex:1}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                <span style={{fontSize:12,fontWeight:700,color:"#f1f5f9"}}>{a.title}</span>
+                <span style={{fontSize:10,color:a.color,fontWeight:700,flexShrink:0,marginLeft:8}}>{a.severity}</span>
+              </div>
+              <div style={{fontSize:11,color:"#64748b",lineHeight:1.5}}>{a.detail}</div>
+              {checked&&<div style={{marginTop:6,fontSize:11,color:correctPriority[priority.indexOf(a.id)]===a.id?"#22c55e":"#ef4444"}}>
+                {correctPriority[priority.indexOf(a.id)]===a.id?"✓ Correct priority!":"✗ Check the reasoning below"}
+              </div>}
+            </div>
+          </div>
+        );
+      })}
+
+      {!checked&&priority.length===alerts.length&&(
+        <button onClick={()=>setChecked(true)} style={{...C.primary,marginBottom:20}}>Check Priority Order</button>
+      )}
+
+      {checked&&(
+        <div style={{...C.card,marginBottom:20}}>
+          <div style={{fontFamily:"Syne,sans-serif",fontSize:16,fontWeight:700,color:score>=4?"#22c55e":"#f9c74f",marginBottom:12}}>Priority Score: {score}/5</div>
+          <div style={{fontSize:13,color:"#94a3b8",lineHeight:1.8}}>
+            <strong style={{color:"#f1f5f9"}}>Correct priority order:</strong><br/>
+            1️⃣ <span style={{color:"#ef4444"}}>A</span> — Active ransomware is the most immediate active threat — contain it NOW<br/>
+            2️⃣ <span style={{color:"#f97316"}}>D</span> — Active exfiltration in progress (may be related to ransomware)<br/>
+            3️⃣ <span style={{color:"#f97316"}}>B</span> — Brute force still active — block before it succeeds<br/>
+            4️⃣ <span style={{color:"#22c55e"}}>E</span> — Backup failure is important post-incident (can't recover without backups)<br/>
+            5️⃣ <span style={{color:"#f9c74f"}}>C</span> — Expiring cert is low urgency — 14 days away, not an active threat
+          </div>
+        </div>
+      )}
+
+      <div style={{fontSize:11,color:"#a855f7",letterSpacing:1,textTransform:"uppercase",marginBottom:12,marginTop:4}}>
+        Step 2: Use ▲▼ to sequence response actions (most immediate first)
+      </div>
+
+      <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:14}}>
+        {actionOrder.map((action,i)=>{
+          const correctIdx=correctActions[actions.indexOf(action)];
+          const isC=actChecked&&i===correctIdx;
+          const isW=actChecked&&i!==correctIdx;
+          return(
+            <div key={action} style={{background:isC?"#052e16":isW?"#2d0a0a":"#0a1525",border:`1px solid ${isC?"#22c55e":isW?"#ef4444":"#1e293b"}`,borderRadius:10,padding:"10px 12px",display:"flex",alignItems:"center",gap:8}}>
+              <span style={{width:22,height:22,borderRadius:6,background:"#1e293b",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#64748b",flexShrink:0}}>{i+1}</span>
+              <span style={{fontSize:12,color:isC?"#86efac":isW?"#fca5a5":"#94a3b8",flex:1,lineHeight:1.4}}>{action}</span>
+              {actChecked&&<span style={{fontSize:14}}>{isC?"✓":"✗"}</span>}
+              {!actChecked&&<div style={{display:"flex",flexDirection:"column",gap:2}}>
+                <button onClick={()=>moveUp(i)} disabled={i===0} style={{background:"transparent",border:"none",color:i===0?"#1e293b":"#475569",cursor:i===0?"default":"pointer",fontSize:14,padding:"1px 6px"}}>▲</button>
+                <button onClick={()=>moveDown(i)} disabled={i===actionOrder.length-1} style={{background:"transparent",border:"none",color:i===actionOrder.length-1?"#1e293b":"#475569",cursor:i===actionOrder.length-1?"default":"pointer",fontSize:14,padding:"1px 6px"}}>▼</button>
+              </div>}
+            </div>
+          );
+        })}
+      </div>
+
+      <button onClick={()=>setActChecked(true)} style={{...C.primary,marginBottom:10}}>Check Action Sequence</button>
+      {actChecked&&<button onClick={()=>{setActionOrder([...actions].sort(()=>Math.random()-.5));setActChecked(false);}} style={{background:"transparent",border:"1px solid #1e293b",borderRadius:12,padding:"12px",color:"#64748b",fontFamily:"inherit",fontSize:14,width:"100%",cursor:"pointer",marginBottom:10}}>Reset Actions</button>}
+    </div>
+  );
+}
+
+// ── PBQ MAIN ─────────────────────────────────────────────────────────────────
+function PBQ(){
+  const [sim,setSim]=useState(null);
+  const sims=[
+    {id:"fw",emoji:"🔥",label:"Firewall Config",desc:"Configure allow/deny rules from a requirements scenario",color:"#ef4444"},
+    {id:"logs",emoji:"📋",label:"Log Analysis",desc:"Read server logs and identify attacks in progress",color:"#f9c74f"},
+    {id:"net",emoji:"🌐",label:"Network Diagram",desc:"Place security devices in the correct network zones",color:"#06d6a0"},
+    {id:"ports",emoji:"🔌",label:"Ports & Protocols",desc:"Match protocols to their correct port numbers",color:"#00d4ff"},
+    {id:"triage",emoji:"🚨",label:"IR Triage",desc:"Prioritize alerts and sequence response actions",color:"#a855f7"},
+  ];
+  return(
+    <div style={{padding:"16px 16px 100px"}}>
+      <h2 style={{fontFamily:"Syne,sans-serif",fontSize:22,marginBottom:6,color:"#f1f5f9"}}>🧪 PBQ Simulations</h2>
+      <p style={{fontSize:12,color:"#475569",marginBottom:20}}>Performance-Based Questions — the interactive portion of the real exam</p>
+      {!sim?(
+        sims.map(s=>(
+          <button key={s.id} onClick={()=>setSim(s.id)} style={{...C.card,width:"100%",textAlign:"left",cursor:"pointer",display:"flex",alignItems:"center",gap:16,minHeight:72,marginBottom:12,fontFamily:"inherit"}}>
+            <div style={{fontSize:32}}>{s.emoji}</div>
+            <div>
+              <div style={{fontFamily:"Syne,sans-serif",fontSize:15,fontWeight:700,color:s.color,marginBottom:4}}>{s.label}</div>
+              <div style={{fontSize:12,color:"#475569"}}>{s.desc}</div>
+            </div>
+          </button>
+        ))
+      ):(
+        <>
+          <button onClick={()=>setSim(null)} style={C.back}>← Back to PBQs</button>
+          {sim==="fw"&&<PBQ_Firewall/>}
+          {sim==="logs"&&<PBQ_Logs/>}
+          {sim==="net"&&<PBQ_Network/>}
+          {sim==="ports"&&<PBQ_Ports/>}
+          {sim==="triage"&&<PBQ_Triage/>}
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── APP ───────────────────────────────────────────────────────────────────────
-const TABS=[{id:"home",icon:"🏠",label:"Home"},{id:"cards",icon:"🃏",label:"Cards"},{id:"quiz",icon:"🎯",label:"Quiz"},{id:"match",icon:"🧩",label:"Match"},{id:"games",icon:"🕹️",label:"Games"}];
+const TABS=[{id:"home",icon:"🏠",label:"Home"},{id:"cards",icon:"🃏",label:"Cards"},{id:"quiz",icon:"🎯",label:"Quiz"},{id:"match",icon:"🧩",label:"Match"},{id:"pbq",icon:"🧪",label:"PBQ"}];
 
 function App(){
   const [tab,setTab]=useState("home");
@@ -771,7 +1380,7 @@ function App(){
         {tab==="cards"&&<Flashcards/>}
         {tab==="quiz"&&<Quiz/>}
         {tab==="match"&&<Match/>}
-        {tab==="games"&&<Games/>}
+        {tab==="pbq"&&<PBQ/>}
       </div>
       <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#080f1a",borderTop:"1px solid #1e293b",display:"flex",paddingBottom:"env(safe-area-inset-bottom,8px)",zIndex:100}}>
         {TABS.map(t=>(
