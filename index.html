@@ -3,158 +3,274 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<meta name="theme-color" content="#07080f"/>
+<meta name="theme-color" content="#111827"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Sec+ Study"/>
 <title>Security+ Study Hub | secplus.kulaninstitute.org</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --bg:#07080f;--bg2:#0d0e1a;--bg3:#111320;--bg4:#161828;
-  --border:#1e2238;--border2:#2a2e4a;
-  --text:#f0f2ff;--text2:#8b93c4;--text3:#4a5180;--text4:#2a2f55;
-  --cyan:#00e5ff;--pink:#ff3d9a;--green:#00ffa3;--yellow:#ffe144;--purple:#b44dff;--orange:#ff7733;
-  --cyan-glow:rgba(0,229,255,.3);--pink-glow:rgba(255,61,154,.3);--green-glow:rgba(0,255,163,.3);
+  --bg:#111827;--bg2:#1a2235;--bg3:#1f2a40;--bg4:#263047;
+  --bd:#2d3b55;--bd2:#394b6a;
+  --tx:#e8ecf8;--tx2:#8d9ac0;--tx3:#505d7e;--tx4:#2d3855;
+  --cy:#38bdf8;--pk:#f472b6;--gn:#34d399;--ye:#fbbf24;--pu:#a78bfa;--or:#fb923c;
+  --cy0:rgba(56,189,248,.1);--pk0:rgba(244,114,182,.1);
+  --gn0:rgba(52,211,153,.1);--ye0:rgba(251,191,36,.1);--pu0:rgba(167,139,250,.1);
+  --sw:230px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);overflow-x:hidden;min-height:100%}
-::-webkit-scrollbar{display:none}
-button{cursor:pointer;font-family:inherit;transition:all .18s ease}
-button:active{transform:scale(.95)}
-input,select{font-family:inherit;outline:none}
-input:focus,select:focus{border-color:var(--cyan)!important;box-shadow:0 0 0 2px var(--cyan-glow)!important}
-#app{max-width:480px;margin:0 auto;min-height:100vh;position:relative;background:var(--bg)}
-#content{padding-bottom:90px}
-/* NAV */
-#nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(7,8,15,.96);border-top:1px solid rgba(255,255,255,.05);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);z-index:100;padding-bottom:env(safe-area-inset-bottom,8px)}
-#nav .tabs{display:flex}
-#nav .tab{flex:1;background:transparent;border:none;padding:10px 2px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text4);font-size:8px;letter-spacing:.5px;text-transform:uppercase;font-weight:600;position:relative;transition:all .2s}
-#nav .tab.active{color:var(--cyan)}
-#nav .tab.active::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:50%;height:2px;border-radius:0 0 4px 4px;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
-#nav .tab .icon{font-size:18px;line-height:1;transition:filter .2s}
-#nav .tab.active .icon{filter:drop-shadow(0 0 8px var(--cyan))}
-/* CARDS */
-.card{background:linear-gradient(145deg,rgba(17,19,32,.95),rgba(13,14,26,.98));border:1px solid var(--border);border-radius:18px;padding:18px 16px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
-.card-glow{background:linear-gradient(145deg,rgba(17,19,32,.95),rgba(13,14,26,.98));border-radius:18px;padding:18px 16px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
-.btn-primary{background:linear-gradient(135deg,#00e5ff,#0099bb);color:#000;border:none;border-radius:14px;padding:15px 20px;font-weight:800;font-size:15px;width:100%;min-height:52px;cursor:pointer;box-shadow:0 4px 20px var(--cyan-glow);letter-spacing:.3px;font-family:inherit;transition:all .2s}
-.btn-primary:active{transform:scale(.97);box-shadow:0 2px 10px var(--cyan-glow)}
-.btn-secondary{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:14px;padding:13px 20px;font-weight:600;font-size:14px;width:100%;cursor:pointer;color:var(--text3);font-family:inherit;transition:all .2s}
-.btn-back{background:transparent;border:none;color:var(--text3);font-size:13px;cursor:pointer;padding:0 0 16px;display:flex;align-items:center;gap:6px}
-/* CHIPS */
-.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+html,body{background:var(--bg);font-family:"DM Sans",sans-serif;color:var(--tx);min-height:100%;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
+button{cursor:pointer;font-family:inherit;border:none;transition:all .18s}
+button:active{transform:scale(.96)}
+input,select{font-family:inherit}
+input:focus,select:focus{outline:none;border-color:var(--cy)!important;box-shadow:0 0 0 3px rgba(56,189,248,.15)!important}
+
+/* ── LAYOUT ── */
+#app{display:flex;min-height:100vh}
+#sb{width:var(--sw);position:fixed;top:0;left:0;height:100vh;background:var(--bg2);
+    border-right:1px solid var(--bd);display:flex;flex-direction:column;
+    padding:22px 14px;z-index:200;overflow-y:auto;
+    transform:translateX(-100%);transition:transform .25s}
+#main{flex:1;min-width:0}
+#pg{padding-bottom:72px}
+#bnav{position:fixed;bottom:0;left:0;right:0;background:rgba(17,24,39,.97);
+      border-top:1px solid var(--bd);backdrop-filter:blur(18px);
+      display:flex;z-index:150;padding-bottom:env(safe-area-inset-bottom,0)}
+.bnt{flex:1;background:transparent;display:flex;flex-direction:column;align-items:center;
+     justify-content:center;gap:2px;color:var(--tx4);font-size:8px;letter-spacing:.4px;
+     text-transform:uppercase;font-weight:700;padding:10px 4px 8px;position:relative}
+.bnt.on{color:var(--cy)}
+.bnt.on::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+                width:44%;height:2px;background:var(--cy);border-radius:0 0 3px 3px;
+                box-shadow:0 0 8px var(--cy)}
+.bnt .bi{font-size:19px;line-height:1}
+.bnt.on .bi{filter:drop-shadow(0 0 6px var(--cy))}
+
+/* sidebar labels */
+.sbl{font-family:"Syne",sans-serif;font-size:16px;font-weight:800;color:var(--cy);margin-bottom:2px}
+.sbs{font-size:10px;color:var(--tx3);margin-bottom:22px}
+.sbsec{font-size:9px;color:var(--tx4);letter-spacing:1.5px;text-transform:uppercase;margin:14px 4px 6px;font-weight:700}
+.sbb{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:11px;
+     background:transparent;color:var(--tx3);font-size:13px;font-weight:500;
+     width:100%;text-align:left;transition:all .18s;margin-bottom:2px;border:1px solid transparent}
+.sbb:hover{background:rgba(255,255,255,.04);color:var(--tx2)}
+.sbb.on{background:var(--cy0);color:var(--cy);border-color:rgba(56,189,248,.2);font-weight:600}
+.sbi{font-size:15px;flex-shrink:0}
+.sbft{margin-top:auto;padding-top:14px;border-top:1px solid var(--bd);
+      font-size:10px;color:var(--tx4);text-align:center;line-height:1.7}
+
+/* desktop: show sidebar, hide bottom nav */
+@media(min-width:768px){
+  #sb{transform:translateX(0)}
+  #main{margin-left:var(--sw)}
+  #bnav{display:none}
+  #pg{padding-bottom:32px}
+}
+@media(min-width:1024px){:root{--sw:245px}}
+@media(min-width:1280px){#pg{max-width:1080px;margin:0 auto}}
+
+/* ── PAGE WRAPPER ── */
+.pg{padding:24px 20px}
+@media(min-width:768px){.pg{padding:36px 40px}}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:20px}
+.card2{background:var(--bg3);border:1px solid var(--bd2);border-radius:16px;padding:20px;box-shadow:0 4px 24px rgba(0,0,0,.28)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;
+     border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;
+     transition:all .2s;font-family:inherit;padding:12px 20px;min-height:46px;border:none}
+.btn-full{width:100%}
+.btn-p{background:linear-gradient(135deg,var(--cy),#0ea5e9);color:#0a1628;box-shadow:0 4px 14px rgba(56,189,248,.22)}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(56,189,248,.3)}
+.btn-s{background:rgba(255,255,255,.05);color:var(--tx2);border:1px solid var(--bd2)}
+.btn-s:hover{background:rgba(255,255,255,.08)}
+.btn-g{background:transparent;color:var(--tx3);padding-left:0}
+.btn-ye{background:linear-gradient(135deg,var(--ye),#f59e0b);color:#1a1005;box-shadow:0 4px 14px rgba(251,191,36,.22)}
+.btn-gn{background:linear-gradient(135deg,var(--gn),#10b981);color:#041a0f;box-shadow:0 4px 14px rgba(52,211,153,.22)}
+.btn-pk{background:linear-gradient(135deg,var(--pk),#e879a0);color:#1a0a14;box-shadow:0 4px 14px rgba(244,114,182,.22)}
+
+/* ── CHIPS ── */
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;margin-bottom:16px}
 .chips::-webkit-scrollbar{display:none}
-.chip{flex-shrink:0;border:1px solid var(--border2);background:rgba(255,255,255,.03);border-radius:20px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;color:var(--text3)}
-.chip.active{background:rgba(0,229,255,.1);border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 12px var(--cyan-glow)}
-/* PROGRESS */
-.progress{height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;margin-bottom:20px}
-.progress-fill{height:100%;border-radius:3px;transition:width .5s cubic-bezier(.4,0,.2,1);background:linear-gradient(90deg,var(--cyan),#7b2fff)}
-/* FLIP CARD */
-.flip-card{min-height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;user-select:none;border-radius:18px;border:1.5px solid var(--cyan);padding:28px 22px;background:linear-gradient(145deg,rgba(0,229,255,.04),rgba(123,47,255,.04));transition:all .3s;box-shadow:0 0 24px rgba(0,229,255,.08),0 8px 32px rgba(0,0,0,.5)}
-.flip-card:active{transform:scale(.98)}
-.flip-card.flipped{border-color:var(--green);background:linear-gradient(145deg,rgba(0,255,163,.04),rgba(0,100,60,.04));box-shadow:0 0 24px rgba(0,255,163,.1),0 8px 32px rgba(0,0,0,.5)}
-/* ANSWER BTN */
-.answer-btn{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:14px;padding:14px 16px;text-align:left;cursor:pointer;color:var(--text2);font-size:14px;font-family:inherit;display:flex;align-items:center;gap:12px;min-height:54px;transition:all .2s;width:100%}
-.answer-btn:hover{border-color:var(--border2);background:rgba(255,255,255,.04)}
-.answer-btn .letter{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;background:rgba(255,255,255,.05);color:var(--text3);border:1px solid var(--border)}
-.answer-btn.correct{background:rgba(0,255,163,.06);border-color:#00ffa3;color:#00ffa3}
-.answer-btn.correct .letter{background:rgba(0,255,163,.15);color:#00ffa3;border-color:#00ffa3}
-.answer-btn.wrong{background:rgba(255,61,154,.06);border-color:#ff3d9a;color:#ff3d9a}
-.answer-btn.wrong .letter{background:rgba(255,61,154,.15);color:#ff3d9a;border-color:#ff3d9a}
-.answer-btn.selected{background:rgba(0,229,255,.06);border-color:var(--cyan);color:var(--cyan)}
-.answer-btn.selected .letter{background:rgba(0,229,255,.15);color:var(--cyan);border-color:var(--cyan)}
-/* MATCH BTN */
-.match-btn{border-radius:12px;padding:11px 10px;text-align:left;cursor:pointer;font-family:inherit;min-height:46px;line-height:1.4;transition:all .15s;width:100%;border:1px solid var(--border);background:rgba(255,255,255,.02);color:var(--text2)}
-.match-btn:hover{border-color:var(--border2)}
-.match-btn.matched{background:rgba(0,255,163,.06);border-color:#00ffa3;color:#00ffa3}
-.match-btn.selected{background:rgba(0,229,255,.07);border-color:var(--cyan);color:var(--cyan)}
-.match-btn.wrong{background:rgba(255,61,154,.07);border-color:#ff3d9a;color:#ff3d9a;animation:shake .4s ease}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-/* ORDER */
-.order-item{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:8px;transition:all .2s}
-.order-item.correct{background:rgba(0,255,163,.05);border-color:#00ffa3}
-.order-item.wrong{background:rgba(255,61,154,.05);border-color:#ff3d9a}
-.order-num{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
-/* ANIMATIONS */
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pulse{0%,100%{opacity:.7}50%{opacity:1}}
-@keyframes pop{0%{transform:scale(.85);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
-@keyframes floatUp{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-40px);opacity:0}}
-@keyframes timerPulse{0%,100%{box-shadow:0 0 10px rgba(255,61,154,.3)}50%{box-shadow:0 0 24px rgba(255,61,154,.7)}}
-.fu{animation:fadeUp .35s ease both}
-.fu1{animation:fadeUp .35s .07s ease both}
-.fu2{animation:fadeUp .35s .14s ease both}
-.fu3{animation:fadeUp .35s .21s ease both}
-/* HERO */
-.hero{position:relative;padding:36px 20px 24px;overflow:hidden}
-.hero-bg{position:absolute;inset:0;background:linear-gradient(160deg,rgba(0,229,255,.06) 0%,rgba(123,47,255,.04) 50%,transparent 100%);pointer-events:none}
-.hero-orb1{position:absolute;top:-80px;right:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,255,.12) 0%,transparent 70%);pointer-events:none}
-.hero-orb2{position:absolute;bottom:-40px;left:-80px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(180,77,255,.1) 0%,transparent 70%);pointer-events:none}
-/* EXPLAIN BOX */
-.explain{background:rgba(0,255,163,.03);border:1px solid rgba(0,255,163,.2);border-left:3px solid #00ffa3;border-radius:12px;padding:14px;margin-top:14px}
-/* LOG BOX */
-.logbox{background:#010408;border:1px solid rgba(0,255,163,.12);border-radius:12px;padding:14px;font-family:'Courier New',monospace;font-size:11px;color:#00ffa3;line-height:1.9;overflow-x:auto;white-space:pre;margin-bottom:16px;box-shadow:inset 0 0 20px rgba(0,255,163,.03)}
-/* FIREWALL TABLE */
-.fw-table{width:100%;border-collapse:collapse;font-size:12px}
-.fw-table th{padding:8px 6px;text-align:left;color:var(--text3);font-weight:700;border-bottom:1px solid var(--border);background:rgba(255,255,255,.03);letter-spacing:.5px;font-size:11px}
-.fw-table td{padding:7px 5px;border-bottom:1px solid rgba(255,255,255,.03)}
-.fw-input{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:8px;padding:6px 8px;color:var(--text);font-size:11px;font-family:inherit;width:100%}
-.fw-select{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:8px;padding:6px 4px;font-size:11px;font-family:inherit;cursor:pointer;color:var(--text)}
-/* ZONE */
-.zone{background:rgba(255,255,255,.02);border:2px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;transition:all .15s}
-.zone.droptarget{border-color:rgba(0,229,255,.4);background:rgba(0,229,255,.03);box-shadow:0 0 16px rgba(0,229,255,.1)}
-.zone-device{display:inline-flex;align-items:center;gap:4px;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;margin:3px;border:1px solid;transition:all .15s}
-/* GRID */
-.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px;margin-bottom:16px}
-.mode-card{background:linear-gradient(145deg,rgba(17,19,32,.95),rgba(13,14,26,.98));border:1px solid var(--border);border-radius:18px;padding:18px 14px;cursor:pointer;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;transition:all .22s}
-.mode-card:active{transform:scale(.96)}
-.mode-card:hover{border-color:var(--border2)}
-/* BLITZ GAME */
-.blitz-timer{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin:0 auto;position:relative}
-.blitz-timer::before{content:"";position:absolute;inset:-3px;border-radius:50%;background:conic-gradient(var(--cyan) var(--prog,100%),rgba(255,255,255,.05) 0);z-index:-1}
-.blitz-lives{display:flex;gap:6px;justify-content:center;font-size:20px}
-.blitz-score{font-family:'Syne',sans-serif;font-size:42px;font-weight:800;text-align:center}
-.blitz-streak{font-size:13px;font-weight:700;color:var(--yellow);text-align:center;min-height:20px}
-.blitz-q{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);line-height:1.55;text-align:center;padding:0 4px}
-.blitz-opt{width:100%;border-radius:14px;padding:14px 16px;text-align:left;font-size:14px;font-family:inherit;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:10px;border:1.5px solid var(--border);background:rgba(255,255,255,.02);color:var(--text2)}
-.blitz-opt.hit{background:rgba(0,255,163,.08);border-color:#00ffa3;color:#00ffa3;animation:pop .3s ease}
-.blitz-opt.miss{background:rgba(255,61,154,.08);border-color:#ff3d9a;color:#ff3d9a}
-.blitz-opt.reveal{background:rgba(0,255,163,.04);border-color:rgba(0,255,163,.4);color:rgba(0,255,163,.6)}
-.float-score{position:fixed;font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#ffe144;pointer-events:none;z-index:999;animation:floatUp .8s ease forwards}
-/* LESSON */
-.lesson-card{background:linear-gradient(145deg,rgba(17,19,32,.95),rgba(13,14,26,.98));border-radius:18px;overflow:hidden;margin-bottom:14px;border:1px solid var(--border)}
-.lesson-header{padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer}
-.lesson-body{padding:0 18px 18px;display:none}
-.lesson-body.open{display:block}
-.lesson-tip{background:rgba(255,225,68,.04);border:1px solid rgba(255,225,68,.2);border-left:3px solid var(--yellow);border-radius:10px;padding:12px 14px;margin-top:12px;font-size:13px;color:#ffe880;line-height:1.65}
-.lesson-concept{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.chip{flex-shrink:0;border:1px solid var(--bd);background:transparent;border-radius:20px;
+      padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;
+      transition:all .2s;color:var(--tx3);font-family:inherit}
+.chip:hover{border-color:var(--bd2);color:var(--tx2)}
+.chip.on{border-color:var(--cy);color:var(--cy);background:var(--cy0)}
+
+/* ── PROGRESS ── */
+.pbar{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-bottom:18px}
+.pbarf{height:100%;border-radius:3px;transition:width .5s cubic-bezier(.4,0,.2,1);
+       background:linear-gradient(90deg,var(--cy),var(--pu))}
+
+/* ── FLASHCARD ── */
+.fc{min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;cursor:pointer;user-select:none;border-radius:18px;padding:28px 24px;
+    transition:all .28s;box-shadow:0 8px 28px rgba(0,0,0,.22)}
+.fc.front{background:linear-gradient(145deg,var(--bg3),var(--bg2));border:2px solid var(--cy);
+           box-shadow:0 0 0 1px rgba(56,189,248,.08),0 8px 28px rgba(0,0,0,.22)}
+.fc.back{background:linear-gradient(145deg,rgba(52,211,153,.05),var(--bg2));border:2px solid var(--gn);
+          box-shadow:0 0 0 1px rgba(52,211,153,.08),0 8px 28px rgba(0,0,0,.22)}
+.fc:active{transform:scale(.98)}
+
+/* Confidence rating — spaced rep */
+.confrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:16px}
+.cbtn{border-radius:13px;padding:13px 6px;font-family:inherit;font-weight:700;font-size:13px;
+      cursor:pointer;transition:all .2s;border:2px solid;display:flex;flex-direction:column;
+      align-items:center;gap:4px;line-height:1.2}
+.cbtn.hard{background:var(--pk0);border-color:var(--pk);color:var(--pk)}
+.cbtn.ok{background:var(--ye0);border-color:var(--ye);color:var(--ye)}
+.cbtn.easy{background:var(--gn0);border-color:var(--gn);color:var(--gn)}
+.cbtn:hover{filter:brightness(1.15)}
+
+/* ── ANSWERS ── */
+.ans{display:flex;align-items:center;gap:11px;width:100%;padding:13px 15px;border-radius:13px;
+     font-size:14px;font-family:inherit;cursor:pointer;transition:all .18s;text-align:left;
+     min-height:52px;background:rgba(255,255,255,.02);border:1.5px solid var(--bd);
+     color:var(--tx2);font-weight:500}
+.ans:hover{border-color:var(--bd2);background:rgba(255,255,255,.04)}
+.ltr{width:27px;height:27px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+     font-size:11px;font-weight:800;flex-shrink:0;background:rgba(255,255,255,.05);
+     color:var(--tx3);border:1px solid var(--bd);transition:all .18s}
+.ans.sel{background:var(--cy0);border-color:var(--cy);color:var(--cy)}
+.ans.sel .ltr{background:rgba(56,189,248,.18);color:var(--cy);border-color:var(--cy)}
+.ans.hit{background:var(--gn0);border-color:var(--gn);color:var(--gn)}
+.ans.hit .ltr{background:rgba(52,211,153,.18);color:var(--gn);border-color:var(--gn)}
+.ans.miss{background:var(--pk0);border-color:var(--pk);color:var(--pk)}
+.ans.miss .ltr{background:rgba(244,114,182,.18);color:var(--pk);border-color:var(--pk)}
+.ans.dim{background:rgba(52,211,153,.02);border-color:rgba(52,211,153,.15);color:rgba(52,211,153,.35)}
+.ans.dim .ltr{color:rgba(52,211,153,.25)}
+
+/* ── MATCH ── */
+.mb{width:100%;padding:11px 9px;border-radius:11px;font-family:inherit;min-height:44px;
+    line-height:1.4;cursor:pointer;background:rgba(255,255,255,.02);border:1.5px solid var(--bd);
+    color:var(--tx2);text-align:left;font-size:12px;transition:all .14s;font-weight:500}
+.mb:hover{border-color:var(--bd2)}
+.mb.mbon{background:var(--cy0);border-color:var(--cy);color:var(--cy)}
+.mb.mbhit{background:var(--gn0);border-color:var(--gn);color:var(--gn)}
+.mb.mbmiss{background:var(--pk0);border-color:var(--pk);color:var(--pk);animation:shake .38s}
+
+/* ── ORDERING ── */
+.oi{background:rgba(255,255,255,.02);border:1.5px solid var(--bd);border-radius:13px;
+    padding:12px 13px;display:flex;align-items:center;gap:9px;margin-bottom:8px;transition:all .2s}
+.oi.oihit{background:var(--gn0);border-color:var(--gn)}
+.oi.oimiss{background:var(--pk0);border-color:var(--pk)}
+.oinm{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;
+      justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+
+/* ── EXPLAIN ── */
+.explain{background:rgba(52,211,153,.04);border:1px solid rgba(52,211,153,.18);
+         border-left:3px solid var(--gn);border-radius:11px;padding:14px;margin-top:14px}
+.tipbox{background:rgba(251,191,36,.04);border:1px solid rgba(251,191,36,.18);
+        border-left:3px solid var(--ye);border-radius:10px;padding:12px 13px;
+        margin-top:12px;font-size:13px;color:#fde68a;line-height:1.65}
+
+/* ── HERO ── */
+.hero{position:relative;overflow:hidden;padding:36px 20px 28px}
+@media(min-width:768px){.hero{padding:48px 40px 36px}}
+.hg1{position:absolute;top:-80px;right:-70px;width:280px;height:280px;border-radius:50%;
+     background:radial-gradient(circle,rgba(56,189,248,.09) 0%,transparent 70%);pointer-events:none}
+.hg2{position:absolute;bottom:-60px;left:-80px;width:200px;height:200px;border-radius:50%;
+     background:radial-gradient(circle,rgba(167,139,250,.07) 0%,transparent 70%);pointer-events:none}
+
+/* ── GAME ── */
+.ghud{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin-bottom:14px}
+.gsc{font-family:"Syne",sans-serif;font-size:26px;font-weight:800;color:var(--ye)}
+.gring{width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+       font-family:"Syne",sans-serif;font-size:22px;font-weight:800;border:3px solid var(--cy)}
+.gring.warn{border-color:var(--ye);color:var(--ye)}
+.gring.danger{border-color:var(--pk);color:var(--pk);animation:tpulse .5s infinite}
+@keyframes tpulse{0%,100%{box-shadow:0 0 0 0 var(--pk)}50%{box-shadow:0 0 0 6px rgba(244,114,182,.12)}}
+.gstreak{min-height:20px;text-align:center;font-size:13px;font-weight:700;color:var(--ye);margin-bottom:12px}
+.bo{width:100%;border-radius:13px;padding:13px 15px;text-align:left;font-size:14px;font-family:inherit;
+    font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:10px;
+    border:1.5px solid var(--bd);background:rgba(255,255,255,.02);color:var(--tx2)}
+.bo:hover{border-color:var(--bd2);background:rgba(255,255,255,.04)}
+.bo.hit{background:var(--gn0);border-color:var(--gn);color:var(--gn);animation:bpop .25s}
+.bo.miss{background:var(--pk0);border-color:var(--pk);color:var(--pk)}
+.bo.dim{background:rgba(52,211,153,.02);border-color:rgba(52,211,153,.14);color:rgba(52,211,153,.3)}
+@keyframes bpop{0%{transform:scale(.95)}60%{transform:scale(1.03)}100%{transform:scale(1)}}
+.fpts{position:fixed;font-family:"Syne",sans-serif;font-size:22px;font-weight:800;
+      color:var(--ye);pointer-events:none;z-index:999;animation:fup .9s ease forwards}
+@keyframes fup{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-50px)}}
+
+/* ── LESSONS ── */
+.lrow{background:var(--bg2);border:1px solid var(--bd);border-radius:14px;overflow:hidden;margin-bottom:10px}
+.lhdr{display:flex;align-items:center;gap:12px;padding:15px 16px;cursor:pointer;transition:background .15s}
+.lhdr:hover{background:rgba(255,255,255,.02)}
+.lbody{padding:0 16px 16px;display:none}
+.lbody.open{display:block}
+.lconcept{background:rgba(255,255,255,.02);border:1px solid var(--bd);border-radius:10px;
+           padding:12px 13px;margin-bottom:8px}
+
+/* ── FIREWALL ── */
+.fwtbl{width:100%;border-collapse:collapse;font-size:12px}
+.fwtbl th{padding:9px 5px;text-align:left;color:var(--tx3);font-weight:700;
+           border-bottom:1px solid var(--bd);background:rgba(255,255,255,.02);
+           font-size:10px;letter-spacing:.5px;text-transform:uppercase}
+.fwtbl td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.025)}
+.fw-in{background:var(--bg4);border:1px solid var(--bd2);border-radius:7px;
+       padding:6px 7px;color:var(--tx);font-size:11px;font-family:inherit;width:100%}
+.fw-sel{background:var(--bg4);border:1px solid var(--bd2);border-radius:7px;
+        padding:6px 4px;font-size:11px;font-family:inherit;cursor:pointer;color:var(--tx)}
+
+/* ── ZONE ── */
+.zone{background:rgba(255,255,255,.02);border:2px solid var(--bd);border-radius:13px;
+      padding:13px;margin-bottom:10px;transition:all .15s}
+.zone.zt{border-color:rgba(56,189,248,.35);background:rgba(56,189,248,.03)}
+.zd{display:inline-flex;align-items:center;gap:4px;border-radius:7px;padding:5px 9px;
+    font-size:11px;font-weight:600;cursor:pointer;margin:3px;border:1px solid;transition:all .15s}
+
+/* ── LOG BOX ── */
+.logbox{background:#080c14;border:1px solid rgba(52,211,153,.12);border-radius:12px;
+        padding:13px;font-family:monospace;font-size:11px;color:var(--gn);
+        line-height:1.9;overflow-x:auto;white-space:pre;margin-bottom:16px}
+
+/* ── MISC ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.fu{animation:fadeUp .3s ease both}
+.fu1{animation:fadeUp .3s .07s ease both}
+.fu2{animation:fadeUp .3s .14s ease both}
+.fu3{animation:fadeUp .3s .21s ease both}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.col{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;align-items:center;gap:8px}
+.stitle{font-size:10px;color:var(--tx3);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:12px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 </style>
 </head>
 <body>
 <div id="app">
-  <div id="content"></div>
-  <nav id="nav">
-    <div class="tabs">
-      <button class="tab active" data-tab="home"><span class="icon">🏠</span>Home</button>
-      <button class="tab" data-tab="learn"><span class="icon">📖</span>Learn</button>
-      <button class="tab" data-tab="quiz"><span class="icon">🎯</span>Quiz</button>
-      <button class="tab" data-tab="game"><span class="icon">🎮</span>Game</button>
-      <button class="tab" data-tab="pbq"><span class="icon">🧪</span>PBQ</button>
-    </div>
-  </nav>
+  <aside id="sb">
+    <div class="sbl">Sec+ Study</div>
+    <div class="sbs">SY0-701 · secplus.kulaninstitute.org</div>
+    <div class="sbsec">Study</div>
+    <button class="sbb on" data-tab="home"><span class="sbi">🏠</span> Home</button>
+    <button class="sbb" data-tab="learn"><span class="sbi">📖</span> Lessons</button>
+    <button class="sbb" data-tab="cards"><span class="sbi">🃏</span> Flashcards</button>
+    <button class="sbb" data-tab="quiz"><span class="sbi">🎯</span> Practice Quiz</button>
+    <div class="sbsec">Play</div>
+    <button class="sbb" data-tab="match"><span class="sbi">🧩</span> Match Game</button>
+    <button class="sbb" data-tab="game"><span class="sbi">🎮</span> Cyber Blitz</button>
+    <button class="sbb" data-tab="pbq"><span class="sbi">🧪</span> PBQ Sims</button>
+    <div class="sbft">Kulan Institute of Learning<br>secplus.kulaninstitute.org</div>
+  </aside>
+  <main id="main"><div id="pg"></div></main>
 </div>
-
+<nav id="bnav">
+  <button class="bnt on" data-tab="home"><span class="bi">🏠</span>Home</button>
+  <button class="bnt" data-tab="learn"><span class="bi">📖</span>Learn</button>
+  <button class="bnt" data-tab="quiz"><span class="bi">🎯</span>Quiz</button>
+  <button class="bnt" data-tab="game"><span class="bi">🎮</span>Game</button>
+  <button class="bnt" data-tab="pbq"><span class="bi">🧪</span>PBQ</button>
+</nav>
 <script>
-// ─── DATA ───────────────────────────────────────────────────────────────────
 
-const DOMAINS=[
-  {id:1,name:"General Security Concepts",weight:12,color:"#00d4ff"},
-  {id:2,name:"Threats, Vulnerabilities & Mitigations",weight:22,color:"#ff4d6d"},
-  {id:3,name:"Security Architecture",weight:18,color:"#06d6a0"},
-  {id:4,name:"Security Operations",weight:28,color:"#f9c74f"},
-  {id:5,name:"Security Program Management",weight:20,color:"#a855f7"},
-];
-
+const DOMAINS=[{id:1,name:"General Security Concepts",weight:12,color:"#38bdf8"},{id:2,name:"Threats, Vulnerabilities & Mitigations",weight:22,color:"#f472b6"},{id:3,name:"Security Architecture",weight:18,color:"#34d399"},{id:4,name:"Security Operations",weight:28,color:"#fbbf24"},{id:5,name:"Security Program Management",weight:20,color:"#a78bfa"}];
 const FC=[
   // D1
   {t:"CIA Triad",d:"Confidentiality, Integrity, Availability — the three core security principles",dm:1},
@@ -288,7 +404,6 @@ const FC=[
   {t:"BIA",d:"Business Impact Analysis — identifies critical processes and impact of their disruption",dm:5},
   {t:"Due Diligence",d:"Investigation and research BEFORE entering a business relationship",dm:5},
 ];
-
 const QZ=[
   {q:"A company policy states finance employees cannot both ENTER and APPROVE payment transactions. Which principle is this?",o:["Least Privilege","Dual Control","Separation of Duties","Job Rotation"],a:2,d:1,e:"Separation of Duties splits a critical transaction across two people — preventing any one person from committing fraud alone."},
   {q:"An admin needs to grant a contractor temporary access to one server for 4 hours. Which BEST minimizes risk?",o:["Create a permanent least-privilege account","Just-in-Time access with automatic expiration","Add contractor to existing RBAC group","Share admin credentials temporarily"],a:1,d:1,e:"JIT access grants temporary, time-bound access that auto-revokes after the task — no lingering accounts or excess permissions."},
@@ -640,7 +755,6 @@ const QZ=[
   {q:"An organization collects customer email addresses for order confirmations but then uses them for marketing campaigns without customer consent. Which GDPR principle is violated?",o:["Data Minimization","Storage Limitation","Purpose Limitation","Data Integrity"],a:2,d:5,e:"Purpose Limitation requires that personal data is only used for the specific purpose for which it was collected — using order confirmation email addresses for marketing without consent violates this principle."},
   {q:"A CISO wants to demonstrate security program value to the board. Which metrics are MOST relevant?",o:["Number of firewall rules configured","Mean Time to Detect, Mean Time to Respond, patch compliance rate, and risk reduction over time","Total number of security tools deployed","Number of security training courses completed"],a:1,d:5,e:"Business-relevant security metrics demonstrate program effectiveness: MTTD/MTTR show detection and response capability, patch compliance shows vulnerability management, risk reduction demonstrates ROI on security investment."},
 ];
-
 const MATCH=[
   {t:"SYN Flood",m:"Half-open TCP connections exhaust server"},
   {t:"Evil Twin",m:"Fake AP with identical SSID to real network"},
@@ -680,431 +794,646 @@ const MATCH=[
   {t:"Zero Trust",m:"Never trust always verify regardless of location"},
 ];
 
-// ─── STATE ───────────────────────────────────────────────────────────────────
-let state = {
-  tab: 'home',
-  cards: { domain: 0, idx: 0, flipped: false, known: [], review: [] },
-  quiz: { domain: 0, cur: 0, sel: null, answers: [], done: false },
-  match: { page: 0, selT: null, selM: null, matched: [], wrong: false, moves: 0, done: false, shuffled: [] },
-  pbq: { sim: null },
-  fw: { rules: [{s:'',d:'',p:'',a:'ALLOW'},{s:'',d:'',p:'',a:'ALLOW'},{s:'',d:'',p:'',a:'ALLOW'},{s:'',d:'',p:'',a:'ALLOW'}], checked: false, results: [] },
-  logs: { scenario: 0, answers: {}, checked: false },
-  ports: { page: 0, selP: null, selPort: null, matched: [], wrong: false, moves: 0, done: false, shuffled: [] },
-  triage: { priority: [], checked: false, actionOrder: [], actChecked: false },
-  order: { game: null, items: [], checked: false },
-  net: { placed: {}, dragging: null, checked: false },
-};
-
-function shuffle(arr){ return [...arr].sort(()=>Math.random()-.5); }
-
-// Init match shuffles
-const MATCH_PAGE = 12;
-state.match.shuffled = shuffle(MATCH.slice(0, MATCH_PAGE).map(p=>p.m));
-const PORTS_ALL = [
-  {p:"HTTPS",port:"443"},{p:"SSH",port:"22"},{p:"RDP",port:"3389"},{p:"DNS",port:"53"},
-  {p:"SMTP",port:"25"},{p:"LDAP",port:"389"},{p:"SNMP",port:"161"},{p:"Kerberos",port:"88"},
-  {p:"RADIUS",port:"1812"},{p:"FTP",port:"21"},{p:"HTTP",port:"80"},{p:"LDAPS",port:"636"},
-  {p:"FTPS",port:"990"},{p:"IMAP",port:"143"},{p:"RPC",port:"135"},
+const LESSONS=[
+{domain:1,color:"#38bdf8",subs:[
+  {id:"1.1",title:"Security Controls",tip:"Every control has BOTH a category AND a type. Security camera = Physical + Detective. Written policy = Managerial + Directive. Exam tests both dimensions.",
+   cx:[{h:"Categories",b:"Technical = technology enforces. Managerial = policy-driven. Operational = humans do it. Physical = guards physical space."},
+       {h:"Types",b:"Preventive stops attacks. Detective identifies them. Corrective fixes damage. Deterrent discourages. Compensating substitutes when primary control unavailable. Directive guides via policy."},
+       {h:"Both Together",b:"A locked server door = Physical + Preventive. An antivirus = Technical + Detective/Corrective. Screen-lock policy = Managerial + Directive."}]},
+  {id:"1.2",title:"Core Security Principles",tip:"Separation of Duties = tasks SPLIT across people. Dual Control = both people PRESENT simultaneously. This distinction is a frequent exam trap.",
+   cx:[{h:"CIA Triad",b:"Confidentiality (authorized access only) + Integrity (data unchanged) + Availability (accessible when needed). Every security decision maps here."},
+       {h:"Zero Trust",b:"Never trust, always verify. No implicit trust based on network location. Even internal users re-authenticate to every resource access."},
+       {h:"Least Privilege & Need to Know",b:"Least Privilege = minimum access for the job. Need to Know = even WITH clearance, only access data needed for THIS specific task."}]},
+  {id:"1.3",title:"Cryptography",tip:"AES = symmetric. RSA = asymmetric. Sign with PRIVATE key (proves you sent it). Encrypt with PUBLIC key (only recipient can decrypt). Direction matters on every exam question.",
+   cx:[{h:"Symmetric vs Asymmetric",b:"Symmetric = 1 shared key, FAST, bulk data (AES-256, 3DES). Asymmetric = public/private pair, SLOW, key exchange and signatures (RSA, ECC, Diffie-Hellman)."},
+       {h:"Hashing",b:"One-way, fixed-length output, cannot reverse. MD5 = broken. SHA-1 = deprecated. SHA-256 = current standard. bcrypt = passwords. Salt defeats rainbow tables."},
+       {h:"Digital Signatures & PKI",b:"Hash encrypted with senders PRIVATE key proves authenticity + integrity + non-repudiation. CA issues certificates. RA verifies identities. CRL/OCSP check revocation status."},
+       {h:"Perfect Forward Secrecy",b:"Unique ephemeral keys per session. If server private key is stolen later, past sessions cannot be decrypted."}]},
+  {id:"1.4",title:"Authentication & Access Control",tip:"SAML = enterprise SSO federation. OAuth = delegated authorization (Login with Google). Kerberos = tickets for internal AD resources. RADIUS = VPN and Wi-Fi auth on UDP.",
+   cx:[{h:"MFA Factor Types",b:"Something you KNOW (password, PIN). Something you HAVE (smart card, hardware token, OTP app). Something you ARE (biometric: fingerprint, retina). Somewhere you ARE (GPS/location)."},
+       {h:"Access Control Models",b:"DAC = owner decides. MAC = system enforces labels (military). RBAC = job role. ABAC = multiple dynamic attributes (role + location + time + sensitivity). Rule-Based = admin ACLs."},
+       {h:"Auth Protocols",b:"Kerberos = tickets + KDC for Active Directory. SAML = enterprise SSO across orgs. OAuth 2.0 = delegated authorization. OpenID Connect = authentication layer on OAuth. RADIUS = VPN/Wi-Fi (UDP). TACACS+ = separates AAA (TCP)."}]}
+]},
+{domain:2,color:"#f472b6",subs:[
+  {id:"2.1",title:"Social Engineering",tip:"Phishing = mass/generic. Spear Phishing = targeted with personal details. Whaling = executive target. Vishing = voice. Smishing = SMS. These distinctions appear on nearly every exam.",
+   cx:[{h:"Email Attacks",b:"Phishing (mass, generic Dear Customer), Spear Phishing (targeted, personalized with name/role/project), Whaling (executive target), Business Email Compromise (impersonates exec for wire transfers)."},
+       {h:"Other Vectors",b:"Vishing (voice/phone), Smishing (SMS text), Pretexting (fabricated scenario), Baiting (infected USB drives), Tailgating (physical door access), Watering Hole (compromise site target visits)."},
+       {h:"Key Indicators",b:"Urgency, fear, authority claims, generic greeting, unexpected attachment, URL mismatch between display text and actual link destination."}]},
+  {id:"2.2",title:"Malware Types",tip:"Rootkit = AV reports clean but system misbehaves. Cryptojacking = 100% CPU + mining pool connections. Ransomware deletes shadow copies BEFORE encrypting to prevent easy recovery.",
+   cx:[{h:"Core Malware",b:"Virus (needs user to execute), Worm (self-replicates, no user needed), Trojan (disguised as legitimate), Ransomware (encrypt + demand payment), Rootkit (kernel-level, hides from AV), Cryptojacker (mines crypto using your CPU)."},
+       {h:"Advanced Malware",b:"Fileless malware = memory-only, no disk files, evades signature AV completely. Logic Bomb = triggered by condition or date. RAT = remote control of infected system. Botnet = C2-controlled network of infected hosts."},
+       {h:"APT Characteristics",b:"Long dwell time (months/years), stealthy, patient, targeted specific victim, nation-state level resources. Uses living-off-the-land tools to blend in."}]},
+  {id:"2.3",title:"Network & Application Attacks",tip:"SYN Flood = half-open TCP. SQL Injection = single quote breaks query. Stored XSS = in database affects all visitors. Reflected XSS = in URL, affects clicker only. Replay = later. Hijacking = live.",
+   cx:[{h:"Network DoS",b:"SYN Flood (half-open TCP exhausts connection table), Smurf (ICMP broadcast with spoofed victim IP), DNS Amplification (small query, massive response), Volumetric DDoS (bandwidth exhaustion from botnet)."},
+       {h:"Web Attacks",b:"SQL Injection (single quote or OR 1=1 in input), Stored XSS (script saved in DB, affects all visitors), Reflected XSS (script in URL, only affects the clicker), CSRF (forged authenticated request), Directory Traversal (../ escapes web root)."},
+       {h:"Credential & Wireless",b:"Password Spray (few passwords, many accounts), Credential Stuffing (breached pairs from other sites), Pass-the-Hash (reuse NTLM without cracking). Evil Twin (fake SSID) vs Rogue AP (unauthorized AP physically plugged into internal network) - different attacks!"}]},
+  {id:"2.4",title:"Vulnerability Management",tip:"Zero-Day = no patch exists yet. CVSS score alone is insufficient - also consider asset criticality and exploitability in the wild. Black Box = no knowledge. White Box = full access.",
+   cx:[{h:"Vulnerability Types",b:"Zero-Day (no patch, being exploited), Misconfiguration (default creds, verbose errors, open ports), Unpatched (known CVEs with patches available), Improper Input Validation (root cause of SQLi/XSS/buffer overflow)."},
+       {h:"Testing Types",b:"Vulnerability Scan = non-invasive, identifies weaknesses, no exploitation. Pen Test = authorized exploitation proving real-world impact. Red Team = full adversarial simulation, all vectors, extended time, stealth."},
+       {h:"Threat Intel",b:"IOC = evidence of compromise. TTPs = attacker behavior patterns. OSINT = public-source recon. MITRE ATT&CK = comprehensive TTP knowledge base. Prioritize remediation by CVSS + asset criticality + exploitability."}]}
+]},
+{domain:3,color:"#34d399",subs:[
+  {id:"3.1",title:"Network Architecture",tip:"DMZ for ALL public-facing servers. IDS = passive alerts only. IPS = active blocks inline. WAF = Layer 7 HTTP only. Zero Trust = verify every request regardless of network location.",
+   cx:[{h:"Network Zones",b:"Internet (untrusted) → Perimeter Firewall → DMZ (public servers) → Internal Firewall → LAN → Secure Zone (databases). Each zone has increasing trust and decreasing attack surface."},
+       {h:"Key Devices",b:"Firewall (stateful rules), NGFW (adds DPI + app ID + IPS), IDS (passive/alerts), IPS (active/blocks inline), WAF (Layer 7, HTTP attacks only), Reverse Proxy (hides server IPs), Honeypot (decoy/research)."},
+       {h:"Segmentation",b:"VLANs provide logical L2 isolation. Route inter-VLAN traffic through a firewall for policy enforcement. Microsegmentation = granular workload-level isolation. Air Gap = physically isolated with zero network connectivity."}]},
+  {id:"3.2",title:"Cloud & Virtualization",tip:"IaaS customer must patch the OS. SaaS customer only manages data and access config. Client-side encryption = provider CANNOT decrypt even if they are fully compromised.",
+   cx:[{h:"Service Models",b:"IaaS: provider owns hardware, customer owns OS+apps+data. PaaS: provider owns OS+runtime, customer owns apps+data. SaaS: provider owns everything, customer only manages data+config."},
+       {h:"Shared Responsibility",b:"Physical infrastructure ALWAYS provider responsibility. Customer responsibility increases: SaaS (least) to IaaS (most). OS patching in IaaS = customer. Failure to understand this causes breaches."},
+       {h:"Virtualization Risks",b:"VM Escape (break out of VM to host or other VMs), Container Breakout (escape container to shared host kernel), Type 1 hypervisor (bare-metal, more secure), Type 2 (runs on OS, larger attack surface)."}]},
+  {id:"3.3",title:"Resilience & Recovery",tip:"RTO = how long can we be DOWN? RPO = how much DATA can we lose? Hot Site = fastest/most expensive. Cold = slowest/cheapest. Match the site type to the stated RTO requirement.",
+   cx:[{h:"Key Metrics",b:"RTO = max acceptable downtime. RPO = max acceptable data loss measured in time. MTTR = average repair time after failure. MTBF = average time between failures."},
+       {h:"Backup Types",b:"Full = all data, slowest create, fastest restore (1 file). Incremental = changes since last ANYTHING, fastest create, slowest restore (need full + every increment). Differential = changes since last FULL, need only full + latest differential."},
+       {h:"Recovery Sites",b:"Hot = fully operational + real-time sync, minutes-hours RTO, most expensive. Warm = partially equipped, hours-days RTO, medium cost. Cold = empty facility with power/cooling, days-weeks RTO, cheapest."}]}
+]},
+{domain:4,color:"#fbbf24",subs:[
+  {id:"4.1",title:"Incident Response",tip:"CRITICAL: Eradication ALWAYS before Recovery. Restoring into a still-vulnerable environment = immediate reinfection. The correct order is always: Contain, Eradicate, THEN Recover.",
+   cx:[{h:"6 Phases In Order",b:"1-Preparation (build IR capability). 2-Detection & Analysis (confirm it is real). 3-Containment (stop the spread immediately). 4-Eradication (remove threat + patch vulnerability). 5-Recovery (restore from clean backup). 6-Lessons Learned (document and improve)."},
+       {h:"Exercises",b:"Tabletop = discussion only, no systems touched, tests procedures and communication. Red Team = full adversarial simulation with real attack techniques. Purple Team = Red and Blue collaborate to improve detections. Phishing Sim = tests human controls."},
+       {h:"Common IR Mistakes",b:"Restoring before eradicating causes immediate reinfection. Failing to collect volatile evidence before rebooting loses critical forensic data. Not isolating systems allows lateral spread."}]},
+  {id:"4.2",title:"Digital Forensics",tip:"Order of volatility: CPU cache disappears on power-off = collect FIRST. Hard drive persists = collect LAST. RAM is lost on reboot = collect BEFORE rebooting under any circumstances.",
+   cx:[{h:"Order of Volatility",b:"Most to least volatile: 1-CPU registers and cache, 2-RAM and running processes, 3-Swap/temporary files, 4-Hard drive image, 5-Optical media and archived logs. Always collect most volatile first."},
+       {h:"Chain of Custody",b:"Documents every person who touched evidence and when. Breaks in chain = evidence inadmissible in court. Hash evidence immediately after collection using SHA-256 to prove no tampering."},
+       {h:"Key Controls",b:"Write Blocker prevents any modification to evidence during imaging. Legal Hold overrides all normal retention policies and must be obeyed immediately. eDiscovery = producing evidence for legal proceedings."}]},
+  {id:"4.3",title:"Monitoring & Detection",tip:"SIEM detects and alerts. SOAR automates response. UEBA detects behavioral anomalies impossible travel, off-hours access. EDR = endpoint only. XDR = extends across all vectors.",
+   cx:[{h:"SIEM and SOAR",b:"SIEM aggregates logs from all sources, correlates events, generates prioritized alerts. SOAR automates repetitive IR playbooks - SIEM detects, SOAR responds. Together reduce response from minutes to seconds."},
+       {h:"UEBA",b:"Establishes behavioral baselines per user and entity. Flags deviations: impossible travel, off-hours database access, unusual data volumes. Detects insider threats and compromised accounts that evade signature detection."},
+       {h:"EDR and XDR",b:"EDR monitors and responds to endpoint threats (processes, files, registry, network connections). XDR extends correlation across endpoints, network traffic, cloud workloads, email, and identity for unified multi-vector detection."}]},
+  {id:"4.4",title:"Identity & Access Management",tip:"Privilege creep = employee who changed roles and kept old access. Deprovisioning failure = ghost accounts of former employees. Fix both with periodic user access reviews.",
+   cx:[{h:"Privileged Access",b:"JIT = temporary time-limited elevation automatically revoked after task completes. PAM = controls, monitors, and records all privileged sessions. Least Privilege = minimum required, nothing more."},
+       {h:"Lifecycle Management",b:"Provisioning (new hire gets correct access) > Role changes (update access immediately) > Departure (deprovisioning IMMEDIATELY, same day). Privilege creep = accumulated permissions from role changes never cleaned up."},
+       {h:"Access Reviews",b:"Periodic audits identifying and removing excess permissions. Catch privilege creep before it is abused. Required by most compliance frameworks."}]}
+]},
+{domain:5,color:"#a78bfa",subs:[
+  {id:"5.1",title:"Risk Management",tip:"ALE = SLE x ARO. Example: SLE $100k x ARO 0.25 = ALE $25k/year. If a control costs $50k/year it is NOT cost-effective. This exact calculation appears on the exam.",
+   cx:[{h:"Risk Formula",b:"Risk = Likelihood x Impact. Inherent Risk = before any controls. Residual Risk = after controls applied. Risk Appetite = how much risk the organization is willing to accept and tolerate."},
+       {h:"Quantitative Analysis",b:"SLE = Asset Value x Exposure Factor (loss from ONE incident). ARO = expected incidents per year. ALE = SLE x ARO = expected yearly financial loss. Drives cost-benefit decisions for security controls."},
+       {h:"Risk Responses",b:"Avoidance = stop the risky activity entirely. Mitigation = implement controls to reduce likelihood or impact. Transference = cyber insurance or outsourcing. Acceptance = formally document and tolerate the risk."}]},
+  {id:"5.2",title:"Compliance & Frameworks",tip:"NIST CSF = voluntary, 5 functions. PCI DSS = mandatory for card processors. HIPAA = US healthcare PHI. GDPR = EU data, 72-hour breach notification. SOC 2 Type II = 6-12 month effectiveness assessment.",
+   cx:[{h:"Key Frameworks",b:"NIST CSF: Identify, Protect, Detect, Respond, Recover. ISO 27001: ISMS certification standard. PCI DSS: mandatory for credit card data, 12 requirements. HIPAA: US healthcare PHI protection. GDPR: EU data privacy with individual rights."},
+       {h:"GDPR Rights",b:"Access (request copy of all data held), Rectification (correct errors), Erasure/Right to be Forgotten (delete when no longer needed), Portability (receive data in usable format). Breach notification required within 72 hours."},
+       {h:"Audit Types",b:"SOC 2 Type I = controls exist at one point in time. SOC 2 Type II = controls operated effectively over 6-12 months (much stronger assurance). Penetration Test = authorized exploitation. Vulnerability Assessment = non-invasive scan."}]},
+  {id:"5.3",title:"Data Privacy & Vendor Risk",tip:"Data Controller = legally accountable under GDPR. Data Custodian = IT admin implementing protections. Supply chain attack = compromise trusted vendor to reach real downstream targets (SolarWinds).",
+   cx:[{h:"Data Classification",b:"Public (no harm if disclosed) > Internal/Private (low sensitivity) > Confidential (significant harm) > Restricted/Top Secret (severe harm). Classification drives every protection decision including encryption, access controls, and retention."},
+       {h:"Data Roles",b:"Controller = decides WHY and HOW personal data is processed, legally accountable under GDPR. Processor = processes on behalf of controller. Owner = business person accountable for classification. Custodian = IT role implementing technical protections."},
+       {h:"Vendor Risk",b:"Assess security before engaging. Require security controls in contracts. Maintain right-to-audit clauses. Revoke ALL access immediately upon contract termination. Supply chain attacks compromise trusted vendors to reach downstream customers."}]}
+]}
 ];
-state.ports.shuffled = shuffle(PORTS_ALL.slice(0,8).map(p=>p.port));
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
-const $ = id => document.getElementById(id);
-const content = () => $('content');
 
-function render(html){ content().innerHTML = html; }
+const MPGSZ=12;
+const PORTS_ALL=[{p:"HTTPS",port:"443"},{p:"SSH",port:"22"},{p:"RDP",port:"3389"},{p:"DNS",port:"53"},{p:"SMTP",port:"25"},{p:"LDAP",port:"389"},{p:"SNMP",port:"161"},{p:"Kerberos",port:"88"},{p:"RADIUS",port:"1812"},{p:"FTP",port:"21"},{p:"HTTP",port:"80"},{p:"LDAPS",port:"636"},{p:"FTPS",port:"990"},{p:"IMAP",port:"143"},{p:"RPC",port:"135"}];
+const shuffle=a=>[...a].sort(()=>Math.random()-.5);
+
+const S={
+  tab:"home",
+  cards:{dom:0,idx:0,flipped:false,known:[],review:[],hard:[]},
+  quiz:{dom:0,cur:0,sel:null,ans:[],done:false},
+  match:{pg:0,sT:null,sM:null,matched:[],wrong:false,moves:0,done:false,sh:[]},
+  learn:{dom:0,open:null},
+  game:{on:false,score:0,lives:3,streak:0,best:0,timer:60,iv:null,qs:[],qi:0,cur:null,sel:null,df:0},
+  pbq:{sim:null},
+  fw:{rules:[{s:"",d:"",p:"",a:"ALLOW"},{s:"",d:"",p:"",a:"ALLOW"},{s:"",d:"",p:"",a:"ALLOW"},{s:"",d:"",p:"",a:"ALLOW"}],checked:false,res:[]},
+  logs:{sc:0,ans:{},checked:false},
+  ports:{pg:0,sP:null,sPort:null,matched:[],wrong:false,moves:0,done:false,sh:[]},
+  triage:{pri:[],checked:false,acts:[],actCk:false},
+  net:{placed:{},drag:null,checked:false},
+};
+S.match.sh=shuffle(MATCH.slice(0,MPGSZ).map(p=>p.m));
+S.ports.sh=shuffle(PORTS_ALL.slice(0,8).map(p=>p.port));
+
+const pg=()=>document.getElementById("pg");
+function render(html){pg().innerHTML=html;window.scrollTo(0,0);}
+function dc(id){return DOMAINS[id-1]?.color||"#38bdf8";}
+function sc(p){return p>=80?"var(--gn)":p>=60?"var(--ye)":"var(--pk)";}
+
+function mkchips(cur,fn){
+  return [{id:0,name:"All",col:"#38bdf8"},...DOMAINS.map(d=>({id:d.id,name:"D"+d.id,col:d.color}))]
+    .map(d=>{
+      var on=cur===d.id;
+      var st=on?"color:"+d.col+";border-color:"+d.col+";background:"+d.col+"18":"";
+      return "<button class='chip"+(on?" on":"")+"' style='"+st+"' onclick='"+fn+"("+d.id+")'>"+d.name+"</button>";
+    }).join("");
+}
 
 function setTab(id){
-  state.tab = id;
-  document.querySelectorAll('#nav .tab').forEach(t=>{
-    t.classList.toggle('active', t.dataset.tab === id);
-  });
+  S.tab=id;
+  document.querySelectorAll(".sbb,.bnt").forEach(b=>b.classList.toggle("on",b.dataset.tab===id));
   renderTab(id);
 }
+document.querySelectorAll(".sbb,.bnt").forEach(b=>b.addEventListener("click",()=>setTab(b.dataset.tab)));
 
-function domainColor(id){ return DOMAINS[id-1]?.color || '#00d4ff'; }
-
-function scoreColor(pct){ return pct>=80?'#00ffa3':pct>=60?'#ffe144':'#ff3d9a'; }
-
-function domainPill(id){
-  const d = DOMAINS[id-1];
-  if(!d) return '';
-  return `<span style="font-size:11px;color:${d.color};letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:block">Domain ${id}</span>`;
+function renderTab(id){
+  if(id==="home") renderHome();
+  else if(id==="learn") renderLearn();
+  else if(id==="cards") renderCards();
+  else if(id==="quiz") renderQuiz();
+  else if(id==="match") renderMatch();
+  else if(id==="game") renderGame();
+  else if(id==="pbq") renderPBQ();
 }
 
-// ─── HOME ────────────────────────────────────────────────────────────────────
+
 function renderHome(){
-  render(`
-    <div class="hero fu">
-      <div style="font-size:10px;color:#00d4ff;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px">
-        <span style="width:20px;height:1px;background:linear-gradient(90deg,#00d4ff,transparent);display:inline-block"></span>
-        CompTIA Security+ SY0-701
-        <span style="width:20px;height:1px;background:linear-gradient(90deg,transparent,#00d4ff);display:inline-block"></span>
-      </div>
-      <h1 style="font-family:'Syne',sans-serif;font-size:34px;font-weight:800;background:linear-gradient(135deg,#f1f5f9 30%,#00d4ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:8px">Study Hub</h1>
-      <p style="font-size:13px;color:#475569;margin-bottom:20px">Interactive exam prep · Kulan Institute of Learning</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        ${[['🃏',`${FC.length} Cards`],['🎯',`${QZ.length} Questions`],['🧩',`${MATCH.length} Pairs`],['🧪','5 PBQs']].map(([ic,lb])=>`
-          <div style="display:flex;align-items:center;gap:6px;background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.15);border-radius:20px;padding:5px 12px">
-            <span style="font-size:13px">${ic}</span>
-            <span style="font-size:11px;color:#00d4ff;font-weight:600">${lb}</span>
-          </div>`).join('')}
-      </div>
-    </div>
-    <div style="padding:0 16px">
-      <div class="card fu1" style="margin-bottom:14px">
-        <div style="font-size:11px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px">Domain Weights</div>
-        ${DOMAINS.map(d=>`
-          <div style="margin-bottom:14px">
-            <div style="display:flex;justify-content:space-between;margin-bottom:5px;align-items:center">
-              <div style="display:flex;align-items:center;gap:8px">
-                <div style="width:6px;height:6px;border-radius:50%;background:${d.color};box-shadow:0 0 6px ${d.color}"></div>
-                <span style="font-size:12px;color:#94a3b8">D${d.id}: ${d.name}</span>
-              </div>
-              <span style="font-size:12px;font-weight:700;color:${d.color}">${d.weight}%</span>
-            </div>
-            <div style="height:5px;background:#0d1f35;border-radius:3px;overflow:hidden">
-              <div style="height:100%;width:${d.weight*3.2}%;background:linear-gradient(90deg,${d.color}99,${d.color});border-radius:3px;box-shadow:0 0 8px ${d.color}44"></div>
-            </div>
-          </div>`).join('')}
-      </div>
-      <div style="font-size:11px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">Study Modes</div>
-      <div class="mode-grid fu2">
-        ${[['🃏','Flashcards',`${FC.length} terms`,'#00d4ff','cards'],['🎯','Quiz',`${QZ.length} questions`,'#ff4d6d','quiz'],['🧩','Match',`${MATCH.length} pairs`,'#f9c74f','match'],['🧪','PBQ Sims','5 simulations','#a855f7','pbq']].map(([ic,lb,sub,cl,tab])=>`
-          <div class="mode-card" style="border-color:${cl}22" onclick="setTab('${tab}')">
-            <div style="position:absolute;top:-20px;right:-20px;width:70px;height:70px;border-radius:50%;background:radial-gradient(circle,${cl}15 0%,transparent 70%)"></div>
-            <div style="font-size:26px">${ic}</div>
-            <div>
-              <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:${cl};margin-bottom:2px">${lb}</div>
-              <div style="font-size:11px;color:#475569">${sub}</div>
-            </div>
-          </div>`).join('')}
-      </div>
-      <div class="card fu3" style="background:linear-gradient(135deg,rgba(8,12,26,.95),rgba(10,15,32,.9));border-color:#0f1929;margin-bottom:0">
-        <div style="font-size:11px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px">Exam Info</div>
-        ${[['Version','SY0-701 (Current)','#00d4ff'],['Questions','Max 90 — MCQ + PBQ','#f1f5f9'],['Time','90 minutes','#f1f5f9'],['Passing Score','750 / 900 — 83%','#22c55e'],['Valid Until','~Fall 2026','#f1f5f9']].map(([k,v,vc])=>`
-          <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid #0d1829">
-            <span style="font-size:13px;color:#475569">${k}</span>
-            <span style="font-size:12px;color:${vc};font-weight:600">${v}</span>
-          </div>`).join('')}
-        <div style="margin-top:4px;padding:10px 12px;background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.1);border-radius:10px;text-align:center">
-          <div style="font-size:11px;color:#00d4ff;letter-spacing:1px">secplus.kulaninstitute.org</div>
-        </div>
-      </div>
-    </div>
-  `);
+  var hs=parseInt(localStorage.getItem("bhs")||"0");
+  render(
+    "<div class='hero fu'><div class='hg1'></div><div class='hg2'></div>"+
+    "<div style='font-size:10px;color:var(--cy);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px'>"+
+      "<span style='width:18px;height:1px;background:linear-gradient(90deg,var(--cy),transparent);display:inline-block'></span>"+
+      "CompTIA Security+ SY0-701"+
+      "<span style='width:18px;height:1px;background:linear-gradient(90deg,transparent,var(--cy));display:inline-block'></span>"+
+    "</div>"+
+    "<h1 style='font-family:Syne,sans-serif;font-size:clamp(26px,5vw,42px);font-weight:800;background:linear-gradient(135deg,var(--tx) 0%,var(--cy) 60%,var(--pu) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:8px'>Study Hub</h1>"+
+    "<p style='font-size:14px;color:var(--tx3);margin-bottom:18px'>Interactive exam prep · Kulan Institute of Learning</p>"+
+    "<div style='display:flex;gap:8px;flex-wrap:wrap'>"+
+      [["🃏",FC.length+" Cards","#38bdf8"],["🎯",QZ.length+" Questions","#f472b6"],["📖","19 Lessons","#a78bfa"],["🎮","Cyber Blitz","#fbbf24"],["🧪","5 PBQs","#34d399"]].map(function(r){
+        return "<div style='display:flex;align-items:center;gap:5px;background:"+r[2]+"0d;border:1px solid "+r[2]+"22;border-radius:20px;padding:5px 12px'><span style='font-size:12px'>"+r[0]+"</span><span style='font-size:11px;color:"+r[2]+";font-weight:700'>"+r[1]+"</span></div>";
+      }).join("")+
+    "</div></div>"+
+    "<div class='pg'>"+
+    "<div class='g2 fu1' style='margin-bottom:20px'>"+
+      [["📖","Lessons","19 sub-objectives","#a78bfa","learn"],["🎮","Cyber Blitz","Beat your score","#fbbf24","game"],["🎯","Practice Quiz",QZ.length+" questions","#f472b6","quiz"],["🧪","PBQ Sims","Real exam format","#34d399","pbq"]].map(function(r){
+        return "<button data-goto='"+r[4]+"' style='background:var(--bg2);border:1.5px solid "+r[3]+"22;border-radius:16px;padding:18px 14px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;transition:all .2s;font-family:inherit;min-height:90px' onclick='setTab(this.dataset.goto)'>"+  // was onclick with quotes
+          "<div style='position:absolute;top:-15px;right:-15px;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,"+r[3]+"18 0%,transparent 70%)'></div>"+
+          "<div style='font-size:26px'>"+r[0]+"</div>"+
+          "<div><div style='font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:"+r[3]+";margin-bottom:2px'>"+r[1]+"</div>"+
+          "<div style='font-size:11px;color:var(--tx3)'>"+r[2]+"</div></div></button>";
+      }).join("")+
+    "</div>"+
+    "<div class='card fu2' style='margin-bottom:16px'>"+
+      "<div class='stitle'>Domain Weights</div>"+
+      DOMAINS.map(function(d){
+        return "<div style='margin-bottom:13px'>"+
+          "<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:5px'>"+
+            "<div class='row'><div class='dot' style='background:"+d.color+";box-shadow:0 0 6px "+d.color+"'></div><span style='font-size:12px;color:var(--tx2)'>D"+d.id+": "+d.name+"</span></div>"+
+            "<span style='font-size:12px;font-weight:700;color:"+d.color+"'>"+d.weight+"%</span>"+
+          "</div>"+
+          "<div class='pbar' style='margin-bottom:0'><div class='pbarf' style='width:"+Math.round(d.weight*3.2)+"%;background:linear-gradient(90deg,"+d.color+"80,"+d.color+")'></div></div>"+
+        "</div>";
+      }).join("")+
+    "</div>"+
+    "<div class='g2 fu3' style='margin-bottom:16px'>"+
+      "<div class='card' style='text-align:center;border-color:rgba(251,191,36,.15)'>"+
+        "<div style='font-size:11px;color:var(--tx3);margin-bottom:4px'>🏆 Blitz Best</div>"+
+        "<div style='font-family:Syne,sans-serif;font-size:24px;font-weight:800;color:var(--ye)'>"+( hs>0?hs.toLocaleString():"—")+"</div>"+
+      "</div>"+
+      "<div class='card' style='text-align:center;border-color:rgba(56,189,248,.15)'>"+
+        "<div style='font-size:11px;color:var(--tx3);margin-bottom:4px'>✅ Passing Score</div>"+
+        "<div style='font-family:Syne,sans-serif;font-size:24px;font-weight:800;color:var(--cy)'>750/900</div>"+
+      "</div>"+
+    "</div>"+
+    "<div class='card'>"+
+      "<div class='stitle'>Exam Details</div>"+
+      [["Version","SY0-701 (Current until ~Fall 2026)","var(--cy)"],["Questions","Max 90 — MCQ + PBQ","var(--tx)"],["Time Limit","90 minutes","var(--tx)"],["Passing Score","750 / 900 (83%)","var(--gn)"],["Domains","5 weighted domains","var(--tx)"]].map(function(r){
+        return "<div style='display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)'><span style='font-size:13px;color:var(--tx3)'>"+r[0]+"</span><span style='font-size:12px;color:"+r[2]+";font-weight:600;text-align:right;max-width:58%'>"+r[1]+"</span></div>";
+      }).join("")+
+      "<div style='margin-top:12px;padding:10px;background:var(--cy0);border:1px solid rgba(56,189,248,.15);border-radius:10px;text-align:center'>"+
+        "<span style='font-size:11px;color:var(--cy);font-weight:600;letter-spacing:.5px'>secplus.kulaninstitute.org</span>"+
+      "</div>"+
+    "</div></div>"
+  );
 }
 
-// ─── FLASHCARDS ───────────────────────────────────────────────────────────────
-function getCards(){
-  const s = state.cards;
-  return s.domain === 0 ? FC : FC.filter(c=>c.dm===s.domain);
-}
 
-function renderCards(){
-  const s = state.cards;
-  const cards = getCards();
-  const done = s.known.length + s.review.length >= cards.length;
-  const card = cards[s.idx];
-  const progress = ((s.known.length + s.review.length) / cards.length) * 100;
-
-  render(`
-    <div style="padding:16px 16px 100px">
-      <h2 style="font-family:'Syne',sans-serif;font-size:22px;margin-bottom:16px;color:#f1f5f9">🃏 Flashcards <span style="font-size:13px;color:#475569;font-family:inherit;font-weight:400">(${FC.length} cards)</span></h2>
-      <div class="chips" style="margin-bottom:16px">
-        ${[{id:0,name:'All',color:'#00d4ff'},...DOMAINS.map(d=>({id:d.id,name:`D${d.id}`,color:d.color}))].map(d=>`
-          <button class="chip ${s.domain===d.id?'active':''}" style="${s.domain===d.id?`color:${d.color};border-color:${d.color};background:${d.color}18;box-shadow:0 0 10px ${d.color}33`:''}" onclick="setCardDomain(${d.id})">${d.name}</button>`).join('')}
-      </div>
-      ${done ? renderCardsDone() : `
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px;color:#475569">
-          <span>${s.idx+1} / ${cards.length}</span>
-          <span><span style="color:#22c55e">✓ ${s.known.length}</span> · <span style="color:#ef4444">✗ ${s.review.length}</span></span>
-        </div>
-        <div class="progress" style="margin-bottom:20px"><div class="progress-fill" style="width:${progress}%"></div></div>
-        <div class="flip-card ${s.flipped?'flipped':''}" onclick="flipCard()">
-          <div style="font-size:11px;color:${s.flipped?'#06d6a0':'#00d4ff'};letter-spacing:2px;text-transform:uppercase;margin-bottom:14px">${s.flipped?'Definition':'Tap to reveal'}</div>
-          <div style="font-size:${s.flipped?14:22}px;font-weight:${s.flipped?400:700};color:#f1f5f9;line-height:1.7;font-family:${s.flipped?"'DM Sans',sans-serif":"'Syne',sans-serif"}">${s.flipped?card.d:card.t}</div>
-          ${!s.flipped?`<div style="margin-top:12px;font-size:11px;color:#334155">Domain ${card.dm}</div>`:''}
-        </div>
-        ${s.flipped ? `
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">
-            <button onclick="cardNext('r')" style="background:#2d0a0a;border:1px solid #ef4444;border-radius:12px;padding:14px;color:#fca5a5;font-family:inherit;font-size:14px;font-weight:700;min-height:52px;cursor:pointer">✗ Still Learning</button>
-            <button onclick="cardNext('k')" style="background:#052e16;border:1px solid #22c55e;border-radius:12px;padding:14px;color:#86efac;font-family:inherit;font-size:14px;font-weight:700;min-height:52px;cursor:pointer">✓ Got It!</button>
-          </div>` : `<p style="text-align:center;color:#334155;font-size:13px;margin-top:16px">Tap card to flip</p>`}
-      `}
-    </div>
-  `);
-}
-
-function renderCardsDone(){
-  const s = state.cards;
-  return `
-    <div class="card" style="text-align:center;padding:32px">
-      <div style="font-size:48px;margin-bottom:12px">🎯</div>
-      <div style="font-family:'Syne',sans-serif;font-size:22px;color:#f1f5f9;margin-bottom:8px">Deck Complete!</div>
-      <div style="font-size:14px;color:#64748b;margin-bottom:24px"><span style="color:#22c55e">${s.known.length} known</span> · <span style="color:#ef4444">${s.review.length} to review</span></div>
-      ${s.review.length>0?`
-        <div style="background:#0d0a14;border:1px solid #2d1a1a;border-radius:12px;padding:14px;margin-bottom:20px;text-align:left">
-          <div style="font-size:11px;color:#ef4444;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Review These</div>
-          ${s.review.map(t=>`<div style="font-size:13px;color:#94a3b8;margin-bottom:4px">• ${t}</div>`).join('')}
-        </div>`:''}
-      <button class="btn-primary" onclick="resetCards()">Study Again</button>
-    </div>`;
-}
-
-function setCardDomain(id){ state.cards.domain=id; resetCards(); }
-function resetCards(){ Object.assign(state.cards,{idx:0,flipped:false,known:[],review:[]}); renderCards(); }
-function flipCard(){ state.cards.flipped=!state.cards.flipped; renderCards(); }
-function cardNext(r){
-  const s=state.cards; const cards=getCards(); const card=cards[s.idx];
-  if(r==='k') s.known.push(card.t); else s.review.push(card.t);
-  s.flipped=false;
-  if(s.idx+1<cards.length) s.idx++; else s.idx=cards.length;
+function cardDeck(){return S.cards.dom===0?FC:FC.filter(c=>c.dm===S.cards.dom);}
+function setCardDom(id){S.cards={dom:id,idx:0,flipped:false,known:[],review:[],hard:S.cards.hard||[]};renderCards();}
+function flipCard(){S.cards.flipped=!S.cards.flipped;renderCards();}
+function cardNext(conf){
+  var s=S.cards,deck=cardDeck();
+  if(s.idx>=deck.length)return;
+  var card=deck[s.idx];
+  if(!card){resetCards();return;}
+  if(!s.hard)s.hard=[];
+  if(conf==="hard"){if(!s.hard.includes(card.t))s.hard.push(card.t);if(!s.review.includes(card.t))s.review.push(card.t);}
+  else if(conf==="ok"){if(!s.review.includes(card.t))s.review.push(card.t);}
+  else{s.hard=s.hard.filter(t=>t!==card.t);if(!s.known.includes(card.t))s.known.push(card.t);}
+  s.flipped=false;s.idx++;
   renderCards();
 }
+function resetCards(){S.cards={dom:S.cards.dom,idx:0,flipped:false,known:[],review:[],hard:S.cards.hard||[]};renderCards();}
 
-// ─── QUIZ ─────────────────────────────────────────────────────────────────────
-function getQuizQ(){
-  const s=state.quiz;
-  return s.domain===0?QZ:QZ.filter(q=>q.d===s.domain);
+function renderCards(){
+  var s=S.cards;
+  if(!s.hard)s.hard=[];
+  var deck=cardDeck();
+  var chips="<div class='chips'>"+mkchips(s.dom,"setCardDom")+"</div>";
+  var hdr="<h2 style='font-family:Syne,sans-serif;font-size:20px;margin-bottom:16px;color:var(--tx)'>🃏 Flashcards <span style='font-size:13px;color:var(--tx3);font-weight:400'>"+(FC.length)+" cards</span></h2>";
+
+  if(s.idx>=deck.length){
+    render("<div class='pg'>"+hdr+chips+
+      "<div class='card2' style='text-align:center;padding:36px 20px'>"+
+        "<div style='font-size:52px;margin-bottom:14px'>🎯</div>"+
+        "<div style='font-family:Syne,sans-serif;font-size:24px;color:var(--tx);margin-bottom:10px'>Deck Complete!</div>"+
+        "<div style='font-size:14px;color:var(--tx3);margin-bottom:24px'>"+
+          "<span style='color:var(--gn);font-weight:700'>"+s.known.length+" easy</span> · "+
+          "<span style='color:var(--ye);font-weight:700'>"+(Math.max(0,s.review.length-s.known.length))+" medium</span> · "+
+          "<span style='color:var(--pk);font-weight:700'>"+s.hard.length+" hard</span>"+
+        "</div>"+
+        (s.hard.length>0?
+          "<div style='background:var(--pk0);border:1px solid rgba(244,114,182,.2);border-radius:12px;padding:14px;margin-bottom:20px;text-align:left'>"+
+            "<div style='font-size:11px;color:var(--pk);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px'>🔄 Review These (Hard)</div>"+
+            s.hard.slice(0,8).map(t=>"<div style='font-size:13px;color:var(--tx2);margin-bottom:4px'>• "+t+"</div>").join("")+
+            (s.hard.length>8?"<div style='font-size:11px;color:var(--tx3)'>+ "+(s.hard.length-8)+" more</div>":"")+
+          "</div>":"")+""+
+        "<button class='btn btn-p btn-full' onclick='resetCards()'>Study Again</button>"+
+      "</div></div>");
+    return;
+  }
+
+  var card=deck[s.idx];
+  if(!card){resetCards();return;}
+  var pct=s.idx/deck.length*100;
+
+  var cardHtml="<div class='fc "+(s.flipped?"back":"front")+"' onclick='flipCard()'>"+
+    "<div style='font-size:11px;color:"+(s.flipped?"var(--gn)":"var(--cy)")+";letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;font-weight:700'>"+
+      (s.flipped?"Definition":"Tap to reveal →")+
+    "</div>"+
+    "<div style='font-size:"+(s.flipped?"14":"22")+"px;font-weight:"+(s.flipped?"400":"800")+";color:var(--tx);line-height:1.65'>"+
+      (s.flipped?card.d:card.t)+
+    "</div>"+
+    (!s.flipped?"<div style='margin-top:14px;font-size:11px;color:var(--tx4)'>Domain "+card.dm+" · "+DOMAINS[card.dm-1].name+"</div>":"")+
+  "</div>";
+
+  var confHtml=s.flipped?
+    "<div class='confrow'>"+
+      "<button class='cbtn hard' onclick='cardNext(this.dataset.conf)' data-conf='hard'><span style='font-size:20px'>😓</span><span>Hard</span><span style='font-size:10px;font-weight:400;opacity:.7'>See soon</span></button>"+
+      "<button class='cbtn ok' onclick='cardNext(this.dataset.conf)' data-conf='ok'><span style='font-size:20px'>🤔</span><span>Good</span><span style='font-size:10px;font-weight:400;opacity:.7'>Review later</span></button>"+
+      "<button class='cbtn easy' onclick='cardNext(this.dataset.conf)' data-conf='easy'><span style='font-size:20px'>😊</span><span>Easy</span><span style='font-size:10px;font-weight:400;opacity:.7'>Got it!</span></button>"+
+    "</div>"+
+    "<div class='tipbox' style='margin-top:12px'>"+
+      "<div style='font-size:10px;font-weight:800;color:var(--ye);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px'>⚡ Spaced Repetition</div>"+
+      "Rate honestly — Hard cards re-queue automatically. Easy cards are retired. This is how memory science works."+
+    "</div>":
+    "<p style='text-align:center;font-size:12px;color:var(--tx3);margin-top:14px'>Tap the card to flip it</p>";
+
+  render("<div class='pg'>"+hdr+chips+
+    "<div style='display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px;color:var(--tx3)'>"+
+      "<span>Card "+(s.idx+1)+" of "+deck.length+"</span>"+
+      "<span><span style='color:var(--gn)'>✓"+s.known.length+"</span> · "+
+            "<span style='color:var(--ye)'>~"+Math.max(0,s.review.length-s.known.length)+"</span> · "+
+            "<span style='color:var(--pk)'>✗"+s.hard.length+"</span></span>"+
+    "</div>"+
+    "<div class='pbar'><div class='pbarf' style='width:"+pct+"%'></div></div>"+
+    cardHtml+confHtml+
+  "</div>");
 }
 
-function renderQuiz(){
-  const s=state.quiz;
-  const qs=getQuizQ();
-  if(s.done){ renderQuizResults(); return; }
-  const q=qs[s.cur];
-  const score=s.answers.filter(a=>a.c).length;
 
-  render(`
-    <div style="padding:16px 16px 100px">
-      <h2 style="font-family:'Syne',sans-serif;font-size:22px;margin-bottom:16px;color:#f1f5f9">🎯 Practice Quiz <span style="font-size:13px;color:#475569;font-family:inherit;font-weight:400">(${QZ.length} questions)</span></h2>
-      <div class="chips" style="margin-bottom:16px">
-        ${[{id:0,name:'All',color:'#00d4ff'},...DOMAINS.map(d=>({id:d.id,name:`D${d.id}`,color:d.color}))].map(d=>`
-          <button class="chip ${s.domain===d.id?'active':''}" style="${s.domain===d.id?`color:${d.color};border-color:${d.color};background:${d.color}18;box-shadow:0 0 10px ${d.color}33`:''}" onclick="setQuizDomain(${d.id})">${d.name}</button>`).join('')}
-      </div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px;color:#475569">
-        <span>Q ${s.cur+1} / ${qs.length}</span><span style="color:#22c55e">${score} correct</span>
-      </div>
-      <div class="progress"><div class="progress-fill" style="width:${(s.cur/qs.length)*100}%"></div></div>
-      <div class="card" style="margin-bottom:14px">
-        ${domainPill(q.d)}
-        <div style="font-size:15px;font-weight:600;color:#f1f5f9;line-height:1.65;font-family:'Syne',sans-serif">${q.q}</div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
-        ${q.o.map((opt,i)=>{
-          let cls='',extra='';
-          if(s.sel!==null){
-            if(i===q.a){cls='correct';extra='<span style="margin-left:auto">✓</span>';}
-            else if(i===s.sel){cls='wrong';extra='<span style="margin-left:auto">✗</span>';}
-          } else if(i===s.sel) cls='selected';
-          return `<button class="answer-btn ${cls}" onclick="quizPick(${i})">
-            <span class="letter">${['A','B','C','D'][i]}</span>
-            <span style="line-height:1.4">${opt}</span>
-            ${extra}
-          </button>`;
-        }).join('')}
-      </div>
-      ${s.sel!==null?`
-        <div class="explain">
-          <div style="font-size:11px;color:#22c55e;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Explanation</div>
-          <div style="font-size:13px;color:#94a3b8;line-height:1.7;margin-bottom:14px">${q.e}</div>
-          <button class="btn-primary" onclick="quizNext()">${s.cur+1<qs.length?'Next →':'See Results'}</button>
-        </div>`:''}
-    </div>
-  `);
-}
-
-function renderQuizResults(){
-  const s=state.quiz; const qs=getQuizQ();
-  const score=s.answers.filter(a=>a.c).length;
-  const pct=Math.round((score/qs.length)*100);
-  render(`
-    <div style="padding:16px 16px 100px">
-      <h2 style="font-family:'Syne',sans-serif;font-size:22px;margin-bottom:20px;color:#f1f5f9">Results</h2>
-      <div class="card" style="text-align:center;margin-bottom:16px">
-        <div style="font-size:52px;margin-bottom:8px">${pct>=80?'🏆':pct>=60?'💪':'📚'}</div>
-        <div style="font-family:'Syne',sans-serif;font-size:40px;font-weight:800;color:${scoreColor(pct)}">${pct}%</div>
-        <div style="font-size:14px;color:#64748b;margin-top:4px">${score} / ${qs.length} correct</div>
-        <div style="font-size:13px;color:#334155;margin-top:6px">${pct>=80?'Exam ready! 🎯':pct>=60?'Keep drilling! 💪':'Review notes and retry 📚'}</div>
-      </div>
-      <div class="card" style="margin-bottom:16px">
-        <div style="font-size:11px;color:#475569;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">By Domain</div>
-        ${DOMAINS.map(d=>{
-          const da=s.answers.filter(a=>a.d===d.id);
-          if(!da.length) return '';
-          const dc=da.filter(a=>a.c).length;
-          const dp=Math.round((dc/da.length)*100);
-          return `<div style="margin-bottom:12px">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-              <span style="font-size:12px;color:#94a3b8">D${d.id}: ${d.name.substring(0,22)}</span>
-              <span style="font-size:12px;font-weight:700;color:${scoreColor(dp)}">${dp}% (${da.length}q)</span>
-            </div>
-            <div style="height:4px;background:#1e293b;border-radius:2px">
-              <div style="height:100%;width:${dp}%;background:${d.color};border-radius:2px"></div>
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
-      <button class="btn-primary" onclick="resetQuiz()">Try Again</button>
-    </div>
-  `);
-}
-
-function setQuizDomain(id){ state.quiz.domain=id; resetQuiz(); }
-function resetQuiz(){ Object.assign(state.quiz,{cur:0,sel:null,answers:[],done:false}); renderQuiz(); }
+function qDeck(){return S.quiz.dom===0?QZ:QZ.filter(q=>q.d===S.quiz.dom);}
+function setQuizDom(d){S.quiz={dom:d,cur:0,sel:null,ans:[],done:false};renderQuiz();}
+function resetQuiz(){S.quiz={dom:S.quiz.dom,cur:0,sel:null,ans:[],done:false};renderQuiz();}
 function quizPick(i){
-  if(state.quiz.sel!==null) return;
-  state.quiz.sel=i;
-  state.quiz.answers.push({c:i===getQuizQ()[state.quiz.cur].a, d:getQuizQ()[state.quiz.cur].d});
-  renderQuiz();
+  var s=S.quiz,qs=qDeck(),q=qs[s.cur];
+  if(s.sel!==null)return;
+  s.sel=i;s.ans.push({c:i===q.a,d:q.d});renderQuiz();
 }
 function quizNext(){
-  const s=state.quiz; const qs=getQuizQ();
+  var s=S.quiz,qs=qDeck();
   s.sel=null;
-  if(s.cur+1<qs.length) s.cur++; else s.done=true;
+  if(s.cur+1<qs.length)s.cur++;else s.done=true;
   renderQuiz();
 }
-
-// ─── MATCH ────────────────────────────────────────────────────────────────────
-function getMatchPage(){ return MATCH.slice(state.match.page*MATCH_PAGE,(state.match.page+1)*MATCH_PAGE); }
-
-function renderMatch(){
-  const s=state.match;
-  const pairs=getMatchPage();
-  const totalPages=Math.ceil(MATCH.length/MATCH_PAGE);
-
-  render(`
-    <div style="padding:16px 16px 100px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <h2 style="font-family:'Syne',sans-serif;font-size:22px;color:#f1f5f9">🧩 Match Game</h2>
-        <div style="font-size:12px;color:#475569">${s.matched.length}/${pairs.length} · ${s.moves} moves</div>
-      </div>
-      <div class="chips" style="margin-bottom:14px">
-        ${Array.from({length:totalPages},(_,i)=>`<button class="chip ${s.page===i?'active':''}" style="${s.page===i?'color:#f9c74f;border-color:#f9c74f;background:#f9c74f18':''};" onclick="setMatchPage(${i})">Set ${i+1}</button>`).join('')}
-      </div>
-      ${s.done?renderMatchDone():`
-        <p style="font-size:12px;color:#475569;margin-bottom:14px">Tap a term then tap its matching definition</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div style="display:flex;flex-direction:column;gap:6px">
-            <div style="font-size:10px;color:#475569;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">Terms</div>
-            ${pairs.map(({t})=>{
-              const isM=s.matched.includes(t), isSel=s.selT===t, isW=s.wrong&&isSel;
-              return `<button class="match-btn ${isM?'matched':isSel?'selected':isW?'wrong':''}" onclick="matchSelT('${t.replace(/'/g,"\\'")}')">
-                ${isM?'✓ ':''}${t}
-              </button>`;
-            }).join('')}
-          </div>
-          <div style="display:flex;flex-direction:column;gap:6px">
-            <div style="font-size:10px;color:#475569;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">Definitions</div>
-            ${s.shuffled.map(m=>{
-              const isM=s.matched.some(t=>pairs.find(p=>p.t===t)?.m===m), isSel=s.selM===m, isW=s.wrong&&isSel;
-              return `<button class="match-btn ${isM?'matched':isSel?'selected':isW?'wrong':''}" style="font-size:11px" onclick="matchSelM('${m.replace(/'/g,"\\'")}')">
-                ${isM?'✓ ':''}${m}
-              </button>`;
-            }).join('')}
-          </div>
-        </div>
-      `}
-    </div>
-  `);
+function renderQuiz(){
+  var s=S.quiz;
+  var chips="<div class='chips'>"+mkchips(s.dom,"setQuizDom")+"</div>";
+  var hdr="<h2 style='font-family:Syne,sans-serif;font-size:20px;margin-bottom:16px;color:var(--tx)'>🎯 Practice Quiz <span style='font-size:13px;color:var(--tx3);font-weight:400'>"+QZ.length+" questions</span></h2>";
+  if(s.done){renderQuizResults();return;}
+  var qs=qDeck(),q=qs[s.cur];
+  var score=s.ans.filter(a=>a.c).length;
+  var opts=q.o.map(function(opt,i){
+    var cls="ans",extra="";
+    if(s.sel!==null){
+      if(i===q.a){cls="ans hit";extra="<span style='margin-left:auto;font-size:16px'>✓</span>";}
+      else if(i===s.sel){cls="ans miss";extra="<span style='margin-left:auto;font-size:16px'>✗</span>";}
+      else cls="ans dim";
+    }
+    return "<button class='"+cls+"' onclick='quizPick("+i+")'><span class='ltr'>"+["A","B","C","D"][i]+"</span><span style='line-height:1.4'>"+opt+"</span>"+extra+"</button>";
+  }).join("");
+  render("<div class='pg'>"+hdr+chips+
+    "<div style='display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px;color:var(--tx3)'>"+
+      "<span>Q "+(s.cur+1)+" / "+qs.length+"</span><span style='color:var(--gn)'>"+score+" correct</span>"+
+    "</div>"+
+    "<div class='pbar'><div class='pbarf' style='width:"+(s.cur/qs.length*100)+"%'></div></div>"+
+    "<div class='card' style='margin-bottom:14px'>"+
+      "<div style='font-size:11px;color:"+dc(q.d)+";letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;font-weight:700'>Domain "+q.d+"</div>"+
+      "<div style='font-family:Syne,sans-serif;font-size:16px;font-weight:700;color:var(--tx);line-height:1.6'>"+q.q+"</div>"+
+    "</div>"+
+    "<div class='col' style='gap:9px;margin-bottom:14px'>"+opts+"</div>"+
+    (s.sel!==null?
+      "<div class='explain'>"+
+        "<div style='font-size:11px;color:var(--gn);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-weight:700'>Explanation</div>"+
+        "<div style='font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:14px'>"+q.e+"</div>"+
+        "<button class='btn btn-p btn-full' onclick='quizNext()'>"+(s.cur+1<qs.length?"Next Question →":"See Results")+"</button>"+
+      "</div>":"")+
+  "</div>");
+}
+function renderQuizResults(){
+  var s=S.quiz,qs=qDeck();
+  var score=s.ans.filter(a=>a.c).length;
+  var pct=Math.round(score/qs.length*100);
+  var domStats=DOMAINS.map(function(d){
+    var da=s.ans.filter(a=>a.d===d.id);
+    if(!da.length)return "";
+    var dc2=da.filter(a=>a.c).length;
+    var dp=Math.round(dc2/da.length*100);
+    return "<div style='margin-bottom:12px'>"+
+      "<div style='display:flex;justify-content:space-between;margin-bottom:4px'>"+
+        "<span style='font-size:12px;color:var(--tx2)'>D"+d.id+": "+d.name.substring(0,24)+"</span>"+
+        "<span style='font-size:12px;font-weight:700;color:"+sc(dp)+"'>"+dp+"% ("+da.length+"q)</span>"+
+      "</div>"+
+      "<div class='pbar' style='margin-bottom:0'><div class='pbarf' style='width:"+dp+"%;background:"+d.color+"'></div></div>"+
+    "</div>";
+  }).join("");
+  render("<div class='pg'>"+
+    "<div class='card2' style='text-align:center;margin-bottom:16px;padding:32px 20px'>"+
+      "<div style='font-size:52px;margin-bottom:10px'>"+(pct>=80?"🏆":pct>=60?"💪":"📚")+"</div>"+
+      "<div style='font-family:Syne,sans-serif;font-size:52px;font-weight:800;color:"+sc(pct)+"'>"+pct+"%</div>"+
+      "<div style='font-size:14px;color:var(--tx3);margin-top:4px'>"+score+" / "+qs.length+" correct</div>"+
+      "<div style='font-size:13px;margin-top:8px;color:var(--tx3)'>"+(pct>=80?"Exam ready! 🎯":pct>=60?"Keep drilling 💪":"Review notes and retry 📚")+"</div>"+
+    "</div>"+
+    "<div class='card' style='margin-bottom:16px'><div class='stitle'>By Domain</div>"+domStats+"</div>"+
+    "<button class='btn btn-p btn-full' onclick='resetQuiz()'>Try Again</button>"+
+  "</div>");
 }
 
-function renderMatchDone(){
-  const s=state.match;
-  return `
-    <div class="card" style="text-align:center;padding:40px">
-      <div style="font-size:48px;margin-bottom:12px">🎉</div>
-      <div style="font-family:'Syne',sans-serif;font-size:22px;color:#f1f5f9;margin-bottom:8px">Set ${s.page+1} Complete!</div>
-      <div style="font-size:14px;color:#64748b;margin-bottom:24px">Done in ${s.moves} moves</div>
-      <div style="display:flex;gap:10px">
-        <button class="btn-primary" style="flex:1" onclick="resetMatch()">Play Again</button>
-        ${s.page+1<Math.ceil(MATCH.length/MATCH_PAGE)?`<button class="btn-primary" style="flex:1;background:linear-gradient(135deg,#a855f7,#7c3aed)" onclick="setMatchPage(${s.page+1})">Next Set →</button>`:''}
-      </div>
-    </div>`;
-}
 
-function setMatchPage(i){
-  const pairs=MATCH.slice(i*MATCH_PAGE,(i+1)*MATCH_PAGE);
-  Object.assign(state.match,{page:i,selT:null,selM:null,matched:[],wrong:false,moves:0,done:false,shuffled:shuffle(pairs.map(p=>p.m))});
+function matchPg(){return MATCH.slice(S.match.pg*MPGSZ,(S.match.pg+1)*MPGSZ);}
+function setMatchPg(i){
+  var pp=MATCH.slice(i*MPGSZ,(i+1)*MPGSZ);
+  Object.assign(S.match,{pg:i,sT:null,sM:null,matched:[],wrong:false,moves:0,done:false,sh:shuffle(pp.map(p=>p.m))});
   renderMatch();
 }
-function resetMatch(){ setMatchPage(state.match.page); }
-
 function matchSelT(t){
-  const s=state.match;
-  if(s.matched.includes(t)) return;
-  s.selT = s.selT===t ? null : t;
-  checkMatchPair();
+  if(S.match.matched.includes(t))return;
+  S.match.sT=S.match.sT===t?null:t;checkMatchPair();
 }
 function matchSelM(m){
-  const s=state.match;
-  if(s.matched.some(t=>getMatchPage().find(p=>p.t===t)?.m===m)) return;
-  s.selM = s.selM===m ? null : m;
-  checkMatchPair();
+  var pg2=matchPg();
+  if(S.match.matched.some(t=>pg2.find(p=>p.t===t)?.m===m))return;
+  S.match.sM=S.match.sM===m?null:m;checkMatchPair();
 }
 function checkMatchPair(){
-  const s=state.match;
-  if(!s.selT||!s.selM) { renderMatch(); return; }
+  var s=S.match,pg2=matchPg();
+  if(!s.sT||!s.sM){renderMatch();return;}
   s.moves++;
-  const pair=getMatchPage().find(p=>p.t===s.selT&&p.m===s.selM);
+  var pair=pg2.find(p=>p.t===s.sT&&p.m===s.sM);
   if(pair){
-    s.matched.push(s.selT);
-    s.selT=null; s.selM=null;
-    if(s.matched.length===getMatchPage().length) s.done=true;
-  } else {
-    s.wrong=true;
-    renderMatch();
-    setTimeout(()=>{ s.wrong=false; s.selT=null; s.selM=null; renderMatch(); },700);
-    return;
+    s.matched.push(s.sT);s.sT=null;s.sM=null;
+    if(s.matched.length===pg2.length)s.done=true;
+  }else{
+    s.wrong=true;renderMatch();
+    setTimeout(function(){s.wrong=false;s.sT=null;s.sM=null;renderMatch();},700);return;
   }
   renderMatch();
 }
 
-// ─── PBQ ─────────────────────────────────────────────────────────────────────
-function renderPBQ(){
-  const s=state.pbq;
-  if(!s.sim){
-    render(`
-      <div style="padding:16px 16px 100px">
-        <h2 style="font-family:'Syne',sans-serif;font-size:22px;margin-bottom:6px;color:#f1f5f9">🧪 PBQ Simulations</h2>
-        <p style="font-size:12px;color:#475569;margin-bottom:20px">Performance-Based Questions — just like the real exam</p>
-        ${[
-          ['fw','🔥','Firewall Config','Configure allow/deny rules from a requirements scenario','#ef4444'],
-          ['logs','📋','Log Analysis','Read server logs and identify attacks in progress','#f9c74f'],
-          ['net','🌐','Network Diagram','Place security devices in correct network zones','#06d6a0'],
-          ['ports','🔌','Ports & Protocols','Match protocols to their correct port numbers','#00d4ff'],
-          ['triage','🚨','IR Triage','Prioritize alerts and sequence response actions','#a855f7'],
-        ].map(([id,ic,lb,desc,cl])=>`
-          <button onclick="setPBQ('${id}')" style="background:linear-gradient(135deg,rgba(13,31,53,.9),rgba(10,21,37,.95));border:1px solid #1e293b;border-radius:16px;padding:20px 16px;width:100%;text-align:left;display:flex;align-items:center;gap:16px;min-height:80px;margin-bottom:12px;box-shadow:0 4px 24px rgba(0,0,0,.4)">
-            <div style="font-size:32px;flex-shrink:0">${ic}</div>
-            <div>
-              <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:${cl};margin-bottom:4px">${lb}</div>
-              <div style="font-size:12px;color:#475569">${desc}</div>
-            </div>
-          </button>`).join('')}
-      </div>
-    `);
+function matchByIdx(isT, idx){
+  var pg2=matchPg();
+  if(isT){ matchSelT(pg2[idx].t); }
+  else { matchSelM(S.match.sh[idx]); }
+}
+function renderMatch(){
+  var s=S.match,pairs=matchPg();
+  var nPg=Math.ceil(MATCH.length/MPGSZ);
+  var pgChips="<div class='chips'>"+Array.from({length:nPg},(_,i)=>{
+    var on=s.pg===i;
+    var st=on?"color:#fbbf24;border-color:#fbbf24;background:#fbbf2418":"";
+    return "<button class='chip"+(on?" on":"")+"' style='"+st+"' onclick='setMatchPg("+i+")'>Set "+(i+1)+"</button>";
+  }).join("")+"</div>";
+  var hdr="<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:6px'><h2 style='font-family:Syne,sans-serif;font-size:20px;color:var(--tx)'>🧩 Match Game</h2><div style='font-size:12px;color:var(--tx3)'>"+s.matched.length+"/"+pairs.length+" · "+s.moves+" moves</div></div>";
+
+  if(s.done){
+    render("<div class='pg'>"+hdr+pgChips+
+      "<div class='card2' style='text-align:center;padding:40px 20px'>"+
+        "<div style='font-size:52px;margin-bottom:12px'>🎉</div>"+
+        "<div style='font-family:Syne,sans-serif;font-size:24px;color:var(--tx);margin-bottom:8px'>Set "+(s.pg+1)+" Complete!</div>"+
+        "<div style='font-size:14px;color:var(--tx3);margin-bottom:24px'>Done in "+s.moves+" moves</div>"+
+        "<div class='row' style='gap:10px'>"+
+          "<button class='btn btn-p' style='flex:1' onclick='setMatchPg("+s.pg+")'>Play Again</button>"+
+          (s.pg+1<nPg?"<button class='btn btn-gn' style='flex:1' onclick='setMatchPg("+(s.pg+1)+")'>Next Set →</button>":"")+
+        "</div>"+
+      "</div></div>");
     return;
   }
-  const titles={'fw':'🔥 Firewall Config','logs':'📋 Log Analysis','net':'🌐 Network Diagram','ports':'🔌 Ports & Protocols','triage':'🚨 IR Triage'};
-  let html = `<div style="padding:16px 16px 100px">
-    <button class="btn-back" onclick="setPBQ(null)">← Back to PBQs</button>
-    <h2 style="font-family:'Syne',sans-serif;font-size:20px;margin-bottom:20px;color:#f1f5f9">${titles[s.sim]}</h2>`;
 
-  if(s.sim==='fw') html += renderFW();
-  else if(s.sim==='logs') html += renderLogs();
-  else if(s.sim==='net') html += renderNet();
-  else if(s.sim==='ports') html += renderPorts();
-  else if(s.sim==='triage') html += renderTriage();
+  var isM=t=>s.matched.includes(t);
+  var isMm=m=>s.matched.some(t=>pairs.find(p=>p.t===t)?.m===m);
+  var terms=pairs.map(function(p,i){
+    var t=p.t,sel=s.sT===t,hit=isM(t),wr=s.wrong&&sel;
+    var cls="mb"+(hit?" mbhit":sel?" mbon":wr?" mbmiss":"");
 
-  html += '</div>';
+    return "<button class='"+cls+"' onclick='matchByIdx(true,"+i+")'>"+(hit?"✓ ":"")+t+"</button>";
+  }).join("");
+  var defs=s.sh.map(function(m,j){
+    var sel=s.sM===m,hit=isMm(m),wr=s.wrong&&sel;
+    var cls="mb"+(hit?" mbhit":sel?" mbon":wr?" mbmiss":"");
+
+    return "<button class='"+cls+"' style='font-size:11px' onclick='matchByIdx(false,"+j+")'>"+(hit?"✓ ":"")+m+"</button>";
+  }).join("");
+  render("<div class='pg'>"+hdr+pgChips+
+    "<p style='font-size:12px;color:var(--tx3);margin-bottom:14px'>Tap a term then tap its matching definition</p>"+
+    "<div class='g2'><div class='col'><div class='stitle'>Terms</div>"+terms+"</div>"+
+    "<div class='col'><div class='stitle'>Definitions</div>"+defs+"</div></div>"+
+  "</div>");
+}
+
+
+function renderLearn(){
+  var ls=S.learn;
+  if(!ls.dom){
+    var rows=LESSONS.map(function(l){
+      return "<button onclick='S.learn.dom="+l.domain+";S.learn.open=null;renderLearn()' style='width:100%;background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:18px 16px;text-align:left;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;gap:14px;font-family:inherit;transition:border-color .2s'>"+
+        "<div style='width:44px;height:44px;border-radius:12px;background:"+l.color+"15;border:1px solid "+l.color+"33;display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:"+l.color+";flex-shrink:0'>D"+l.domain+"</div>"+
+        "<div style='flex:1'>"+
+          "<div style='font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:"+l.color+";margin-bottom:3px'>"+DOMAINS[l.domain-1].name+"</div>"+
+          "<div style='font-size:11px;color:var(--tx3)'>"+l.subs.length+" sub-objectives · "+DOMAINS[l.domain-1].weight+"% of exam</div>"+
+        "</div>"+
+        "<div style='font-size:18px;color:var(--tx4)'>→</div></button>";
+    }).join("");
+    render("<div class='pg'>"+
+      "<h2 style='font-family:Syne,sans-serif;font-size:20px;margin-bottom:6px;color:var(--tx)'>📖 Lessons</h2>"+
+      "<p style='font-size:13px;color:var(--tx3);margin-bottom:20px'>Every SY0-701 sub-objective · concept breakdowns · exam tips</p>"+
+      rows+"</div>");
+    return;
+  }
+  var lesson=LESSONS[ls.dom-1];
+  var subsHtml=lesson.subs.map(function(sub,si){
+    var isOpen=ls.open===si;
+    var bodyHtml="";
+    if(isOpen){
+      bodyHtml="<div class='lbody open'>"+
+        sub.cx.map(c=>"<div class='lconcept'><div style='font-size:12px;font-weight:800;color:"+lesson.color+";margin-bottom:5px'>"+c.h+"</div><div style='font-size:13px;color:var(--tx2);line-height:1.65'>"+c.b+"</div></div>").join("")+
+        "<div class='tipbox'><div style='font-size:10px;font-weight:800;color:var(--ye);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px'>⚡ Exam Tip</div>"+sub.tip+"</div>"+
+        "<button class='btn btn-p btn-full' style='margin-top:14px;font-size:13px' onclick='S.quiz.dom="+lesson.domain+";resetQuiz();setTab(this.dataset.t)' data-t='quiz'>Practice D"+lesson.domain+" Questions →</button>"+
+      "</div>";
+    }
+    return "<div class='lrow'>"+
+      "<div class='lhdr' onclick='S.learn.open=S.learn.open==="+si+"?null:"+si+";renderLearn()'>"+
+        "<div style='width:36px;height:36px;border-radius:10px;background:"+lesson.color+"12;border:1px solid "+lesson.color+"25;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:"+lesson.color+";flex-shrink:0'>"+sub.id+"</div>"+
+        "<div style='flex:1'><div style='font-weight:700;font-size:14px;color:var(--tx)'>"+sub.title+"</div><div style='font-size:11px;color:var(--tx3);margin-top:1px'>"+sub.cx.length+" concepts</div></div>"+
+        "<div style='font-size:20px;color:var(--tx3);transform:"+(isOpen?"rotate(90deg)":"none")+";transition:transform .2s'>›</div>"+
+      "</div>"+bodyHtml+"</div>";
+  }).join("");
+  render("<div class='pg'>"+
+    "<button class='btn btn-g' onclick='S.learn.dom=0;renderLearn()' style='margin-bottom:16px'>← All Domains</button>"+
+    "<div style='display:flex;align-items:center;gap:12px;margin-bottom:20px'>"+
+      "<div style='width:42px;height:42px;border-radius:12px;background:"+lesson.color+"15;border:1px solid "+lesson.color+"33;display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-size:15px;font-weight:800;color:"+lesson.color+";flex-shrink:0'>D"+lesson.domain+"</div>"+
+      "<div><h2 style='font-family:Syne,sans-serif;font-size:18px;font-weight:800;color:var(--tx)'>"+DOMAINS[lesson.domain-1].name+"</h2>"+
+      "<div style='font-size:11px;color:var(--tx3)'>"+lesson.subs.length+" sub-objectives · "+DOMAINS[lesson.domain-1].weight+"% of exam</div></div>"+
+    "</div>"+subsHtml+"</div>");
+}
+
+
+function blitzQs(d){return shuffle(d===0?[...QZ]:QZ.filter(q=>q.d===d));}
+function blitzStart(d){
+  clearInterval(S.game.iv);
+  Object.assign(S.game,{on:true,score:0,lives:3,streak:0,best:0,timer:60,df:d,qs:blitzQs(d),qi:0,sel:null});
+  S.game.cur=S.game.qs[0];
+  S.game.iv=setInterval(function(){
+    S.game.timer--;
+    var tv=document.getElementById("btv");if(tv)tv.textContent=S.game.timer;
+    var tr=document.getElementById("btr");
+    if(tr)tr.className="gring"+(S.game.timer<=10?" danger":S.game.timer<=20?" warn":"");
+    if(S.game.timer<=0)blitzEnd();
+  },1000);
+  renderGame();
+}
+function blitzPick(i){
+  var g=S.game;
+  if(!g.on||g.sel!==null)return;
+  g.sel=i;
+  if(i===g.cur.a){
+    g.streak++;g.best=Math.max(g.best,g.streak);
+    var mul=g.streak>=5?3:g.streak>=3?2:1;
+    var pts=100*mul;g.score+=pts;
+    var el=document.createElement("div");el.className="fpts";el.textContent="+"+pts+(mul>1?" x"+mul+"!":"");
+    el.style.cssText="top:"+(28+Math.random()*20)+"%;left:"+(25+Math.random()*50)+"%;";
+    document.body.appendChild(el);setTimeout(function(){el.remove();},1000);
+  }else{
+    g.lives--;g.streak=0;
+    if(g.lives<=0){setTimeout(blitzEnd,900);}
+  }
+  renderGame();
+  if(i===g.cur.a&&g.lives>0){
+    setTimeout(function(){
+      g.sel=null;g.qi++;
+      if(g.qi>=g.qs.length)g.qs=[...g.qs,...blitzQs(g.df)];
+      g.cur=g.qs[g.qi];renderGame();
+    },700);
+  }
+}
+function blitzEnd(){
+  clearInterval(S.game.iv);S.game.on=false;
+  var hs=parseInt(localStorage.getItem("bhs")||"0");
+  if(S.game.score>hs)localStorage.setItem("bhs",S.game.score);
+  renderGame();
+}
+function renderGame(){
+  var g=S.game;
+  var hs=parseInt(localStorage.getItem("bhs")||"0");
+  if(!g.on&&g.score===0&&g.lives===3){
+    render("<div class='pg'>"+
+      "<div style='text-align:center;padding:32px 0 24px'>"+
+        "<div style='font-size:56px;margin-bottom:12px;filter:drop-shadow(0 0 18px rgba(251,191,36,.45))'>🎮</div>"+
+        "<h1 style='font-family:Syne,sans-serif;font-size:28px;font-weight:800;color:var(--ye);margin-bottom:6px'>Cyber Blitz</h1>"+
+        "<p style='font-size:13px;color:var(--tx2);margin-bottom:4px'>60 seconds · 3 lives · streak multipliers</p>"+
+        "<p style='font-size:12px;color:var(--tx3)'>Answer fast, build streaks, beat your high score</p>"+
+      "</div>"+
+      "<div class='g2' style='margin-bottom:20px'>"+
+        [["💥","x1 Streak","100 pts","var(--cy)"],["🔥","3+ Streak","200 pts","var(--ye)"],["⚡","5+ Streak","300 pts","var(--pk)"],["🏆","High Score",hs>0?hs.toLocaleString():"—","var(--pu)"]].map(function(r){
+          return "<div class='card' style='text-align:center;padding:14px 8px'>"+
+            "<div style='font-size:22px;margin-bottom:4px'>"+r[0]+"</div>"+
+            "<div style='font-size:11px;color:var(--tx3);margin-bottom:2px'>"+r[1]+"</div>"+
+            "<div style='font-size:15px;color:"+r[3]+";font-weight:800'>"+r[2]+"</div>"+
+          "</div>";
+        }).join("")+
+      "</div>"+
+      "<div class='stitle'>Select Domain</div>"+
+      "<div class='chips'>"+mkchips(g.df,"function(d){S.game.df=d;renderGame()}")+"</div>"+
+      "<button class='btn btn-ye btn-full' style='font-size:16px;font-weight:800;margin-top:8px' onclick='blitzStart(0)' id=\"blitz-start-btn\">⚡ Start Blitz!</button>"+
+    "</div>");
+    return;
+  }
+  if(!g.on){
+    var newHs=g.score>=hs&&g.score>0;
+    render("<div class='pg'>"+
+      "<div class='card2' style='text-align:center;padding:32px 20px;margin-bottom:20px'>"+
+        "<div style='font-size:52px;margin-bottom:8px'>"+(g.lives<=0?"💀":"⏰")+"</div>"+
+        "<div style='font-size:13px;color:var(--tx3);margin-bottom:6px'>"+(g.lives<=0?"Out of lives!":"Time\'s up!")+"</div>"+
+        (newHs?"<div style='font-size:11px;color:var(--ye);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px'>🏆 New High Score!</div>":"")+
+        "<div style='font-family:Syne,sans-serif;font-size:52px;font-weight:800;color:"+(g.score>1500?"var(--ye)":g.score>800?"var(--gn)":"var(--cy)")+"'>"+g.score.toLocaleString()+"</div>"+
+        "<div style='font-size:13px;color:var(--tx3)'>points</div>"+
+      "</div>"+
+      "<div class='g2' style='margin-bottom:20px'>"+
+        [["🎯","Answered",""+g.qi,"var(--cy)"],["🔥","Best Streak",g.best+"x","var(--ye)"],["🏆","High Score",hs.toLocaleString(),"var(--pu)"],["❤️","Lives Left",g.lives+"/3","var(--pk)"]].map(function(r){
+          return "<div class='card' style='text-align:center;padding:14px 8px'><div style='font-size:20px;margin-bottom:4px'>"+r[0]+"</div><div style='font-size:11px;color:var(--tx3);margin-bottom:2px'>"+r[1]+"</div><div style='font-family:Syne,sans-serif;font-size:20px;font-weight:800;color:"+r[3]+"'>"+r[2]+"</div></div>";
+        }).join("")+
+      "</div>"+
+      "<button class='btn btn-ye btn-full' style='font-size:16px;font-weight:800;margin-bottom:10px' onclick='blitzStart(0)' id=\"blitz-start-btn\">⚡ Play Again</button>"+
+      "<button class='btn btn-s btn-full' onclick='Object.assign(S.game,{on:false,score:0,lives:3,streak:0,best:0,timer:60,iv:null,qs:[],qi:0,cur:null,sel:null,df:0});renderGame()'>Back to Menu</button>"+
+    "</div>");
+    return;
+  }
+  var q=g.cur;
+  var tc=g.timer<=10?"danger":g.timer<=20?"warn":"";
+  var opts=q.o.map(function(opt,i){
+    var cls="bo",extra="";
+    if(g.sel!==null){
+      if(i===q.a){cls="bo hit";extra="<span style='margin-left:auto'>✓</span>";}
+      else if(i===g.sel){cls="bo miss";extra="<span style='margin-left:auto'>✗</span>";}
+      else cls="bo dim";
+    }
+    return "<button class='"+cls+"' onclick='blitzPick("+i+")'>"+
+      "<span style='width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;border:1px solid rgba(255,255,255,.08)'>"+["A","B","C","D"][i]+"</span>"+
+      "<span style='line-height:1.4'>"+opt+"</span>"+extra+"</button>";
+  }).join("");
+  render("<div class='pg'>"+
+    "<div class='ghud'>"+
+      "<div><div class='gsc'>"+g.score.toLocaleString()+"</div><div style='font-size:10px;color:var(--tx3)'>score</div></div>"+
+      "<div id='btr' class='gring "+tc+"'><span id='btv'>"+g.timer+"</span></div>"+
+      "<div style='text-align:right'><div style='font-size:18px'>"+"❤️".repeat(g.lives)+"🖤".repeat(3-g.lives)+"</div></div>"+
+    "</div>"+
+    "<div class='gstreak'>"+(g.streak>=5?"⚡ "+g.streak+" STREAK — 3× POINTS!":g.streak>=3?"🔥 "+g.streak+" streak — 2× points!":g.streak>=1?"✨ "+g.streak+" streak":"")+"</div>"+
+    "<div class='card' style='margin-bottom:14px;border-color:rgba(255,255,255,.05)'>"+
+      "<div style='font-size:11px;color:"+dc(q.d)+";letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;font-weight:700'>Domain "+q.d+"</div>"+
+      "<div style='font-family:Syne,sans-serif;font-size:15px;font-weight:700;color:var(--tx);line-height:1.55;text-align:center'>"+q.q+"</div>"+
+    "</div>"+
+    "<div class='col' style='gap:8px'>"+opts+"</div>"+
+  "</div>");
+}
+
+
+function renderPBQ(){
+  var s=S.pbq;
+  if(!s.sim){
+    var cards=[["fw","🔥","Firewall Config","Configure allow/deny rules from a scenario","#f472b6"],
+               ["logs","📋","Log Analysis","Read server logs and identify attacks","#fbbf24"],
+               ["net","🌐","Network Diagram","Place devices in correct zones","#34d399"],
+               ["ports","🔌","Ports & Protocols","Match protocols to port numbers","#38bdf8"],
+               ["triage","🚨","IR Triage","Prioritize alerts and sequence response","#a78bfa"]];
+    render("<div class='pg'>"+
+      "<h2 style='font-family:Syne,sans-serif;font-size:20px;margin-bottom:6px;color:var(--tx)'>🧪 PBQ Simulations</h2>"+
+      "<p style='font-size:12px;color:var(--tx3);margin-bottom:20px'>Performance-Based Questions — interactive, just like the real exam</p>"+
+      cards.map(function(r){
+        return "<button onclick='S.pbq.sim=this.dataset.s;renderPBQ()' data-s='"+r[0]+"' style='width:100%;background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:18px 16px;text-align:left;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;gap:14px;font-family:inherit'>"+
+          "<div style='font-size:32px;flex-shrink:0'>"+r[1]+"</div>"+
+          "<div><div style='font-family:Syne,sans-serif;font-size:15px;font-weight:700;color:"+r[4]+";margin-bottom:3px'>"+r[2]+"</div>"+
+          "<div style='font-size:12px;color:var(--tx3)'>"+r[3]+"</div></div></button>";
+      }).join("")+
+    "</div>");
+    return;
+  }
+  var titles={fw:"🔥 Firewall Config",logs:"📋 Log Analysis",net:"🌐 Network Diagram",ports:"🔌 Ports & Protocols",triage:"🚨 IR Triage"};
+  var html="<div class='pg'><button class='btn btn-g' onclick='S.pbq.sim=null;renderPBQ()' style='margin-bottom:16px'>← Back to PBQs</button><h2 style='font-family:Syne,sans-serif;font-size:20px;margin-bottom:20px;color:var(--tx)'>"+titles[s.sim]+"</h2>";
+  if(s.sim==="fw")html+=renderFW();
+  else if(s.sim==="logs")html+=renderLogs();
+  else if(s.sim==="net")html+=renderNet();
+  else if(s.sim==="ports")html+=renderPorts();
+  else if(s.sim==="triage")html+=renderTriage();
+  html+="</div>";
   render(html);
 }
 
-function setPBQ(id){ state.pbq.sim=id; renderPBQ(); }
-
-// ─── PBQ: FIREWALL ────────────────────────────────────────────────────────────
 const FW_CORRECT=[
   {s:"ANY",d:"192.168.10.5",p:"443",a:"ALLOW",r:"Internet HTTPS to web server"},
   {s:"192.168.10.5",d:"10.0.0.0/24",p:"3306",a:"ALLOW",r:"Web server to database"},
@@ -1121,17 +1450,17 @@ function renderFW(){
     </div>
     <div style="font-size:11px;color:#f9c74f;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">Configure 4 Firewall Rules</div>
     <div style="overflow-x:auto;margin-bottom:16px">
-      <table class="fw-table">
+      <table class="fwtbl">
         <thead><tr><th>#</th><th>Source</th><th>Destination</th><th>Port</th><th>Action</th><th>✓</th></tr></thead>
         <tbody>
           ${s.rules.map((r,i)=>`
             <tr style="background:${s.checked?(state.fw.results[i]?.ok?'#052e16':'#2d0a0a'):'#080f1a'}">
               <td style="color:#475569;font-weight:700;padding:8px 5px">${i+1}</td>
-              <td style="padding:6px 4px"><input class="fw-input" value="${r.s}" placeholder="e.g. ANY" onchange="fwUpdate(${i},'s',this.value)" style="width:88px"></td>
-              <td style="padding:6px 4px"><input class="fw-input" value="${r.d}" placeholder="IP/subnet" onchange="fwUpdate(${i},'d',this.value)" style="width:88px"></td>
-              <td style="padding:6px 4px"><input class="fw-input" value="${r.p}" placeholder="443" onchange="fwUpdate(${i},'p',this.value)" style="width:60px"></td>
+              <td style="padding:6px 4px"><input class="fw-in" value="${r.s}" placeholder="e.g. ANY" onchange="fwUpdate(${i},'s',this.value)" style="width:88px"></td>
+              <td style="padding:6px 4px"><input class="fw-in" value="${r.d}" placeholder="IP/subnet" onchange="fwUpdate(${i},'d',this.value)" style="width:88px"></td>
+              <td style="padding:6px 4px"><input class="fw-in" value="${r.p}" placeholder="443" onchange="fwUpdate(${i},'p',this.value)" style="width:60px"></td>
               <td style="padding:6px 4px">
-                <select class="fw-select" onchange="fwUpdate(${i},'a',this.value)" style="color:${r.a==='ALLOW'?'#22c55e':'#ef4444'}">
+                <select class="fw-sel" onchange="fwUpdate(${i},'a',this.value)" style="color:${r.a==='ALLOW'?'#22c55e':'#ef4444'}">
                   <option value="ALLOW" ${r.a==='ALLOW'?'selected':''}>ALLOW</option>
                   <option value="DENY" ${r.a==='DENY'?'selected':''}>DENY</option>
                 </select>
@@ -1150,8 +1479,8 @@ function renderFW(){
             ${!r.ok?`<div style="font-size:11px;color:#64748b">Expected: ${FW_CORRECT[i].s} → ${FW_CORRECT[i].d} Port:${FW_CORRECT[i].p} ${FW_CORRECT[i].a}</div>`:''}
           </div>`).join('')}
       </div>`:''}
-    <button class="btn-primary" style="margin-bottom:10px" onclick="checkFW()">Submit Rules</button>
-    <button class="btn-secondary" onclick="resetFW()">Reset</button>
+    <button class="btn btn-p btn-full" style="margin-bottom:10px" onclick="checkFW()">Submit Rules</button>
+    <button class="btn btn-s btn-full" onclick="resetFW()">Reset</button>
   `;
 }
 
@@ -1249,11 +1578,11 @@ function renderLogs(){
         ${s.checked?`<div class="explain"><div style="font-size:11px;color:#22c55e;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Explanation</div><div style="font-size:12px;color:#94a3b8;line-height:1.6">${q.e}</div></div>`:''}
       </div>`;
     }).join('')}
-    ${!s.checked?`<button class="btn-primary" style="opacity:${Object.keys(s.answers).length<sc.qs.length?.5:1}" onclick="checkLogs()">Submit Answers</button>`:
+    ${!s.checked?`<button class="btn btn-p btn-full" style="opacity:${Object.keys(s.answers).length<sc.qs.length?.5:1}" onclick="checkLogs()">Submit Answers</button>`:
     `<div class="card" style="text-align:center;margin-bottom:12px">
       <div style="font-size:36px;margin-bottom:8px">${sc.qs.filter((q,i)=>s.answers[i]===q.a).length===sc.qs.length?'🏆':'💪'}</div>
       <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:${scoreColor(Math.round(sc.qs.filter((q,i)=>s.answers[i]===q.a).length/sc.qs.length*100))};margin-bottom:6px">${sc.qs.filter((q,i)=>s.answers[i]===q.a).length}/${sc.qs.length}</div>
-      <button class="btn-primary" style="margin-top:10px" onclick="resetLogs()">Try Again</button>
+      <button class="btn btn-p btn-full" style="margin-top:10px" onclick="resetLogs()">Try Again</button>
     </div>`}
   `;
 }
@@ -1321,8 +1650,8 @@ function renderNet(){
           <div>🟣 Secure Zone: Database only</div>
         </div>
       </div>`:''}
-    ${!s.checked?`<button class="btn-primary" style="opacity:${unplaced.length>0?.5:1};margin-bottom:10px" onclick="checkNet()">Check Placement</button>`:
-    `<button class="btn-primary" onclick="resetNet()">Try Again</button>`}
+    ${!s.checked?`<button class="btn btn-p btn-full" style="opacity:${unplaced.length>0?.5:1};margin-bottom:10px" onclick="checkNet()">Check Placement</button>`:
+    `<button class="btn btn-p btn-full" onclick="resetNet()">Try Again</button>`}
   `;
 }
 
@@ -1359,8 +1688,8 @@ function renderPorts(){
       <div style="font-family:'Syne',sans-serif;font-size:20px;color:#f1f5f9;margin-bottom:8px">Set ${s.page+1} Complete!</div>
       <div style="font-size:14px;color:#64748b;margin-bottom:24px">${s.moves} moves</div>
       <div style="display:flex;gap:10px">
-        <button class="btn-primary" style="flex:1" onclick="resetPorts()">Again</button>
-        ${s.page+1<totalPages?`<button class="btn-primary" style="flex:1;background:linear-gradient(135deg,#06d6a0,#059669);color:#000" onclick="setPortsPage(${s.page+1})">Next Set →</button>`:''}
+        <button class="btn btn-p btn-full" style="flex:1" onclick="resetPorts()">Again</button>
+        ${s.page+1<totalPages?`<button class="btn btn-p btn-full" style="flex:1;background:linear-gradient(135deg,#06d6a0,#059669);color:#000" onclick="setPortsPage(${s.page+1})">Next Set →</button>`:''}
       </div>
     </div>`;
 
@@ -1468,7 +1797,7 @@ function renderTriage(){
         </div>
       </div>`;
     }).join('')}
-    ${!s.checked&&s.priority.length===TRIAGE_ALERTS.length?`<button class="btn-primary" style="margin-bottom:20px" onclick="checkTriage()">Check Priority</button>`:''}
+    ${!s.checked&&s.priority.length===TRIAGE_ALERTS.length?`<button class="btn btn-p btn-full" style="margin-bottom:20px" onclick="checkTriage()">Check Priority</button>`:''}
     ${s.checked?`
       <div class="card" style="margin-bottom:20px">
         <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:${s.priority.filter((id,i)=>id===CORRECT_PRIORITY[i]).length>=4?'#22c55e':'#f9c74f'};margin-bottom:10px">Priority Score: ${s.priority.filter((id,i)=>id===CORRECT_PRIORITY[i]).length}/5</div>
@@ -1486,7 +1815,7 @@ function renderTriage(){
       const isC=s.actChecked&&i===TRIAGE_ACTIONS.indexOf(action);
       const isW=s.actChecked&&i!==TRIAGE_ACTIONS.indexOf(action);
       return `<div class="order-item ${isC?'correct':isW?'wrong':''}" style="margin-bottom:8px">
-        <span class="order-num" style="background:${isC?'rgba(34,197,94,.2)':isW?'rgba(239,68,68,.2)':'#1e293b'};color:${isC?'#22c55e':isW?'#ef4444':'#64748b'}">${i+1}</span>
+        <span class="oinm" style="background:${isC?'rgba(34,197,94,.2)':isW?'rgba(239,68,68,.2)':'#1e293b'};color:${isC?'#22c55e':isW?'#ef4444':'#64748b'}">${i+1}</span>
         <span style="font-size:12px;color:${isC?'#86efac':isW?'#fca5a5':'#94a3b8'};flex:1;line-height:1.4">${action}</span>
         ${s.actChecked?`<span style="font-size:14px">${isC?'✓':'✗'}</span>`:`
           <div style="display:flex;flex-direction:column;gap:2px">
@@ -1495,8 +1824,8 @@ function renderTriage(){
           </div>`}
       </div>`;
     }).join('')}
-    ${!s.actChecked?`<button class="btn-primary" style="margin-bottom:10px" onclick="checkTriageActions()">Check Actions</button>`:''}
-    <button class="btn-secondary" onclick="resetTriage()">Reset All</button>
+    ${!s.actChecked?`<button class="btn btn-p btn-full" style="margin-bottom:10px" onclick="checkTriageActions()">Check Actions</button>`:''}
+    <button class="btn btn-s btn-full" onclick="resetTriage()">Reset All</button>
   `;
 }
 
@@ -1513,564 +1842,6 @@ function triageDn(i){ const a=state.triage.actionOrder; if(i>=a.length-1)return;
 function checkTriageActions(){ state.triage.actChecked=true; renderPBQ(); }
 function resetTriage(){ state.triage={priority:[],checked:false,actionOrder:shuffle(TRIAGE_ACTIONS),actChecked:false}; renderPBQ(); }
 
-
-// ─── LESSONS DATA ─────────────────────────────────────────────────────────────
-const LESSONS = [
-  { domain:1, color:"#00e5ff", title:"Domain 1: General Security Concepts",
-    subs:[
-      { id:"1.1", title:"Security Control Categories & Types",
-        concepts:[
-          {h:"Control Categories",b:"How a control is IMPLEMENTED: Technical (technology enforces it), Managerial (policy-driven), Operational (humans do it daily), Physical (guards physical space)"},
-          {h:"Control Types",b:"What a control DOES: Preventive stops attacks, Detective identifies them, Corrective fixes damage, Deterrent discourages, Compensating substitutes, Directive guides behavior"},
-          {h:"The Key Trick",b:"Every control has BOTH a category AND a type. A security camera = Physical category + Detective type. A written policy = Managerial category + Directive type."},
-        ],
-        tip:"Exam loves asking for both dimensions. A locked server door = Physical + Preventive. An antivirus = Technical + Detective/Corrective.",
-        qids:[0,1,2]
-      },
-      { id:"1.2", title:"Fundamental Security Concepts",
-        concepts:[
-          {h:"CIA Triad",b:"Confidentiality (only authorized access) + Integrity (data unchanged) + Availability (accessible when needed). Every security decision maps to one of these."},
-          {h:"Zero Trust",b:"Never trust, always verify — no implicit trust based on network location. Even internal users must authenticate to every resource."},
-          {h:"Defense in Depth",b:"Layer multiple independent controls. If one fails, others catch it. No single point of failure."},
-          {h:"Key Principles",b:"Least Privilege (minimum needed), Separation of Duties (split critical tasks), Dual Control (two present simultaneously), Job Rotation (reduces insider threat), Need to Know (even with clearance, only if needed for THIS task)"},
-        ],
-        tip:"Separation of Duties = tasks SPLIT across people. Dual Control = both people PRESENT at same time. Frequently confused on the exam."
-      },
-      { id:"1.3", title:"Change Management & Security Impact",
-        concepts:[
-          {h:"Change Management",b:"Formal process: request, risk assess, approve, test, implement, rollback plan. Prevents unauthorized or untested changes causing outages or vulnerabilities."},
-          {h:"Version Control",b:"Tracks changes to configurations, code, and firewall rules — enables rollback and audit trail."},
-          {h:"Impact Analysis",b:"Before any change, assess: what could break, what is the blast radius, do we have a rollback plan?"},
-        ],
-        tip:"Change management questions often involve: who can approve, what happens without approval, and what a change request must include."
-      },
-      { id:"1.4", title:"Cryptography & PKI",
-        concepts:[
-          {h:"Symmetric vs Asymmetric",b:"Symmetric = 1 shared key, FAST, bulk data (AES, 3DES). Asymmetric = public/private pair, SLOW, key exchange and signatures (RSA, ECC)."},
-          {h:"Hashing",b:"One-way, fixed-length output. Cannot reverse. MD5 = broken, SHA-1 = deprecated, SHA-256 = current standard, bcrypt = passwords. Salting defeats rainbow tables."},
-          {h:"Digital Signatures",b:"Hash encrypted with sender PRIVATE key. Proves authenticity (came from them) + integrity (not modified) + non-repudiation (they cannot deny it)."},
-          {h:"PKI Components",b:"CA issues certificates, RA verifies identities, certificates bind public keys to identities, CRL/OCSP check revocation status."},
-          {h:"Perfect Forward Secrecy",b:"Each session gets unique ephemeral keys. Even if server private key is stolen later, past sessions remain encrypted."},
-        ],
-        tip:"AES = symmetric. RSA = asymmetric. Signature = private key. Encryption = public key. This direction matters on every crypto question."
-      },
-      { id:"1.5", title:"Authentication, Authorization & Access Control",
-        concepts:[
-          {h:"AAA Framework",b:"Authentication (prove WHO you are), Authorization (WHAT you can access), Accounting (LOG what you did). All three are distinct steps."},
-          {h:"MFA Factors",b:"Something you KNOW (password, PIN), something you HAVE (token, smart card, phone), something you ARE (biometric: fingerprint, retina), somewhere you ARE (location/GPS)."},
-          {h:"Access Control Models",b:"DAC = owner decides. MAC = system enforces labels (military). RBAC = job role decides. ABAC = multiple attributes (location+time+role+sensitivity). Rule-Based = admin-defined ACLs."},
-          {h:"Auth Protocols",b:"Kerberos = tickets + KDC (Active Directory). SAML = enterprise SSO federation. OAuth 2.0 = delegated authorization. OpenID Connect = auth on top of OAuth. RADIUS = VPN/Wi-Fi (UDP). TACACS+ = AAA separation (TCP)."},
-        ],
-        tip:"SAML = SSO between organizations. OAuth = delegated authorization (Login with Google). Kerberos = tickets for internal resources. RADIUS = VPN auth."
-      },
-    ]
-  },
-  { domain:2, color:"#ff3d9a", title:"Domain 2: Threats, Vulnerabilities & Mitigations",
-    subs:[
-      { id:"2.1", title:"Threat Actors & Motivations",
-        concepts:[
-          {h:"Nation-State / APT",b:"Highest sophistication. Motivated by espionage, IP theft, disruption. Characteristics: long dwell time (months), stealthy, patient, persistent."},
-          {h:"Organized Crime",b:"Financially motivated. RaaS (Ransomware as a Service) models. Professional operations, specialization."},
-          {h:"Hacktivist",b:"Politically or ideologically motivated. DDoS and data leaks to make a point. Medium sophistication."},
-          {h:"Insider Threat",b:"Most dangerous due to trusted access. Motivations: financial gain, revenge, negligence. Sabotage, data theft, or accidental."},
-          {h:"Script Kiddie",b:"Low skill, uses existing tools. Motivated by notoriety or curiosity. Opportunistic."},
-        ],
-        tip:"APT = 3 things: long dwell time, nation-state level sophistication, targeted specific victim. Not every sophisticated attack is APT."
-      },
-      { id:"2.2", title:"Threat Vectors & Attack Surfaces",
-        concepts:[
-          {h:"Social Engineering",b:"Phishing (mass email), Spear Phishing (targeted), Whaling (executives), Vishing (voice), Smishing (SMS), Pretexting (fake scenario), Baiting (USB drives), Tailgating (physical)."},
-          {h:"Network Attacks",b:"SYN Flood (half-open TCP), Smurf (ICMP broadcast), DNS Amplification (small query big response), Evil Twin (fake SSID), MitM (intercept live), Replay (reuse token later), ARP Poisoning (fake MAC)."},
-          {h:"Web Attacks",b:"SQL Injection (break SQL with single quote), XSS (inject JavaScript into pages), CSRF (forge authenticated request), Directory Traversal (use ../ to escape web root), Command Injection (OS commands via input)."},
-          {h:"Password Attacks",b:"Brute Force (all combinations), Dictionary (word list), Rainbow Table (precomputed hashes, defeated by salt), Credential Stuffing (breached pairs), Password Spraying (few passwords, many accounts)."},
-        ],
-        tip:"XSS = script in browser. SQL Injection = single quote breaks query. CSRF = forged request from authenticated user. Directory Traversal = ../ in URL."
-      },
-      { id:"2.3", title:"Vulnerability Types",
-        concepts:[
-          {h:"Zero-Day",b:"Vendor has zero days to fix it. No patch available. Being exploited in the wild. Hardest to defend against."},
-          {h:"Misconfigurations",b:"Default credentials, unnecessary services enabled, verbose error messages, open ports. Most common and avoidable vulnerability class."},
-          {h:"Unpatched Software",b:"Known CVEs with available patches not applied. Exploited most by attackers — patch immediately after testing."},
-          {h:"Improper Input Validation",b:"Root cause of SQLi, XSS, Buffer Overflow, Command Injection, Directory Traversal. Validate ALL user input, always."},
-          {h:"CVSS Scoring",b:"0-3.9 Low, 4-6.9 Medium, 7-8.9 High, 9-10 Critical. Consider CVSS + asset criticality + exploitability for prioritization."},
-        ],
-        tip:"Most breaches exploit KNOWN vulnerabilities with available patches. Patch management is the single most impactful control."
-      },
-      { id:"2.4", title:"Malware Types & Indicators",
-        concepts:[
-          {h:"Key Malware Types",b:"Virus (needs user action), Worm (self-replicates), Trojan (disguised), Ransomware (encrypts files), Rootkit (hides in kernel, AV reports clean), Cryptojacker (100% CPU + mining pools), Logic Bomb (triggered by condition), RAT (remote control), Keylogger (records keystrokes)."},
-          {h:"Fileless Malware",b:"Operates in memory only. No files written to disk. Uses legitimate tools (PowerShell, WMI). Evades signature-based AV completely."},
-          {h:"APT Characteristics",b:"Long dwell time (months/years), stealthy, patient, uses living-off-the-land techniques, targeted specific victim."},
-          {h:"IOCs",b:"Unusual outbound connections, new admin accounts, unexpected scheduled tasks, AV disabled, high CPU usage, file encryption activity, shadow copy deletion."},
-        ],
-        tip:"Rootkit indicator: AV reports clean but system behaves strangely. Cryptojacking: 100% CPU + mining pool connections. Ransomware: shadow copies deleted first."
-      },
-      { id:"2.5", title:"Mitigation Techniques",
-        concepts:[
-          {h:"Network Defenses",b:"Firewalls, IPS (blocks inline), IDS (alerts only), WAF (web apps at Layer 7), network segmentation, VLAN isolation."},
-          {h:"Endpoint Defenses",b:"EDR (detect + respond), Application Whitelisting (only approved apps), FDE (Full Disk Encryption), Patch Management, Sandboxing (test suspicious files)."},
-          {h:"Identity Defenses",b:"MFA on all accounts, JIT access (time-limited elevation), PAM for privileged accounts, deprovisioning on departure, periodic access reviews."},
-          {h:"Awareness",b:"Security awareness training is the primary defense against social engineering. Phishing simulations measure and improve human controls."},
-        ],
-        tip:"The MOST effective control against phishing is a combination: email filtering (technical) + security awareness training (human) + MFA (compensating if credentials stolen)."
-      },
-    ]
-  },
-  { domain:3, color:"#00ffa3", title:"Domain 3: Security Architecture",
-    subs:[
-      { id:"3.1", title:"Network Security Architecture",
-        concepts:[
-          {h:"Network Zones",b:"Internet (untrusted) → Perimeter Firewall → DMZ (public-facing servers) → Internal Firewall → Internal LAN → Secure Zone (databases, sensitive data). Each zone has increasing trust and control."},
-          {h:"Zero Trust",b:"Treat every request as untrusted regardless of location. Verify every user, device, and application. Microsegment workloads. Never implicit trust."},
-          {h:"Segmentation",b:"VLANs isolate at Layer 2. Firewalls between segments enforce policy. Microsegmentation at workload level. Reduces lateral movement blast radius."},
-          {h:"Key Devices",b:"Firewall (stateful rules), NGFW (adds DPI + app awareness + IPS), IDS (passive/alerts), IPS (active/blocks), WAF (Layer 7 web), Proxy (outbound filtering), Reverse Proxy (inbound to servers), Honeypot (decoy/research)."},
-        ],
-        tip:"DMZ always for public-facing servers. IDS = passive (alerts only). IPS = active (blocks inline). WAF = Layer 7 HTTP/HTTPS only."
-      },
-      { id:"3.2", title:"Cloud & Virtualization Security",
-        concepts:[
-          {h:"Service Models",b:"IaaS: provider owns hardware, customer owns OS+apps+data. PaaS: provider owns OS+runtime, customer owns apps+data. SaaS: provider owns everything, customer owns data+config."},
-          {h:"Shared Responsibility",b:"Physical infrastructure ALWAYS provider responsibility. Customer responsibility increases as you move from SaaS → PaaS → IaaS."},
-          {h:"Virtualization Risks",b:"VM Escape (break out of VM to host/other VMs), Container Breakout (escape container to host kernel), Hypervisor Type 1 (bare-metal, more secure), Type 2 (hosted on OS, more attack surface)."},
-          {h:"Cloud Key Principle",b:"Client-side encryption with customer-managed keys = provider CANNOT decrypt your data even if they are compromised. This is the answer whenever the question says even if provider is compromised."},
-        ],
-        tip:"The MOST important cloud security concept: WHO is responsible for WHAT depends on IaaS/PaaS/SaaS. In IaaS the customer patches the OS. In SaaS they do not."
-      },
-      { id:"3.3", title:"Resilience, Redundancy & Recovery",
-        concepts:[
-          {h:"Key Metrics",b:"RTO = maximum downtime (how long can we be offline?). RPO = maximum data loss in time (how old can our backup be?). MTTR = average repair time. MTBF = average time between failures."},
-          {h:"Backup Types",b:"Full = all data, slowest to create, fastest restore. Incremental = changes since last ANY backup, fastest to create, slowest restore (need full + entire chain). Differential = changes since last FULL, need only latest + last full."},
-          {h:"Recovery Sites",b:"Hot Site = fully operational + real-time sync, most expensive, minutes-hours RTO. Warm Site = partially equipped, hours-days RTO, medium cost. Cold Site = empty facility, days-weeks RTO, cheapest."},
-          {h:"High Availability",b:"Redundant systems (no single point of failure), geographic dispersal (multi-region), load balancing, failover automation."},
-        ],
-        tip:"RTO and RPO are the MOST tested recovery metrics. RTO = downtime. RPO = data loss. Match the site type to the RTO requirement in every scenario."
-      },
-    ]
-  },
-  { domain:4, color:"#ffe144", title:"Domain 4: Security Operations",
-    subs:[
-      { id:"4.1", title:"Incident Response Lifecycle",
-        concepts:[
-          {h:"6 Phases IN ORDER",b:"1-Preparation (build capability before incidents). 2-Detection & Analysis (confirm incident). 3-Containment (stop the spread). 4-Eradication (remove threat + patch). 5-Recovery (restore from clean backup). 6-Lessons Learned (improve)."},
-          {h:"Critical Order Rule",b:"Eradication ALWAYS before Recovery. Restoring into a still-vulnerable environment = immediate reinfection. Close the attack vector FIRST, then restore."},
-          {h:"Containment Actions",b:"Isolate systems from network, block attacker IPs, disable compromised accounts, take systems offline if needed. Stop the spread without destroying evidence."},
-          {h:"Exercises",b:"Tabletop = discussion only, no systems touched. Red Team = full adversarial simulation. Purple Team = Red + Blue collaborate. Penetration Test = scoped exploitation. Phishing Simulation = test human controls."},
-        ],
-        tip:"The MOST tested IR mistake: restoring from backup before eradicating the threat. Always: Contain → Eradicate → THEN Recover."
-      },
-      { id:"4.2", title:"Digital Forensics",
-        concepts:[
-          {h:"Order of Volatility",b:"Collect MOST volatile FIRST: 1-CPU cache+registers (lost on power off), 2-RAM/running processes, 3-Swap/temp files, 4-Hard drive image, 5-Archived logs/backups."},
-          {h:"Chain of Custody",b:"Document who collected, transported, analyzed, and stored evidence. Maintains legal admissibility. Break the chain = evidence may be inadmissible."},
-          {h:"Evidence Hashing",b:"Hash evidence (SHA-256) immediately after collection. Compare hash later to prove it was not modified. Immutable mathematical proof of integrity."},
-          {h:"Write Blocker",b:"Hardware/software preventing writes to evidence media during imaging. Evidence must NEVER be modified."},
-          {h:"Legal Hold",b:"Preservation order requiring data retention beyond normal policy. ALWAYS takes precedence over standard retention schedules."},
-        ],
-        tip:"Order of volatility exam trick: CPU cache disappears on power off = always first. Hard drive persists = collected last. RAM is lost on reboot = collect before rebooting!"
-      },
-      { id:"4.3", title:"Monitoring, Detection & Analysis",
-        concepts:[
-          {h:"SIEM",b:"Aggregates logs from all sources, correlates events across systems, generates prioritized alerts. The central nervous system of a SOC."},
-          {h:"SOAR",b:"Automates repetitive IR tasks and playbooks. SIEM detects → SOAR acts. Reduces analyst workload, speeds response from minutes to seconds."},
-          {h:"UEBA",b:"Establishes behavioral baselines per user/entity. Flags deviations: impossible travel, off-hours access, unusual data volumes. Catches insider threats and compromised accounts."},
-          {h:"EDR vs XDR",b:"EDR = endpoint only (processes, files, registry). XDR = extends across network, cloud, email, identity. Unified detection across all vectors."},
-          {h:"NetFlow vs Full Capture",b:"NetFlow = metadata only (who talked to whom, when, volume). Full Capture = entire packet contents. NetFlow is practical at scale; full capture for deep investigation."},
-        ],
-        tip:"SIEM detects and alerts. SOAR responds automatically. UEBA detects behavioral anomalies. EDR protects endpoints. XDR correlates everything."
-      },
-      { id:"4.4", title:"Identity & Access Management",
-        concepts:[
-          {h:"Access Control Models",b:"DAC = owner decides. MAC = system enforces (labels+clearances). RBAC = job role. ABAC = multiple dynamic attributes. Rule-Based = admin ACLs."},
-          {h:"Privilege Management",b:"JIT = temporary time-limited elevated access. PAM = controls/monitors/records all privileged sessions. Least Privilege = minimum required only. Access Reviews = periodic cleanup of excess permissions."},
-          {h:"Lifecycle",b:"Provisioning (new hire gets correct access) → Role changes (update access promptly) → Departure (deprovisioning IMMEDIATELY). Privilege creep = forgetting to remove old access."},
-          {h:"MFA Everywhere",b:"MFA is the single most effective control for account compromise. Implement on all remote access, admin accounts, and sensitive applications minimum."},
-        ],
-        tip:"Privilege creep = employee who changed roles and kept old access. Fix = periodic user access reviews. Deprovisioning failure = ghost accounts of former employees."
-      },
-      { id:"4.5", title:"Vulnerability Management",
-        concepts:[
-          {h:"Scanning vs Testing",b:"Vulnerability Scan = non-invasive, identifies potential weaknesses, no exploitation. Penetration Test = authorized exploitation to prove real-world impact. Different purpose, different authorization needed."},
-          {h:"Prioritization",b:"CVSS score alone is insufficient. Also consider: asset criticality, exploitability in the wild, business impact, exposure (internet-facing vs internal). Risk-based prioritization beats pure CVSS."},
-          {h:"Pen Test Types",b:"Black Box = no knowledge. Gray Box = partial. White Box = full (code, creds, architecture). Red Team = full adversarial simulation, all vectors, extended time."},
-          {h:"Bug Bounty",b:"External researchers responsibly disclose vulnerabilities. Rewards proportional to severity. Responsible disclosure gives vendor 90 days before public release."},
-        ],
-        tip:"Black Box = simulates external attacker. White Box = simulates insider. Gray Box = most realistic (partial knowledge). Red Team ≠ Pen Test — scope, duration, and stealth differ."
-      },
-    ]
-  },
-  { domain:5, color:"#b44dff", title:"Domain 5: Security Program Management",
-    subs:[
-      { id:"5.1", title:"Risk Management",
-        concepts:[
-          {h:"Risk Formula",b:"Risk = Likelihood × Impact. Inherent Risk = before controls. Residual Risk = after controls. Risk Appetite = how much risk the organization is willing to accept."},
-          {h:"Quantitative Risk",b:"SLE = Asset Value × Exposure Factor (loss from ONE incident). ARO = Annual Rate of Occurrence. ALE = SLE × ARO (expected yearly financial loss). Used for cost-benefit of controls."},
-          {h:"Risk Responses",b:"Avoidance (stop the activity), Mitigation (implement controls), Transference (cyber insurance, outsourcing), Acceptance (document and accept). Choose based on cost vs impact."},
-          {h:"Cost-Benefit",b:"If control costs more than ALE, risk acceptance or transference may be more economical. Controls should reduce risk cost below the control implementation cost."},
-        ],
-        tip:"ALE = SLE × ARO. Example: SLE $100k, ARO 0.25 = ALE $25k/year. If a control costs $50k/year it is NOT cost-effective. This calculation appears on the exam."
-      },
-      { id:"5.2", title:"Compliance Frameworks & Governance",
-        concepts:[
-          {h:"NIST CSF",b:"Identify → Protect → Detect → Respond → Recover. Non-regulatory framework. Maps to most other standards. Used for security program structure."},
-          {h:"ISO 27001",b:"International standard for ISMS (Information Security Management System). Certification available. Requires documented risk assessment and treatment."},
-          {h:"PCI DSS",b:"Mandatory for credit card processors. 12 requirements. Segmentation reduces scope. Non-compliance = fines + loss of processing privileges."},
-          {h:"HIPAA",b:"US law protecting PHI (Protected Health Information). Covered Entities + Business Associates (must sign BAA). Security Rule requires risk analysis + safeguards."},
-          {h:"GDPR",b:"EU regulation. Applies to any organization processing EU citizen data. Rights: access, rectification, erasure, portability. Breach notification within 72 hours. Data minimization and purpose limitation principles."},
-        ],
-        tip:"NIST CSF = voluntary framework. PCI DSS = mandatory for card processors. HIPAA = US healthcare. GDPR = EU data privacy. SOC 2 Type II = 6-12 month effectiveness assessment."
-      },
-      { id:"5.3", title:"Data Privacy & Classification",
-        concepts:[
-          {h:"Data Classification",b:"Public (no harm if disclosed), Internal/Private (low sensitivity), Confidential (significant harm), Restricted/Top Secret (severe harm). Classification drives all protection decisions."},
-          {h:"Data States",b:"At Rest (stored, protect with encryption), In Transit (moving, protect with TLS/VPN), In Use (being processed, protect with access controls and memory protection)."},
-          {h:"Data Roles",b:"Controller (decides WHY and HOW = accountable under GDPR). Processor (processes on behalf of controller). Owner (business accountable for classification). Custodian (IT role implementing technical protections)."},
-          {h:"Privacy Principles",b:"Data Minimization (only collect what you need), Purpose Limitation (only use for stated purpose), Storage Limitation (delete when no longer needed), Accuracy (keep data correct)."},
-        ],
-        tip:"Data Controller = legally accountable under GDPR. Data Custodian = IT admin implementing protections. Owner = business person making classification decisions. These are distinct roles."
-      },
-      { id:"5.4", title:"Third-Party Risk & Supply Chain",
-        concepts:[
-          {h:"Vendor Risk Management",b:"Assess vendors before engagement, include security requirements in contracts, maintain right-to-audit clauses, revoke access immediately upon contract termination."},
-          {h:"Key Contracts",b:"SLA (service levels + uptime + response times), NDA (confidentiality obligations), MSA (overarching relationship terms), BAA (HIPAA business associates), Right-to-Audit (security assessment rights)."},
-          {h:"Supply Chain Attacks",b:"Compromising trusted vendors or software distribution to attack downstream targets. SolarWinds = malicious update to 18,000 customers. Defense: vendor vetting, software integrity verification, segmentation."},
-          {h:"Offboarding Vendors",b:"Revoke ALL access immediately on contract end. Review what data was shared, ensure return/deletion per contract, update access control inventories."},
-        ],
-        tip:"Supply chain attack clue: attacker compromises trusted vendor to reach real target. Defense = vet vendors rigorously + right-to-audit + contractual security requirements."
-      },
-    ]
-  },
-];
-
-// ─── GAME STATE ───────────────────────────────────────────────────────────────
-let gameState = {
-  active:false, score:0, lives:3, streak:0, bestStreak:0,
-  timer:60, timerInterval:null, cur:null, sel:null,
-  domainFilter:0, qs:[], qIdx:0, revealed:false,
-  highScore: parseInt(localStorage.getItem('blitz_hs')||'0'),
-};
-
-function blitzGetQs(d){
-  const pool = d===0 ? [...QZ] : QZ.filter(q=>q.d===d);
-  return shuffle(pool);
-}
-
-function blitzStart(d){
-  clearInterval(gameState.timerInterval);
-  gameState = {
-    active:true, score:0, lives:3, streak:0, bestStreak:0,
-    timer:60, timerInterval:null, cur:null, sel:null,
-    domainFilter:d, qs:blitzGetQs(d), qIdx:0, revealed:false,
-    highScore:parseInt(localStorage.getItem('blitz_hs')||'0'),
-  };
-  gameState.cur = gameState.qs[0];
-  gameState.timerInterval = setInterval(()=>{
-    gameState.timer--;
-    if(gameState.timer<=0){ blitzEnd(); return; }
-    // update timer display only
-    const tb = document.getElementById('blitz-timer-val');
-    const tp = document.getElementById('blitz-timer-prog');
-    if(tb) tb.textContent = gameState.timer;
-    if(tp) tp.style.setProperty('--prog', (gameState.timer/60*100)+'%');
-    if(gameState.timer<=10){
-      const td = document.getElementById('blitz-timer-div');
-      if(td) td.style.animation='timerPulse .5s infinite';
-    }
-  },1000);
-  renderGame();
-}
-
-function blitzPick(i){
-  const g = gameState;
-  if(!g.active || g.sel!==null) return;
-  g.sel = i;
-  g.revealed = true;
-  const correct = i === g.cur.a;
-  if(correct){
-    g.streak++;
-    g.bestStreak = Math.max(g.bestStreak, g.streak);
-    const bonus = g.streak >= 5 ? 3 : g.streak >= 3 ? 2 : 1;
-    const pts = 100 * bonus;
-    g.score += pts;
-    // float score
-    showFloat('+'+pts+(bonus>1?' x'+bonus+'!':''));
-  } else {
-    g.lives--;
-    g.streak = 0;
-    if(g.lives<=0){ setTimeout(()=>blitzEnd(),900); }
-  }
-  renderGame();
-  if(correct && g.lives > 0){
-    setTimeout(()=>blitzNext(), 800);
-  }
-}
-
-function blitzNext(){
-  const g = gameState;
-  g.qIdx++;
-  if(g.qIdx >= g.qs.length) g.qs = [...g.qs, ...blitzGetQs(g.domainFilter)];
-  g.cur = g.qs[g.qIdx];
-  g.sel = null;
-  g.revealed = false;
-  renderGame();
-}
-
-function blitzEnd(){
-  const g = gameState;
-  clearInterval(g.timerInterval);
-  g.active = false;
-  if(g.score > g.highScore){
-    g.highScore = g.score;
-    localStorage.setItem('blitz_hs', g.score);
-  }
-  renderGame();
-}
-
-function showFloat(txt){
-  const el = document.createElement('div');
-  el.className = 'float-score';
-  el.textContent = txt;
-  el.style.cssText = `top:${40+Math.random()*20}%;left:${30+Math.random()*40}%;`;
-  document.body.appendChild(el);
-  setTimeout(()=>el.remove(), 900);
-}
-
-// ─── RENDER GAME ──────────────────────────────────────────────────────────────
-function renderGame(){
-  const g = gameState;
-
-  if(!g.active && g.score===0 && g.lives===3){
-    // Start screen
-    render(`
-      <div style="padding:24px 20px 100px">
-        <div class="hero">
-          <div class="hero-bg"></div><div class="hero-orb1"></div><div class="hero-orb2"></div>
-          <div class="fu" style="text-align:center">
-            <div style="font-size:56px;margin-bottom:12px;filter:drop-shadow(0 0 20px rgba(255,225,68,.5))">🎮</div>
-            <h1 style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#ffe144;margin-bottom:6px;text-shadow:0 0 20px rgba(255,225,68,.4)">Cyber Blitz</h1>
-            <p style="font-size:13px;color:var(--text2);margin-bottom:6px">60 seconds · 3 lives · streak multipliers</p>
-            <p style="font-size:12px;color:var(--text3)">Answer fast, build streaks, beat your high score</p>
-          </div>
-        </div>
-        <div style="padding:0 4px">
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px">
-            <div class="card" style="text-align:center;padding:14px 8px">
-              <div style="font-size:22px;margin-bottom:4px">💥</div>
-              <div style="font-size:11px;color:var(--text3);margin-bottom:2px">x1 Streak</div>
-              <div style="font-size:13px;color:var(--cyan);font-weight:700">100pts</div>
-            </div>
-            <div class="card" style="text-align:center;padding:14px 8px">
-              <div style="font-size:22px;margin-bottom:4px">🔥</div>
-              <div style="font-size:11px;color:var(--text3);margin-bottom:2px">3+ Streak</div>
-              <div style="font-size:13px;color:var(--yellow);font-weight:700">200pts</div>
-            </div>
-            <div class="card" style="text-align:center;padding:14px 8px">
-              <div style="font-size:22px;margin-bottom:4px">⚡</div>
-              <div style="font-size:11px;color:var(--text3);margin-bottom:2px">5+ Streak</div>
-              <div style="font-size:13px;color:var(--pink);font-weight:700">300pts</div>
-            </div>
-          </div>
-          <div style="font-size:11px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">Select Domain</div>
-          <div class="chips" style="margin-bottom:20px">
-            ${[{id:0,name:'All',color:'#00e5ff'},...DOMAINS.map(d=>({id:d.id,name:'D'+d.id,color:d.color}))].map(d=>`
-              <button class="chip ${g.domainFilter===d.id?'active':''}" style="${g.domainFilter===d.id?`color:${d.color};border-color:${d.color};background:${d.color}15`:''}" onclick="gameState.domainFilter=${d.id};renderGame()">${d.name}</button>`).join('')}
-          </div>
-          ${g.highScore>0?`<div class="card" style="text-align:center;padding:12px;margin-bottom:16px;border-color:rgba(255,225,68,.2)"><span style="font-size:12px;color:var(--text3)">🏆 High Score: </span><span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--yellow)">${g.highScore.toLocaleString()}</span></div>`:''}
-          <button class="btn-primary" style="background:linear-gradient(135deg,#ffe144,#ff9500);color:#000;box-shadow:0 4px 20px rgba(255,225,68,.35);font-size:16px" onclick="blitzStart(${g.domainFilter})">
-            ⚡ Start Blitz!
-          </button>
-        </div>
-      </div>
-    `);
-    return;
-  }
-
-  if(!g.active){
-    // Game over screen
-    const isHigh = g.score >= g.highScore && g.score > 0;
-    render(`
-      <div style="padding:24px 20px 100px">
-        <div style="text-align:center;padding:32px 16px 24px">
-          <div style="font-size:52px;margin-bottom:8px">${g.lives<=0?'💀':'⏰'}</div>
-          <div style="font-family:'Syne',sans-serif;font-size:14px;color:var(--text3);margin-bottom:4px">${g.lives<=0?'No lives left!':'Time up!'}</div>
-          ${isHigh?`<div style="font-size:12px;color:var(--yellow);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">🏆 New High Score!</div>`:''}
-          <div class="blitz-score" style="color:${g.score>1500?'#ffe144':g.score>800?'#00ffa3':'#00e5ff'}">${g.score.toLocaleString()}</div>
-          <div style="font-size:13px;color:var(--text3);margin-bottom:24px">points</div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px">
-          <div class="card" style="text-align:center;padding:14px 8px">
-            <div style="font-size:20px;margin-bottom:4px">🎯</div>
-            <div style="font-size:11px;color:var(--text3);margin-bottom:2px">Answered</div>
-            <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--cyan)">${g.qIdx}</div>
-          </div>
-          <div class="card" style="text-align:center;padding:14px 8px">
-            <div style="font-size:20px;margin-bottom:4px">🔥</div>
-            <div style="font-size:11px;color:var(--text3);margin-bottom:2px">Best Streak</div>
-            <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--yellow)">${g.bestStreak}x</div>
-          </div>
-          <div class="card" style="text-align:center;padding:14px 8px">
-            <div style="font-size:20px;margin-bottom:4px">🏆</div>
-            <div style="font-size:11px;color:var(--text3);margin-bottom:2px">High Score</div>
-            <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--purple)">${g.highScore.toLocaleString()}</div>
-          </div>
-        </div>
-        <button class="btn-primary" style="background:linear-gradient(135deg,#ffe144,#ff9500);color:#000;box-shadow:0 4px 20px rgba(255,225,68,.35);margin-bottom:10px" onclick="blitzStart(${g.domainFilter})">
-          ⚡ Play Again
-        </button>
-        <button class="btn-secondary" onclick="gameState={active:false,score:0,lives:3,streak:0,bestStreak:0,timer:60,timerInterval:null,cur:null,sel:null,domainFilter:0,qs:[],qIdx:0,revealed:false,highScore:parseInt(localStorage.getItem('blitz_hs')||'0')};renderGame()">
-          Back to Menu
-        </button>
-      </div>
-    `);
-    return;
-  }
-
-  // Active game
-  const q = g.cur;
-  const timerColor = g.timer<=10?'#ff3d9a':g.timer<=20?'#ffe144':'#00e5ff';
-  const prog = (g.timer/60*100)+'%';
-
-  render(`
-    <div style="padding:16px 16px 100px">
-      <!-- HUD -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div class="blitz-lives">${'❤️'.repeat(g.lives)}${'🖤'.repeat(3-g.lives)}</div>
-        <div id="blitz-timer-div" class="blitz-timer" style="--prog:${prog};color:${timerColor};border:2px solid ${timerColor}33;box-shadow:0 0 16px ${timerColor}22">
-          <span id="blitz-timer-val">${g.timer}</span>
-        </div>
-        <div style="text-align:right">
-          <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--yellow)">${g.score.toLocaleString()}</div>
-          <div style="font-size:10px;color:var(--text3)">score</div>
-        </div>
-      </div>
-      <!-- Streak -->
-      <div class="blitz-streak" style="margin-bottom:14px;min-height:18px">
-        ${g.streak>=5?`⚡ ${g.streak} STREAK — 3x POINTS!`:g.streak>=3?`🔥 ${g.streak} streak — 2x points!`:g.streak>=1?`✨ ${g.streak} streak`:''}
-      </div>
-      <!-- Question -->
-      <div class="card" style="margin-bottom:14px;border-color:rgba(255,255,255,.06)">
-        <div style="font-size:10px;color:${DOMAINS[q.d-1].color};letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;font-weight:700">Domain ${q.d}</div>
-        <div class="blitz-q">${q.q}</div>
-      </div>
-      <!-- Options -->
-      <div style="display:flex;flex-direction:column;gap:8px">
-        ${q.o.map((opt,i)=>{
-          let cls='';
-          if(g.sel!==null){
-            if(i===q.a) cls='hit';
-            else if(i===g.sel&&i!==q.a) cls='miss';
-            else if(g.revealed) cls='reveal';
-          }
-          return `<button class="blitz-opt ${cls}" onclick="blitzPick(${i})">
-            <span style="width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;border:1px solid rgba(255,255,255,.08)">${['A','B','C','D'][i]}</span>
-            <span style="line-height:1.4">${opt}</span>
-            ${g.sel!==null&&i===q.a?'<span style="margin-left:auto;font-size:16px">✓</span>':''}
-            ${g.sel!==null&&i===g.sel&&i!==q.a?'<span style="margin-left:auto;font-size:16px">✗</span>':''}
-          </button>`;
-        }).join('')}
-      </div>
-    </div>
-  `);
-}
-
-// ─── RENDER LEARN ─────────────────────────────────────────────────────────────
-let learnState = { domain:0, openSub:null };
-
-function renderLearn(){
-  const dom = learnState.domain;
-  const lesson = dom>0 ? LESSONS[dom-1] : null;
-
-  if(!lesson){
-    // Domain picker
-    render(`
-      <div style="padding:16px 16px 100px">
-        <div class="hero">
-          <div class="hero-bg"></div><div class="hero-orb1"></div><div class="hero-orb2"></div>
-          <div class="fu">
-            <div style="font-size:10px;color:var(--cyan);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px">Study Mode</div>
-            <h1 style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--text);margin-bottom:6px">Lessons</h1>
-            <p style="font-size:13px;color:var(--text3)">Every SY0-701 sub-objective · concept breakdowns · exam tips</p>
-          </div>
-        </div>
-        <div style="padding:0 4px">
-          ${LESSONS.map((l,i)=>`
-            <button onclick="learnState.domain=${l.domain};learnState.openSub=null;renderLearn()" style="width:100%;background:linear-gradient(145deg,rgba(17,19,32,.95),rgba(13,14,26,.98));border:1px solid var(--border);border-radius:18px;padding:18px 16px;text-align:left;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;gap:14px;transition:all .2s;font-family:inherit">
-              <div style="width:44px;height:44px;border-radius:12px;background:${l.color}15;border:1px solid ${l.color}33;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:${l.color};flex-shrink:0">D${l.domain}</div>
-              <div style="flex:1">
-                <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:${l.color};margin-bottom:3px">${l.title.split(':')[1].trim()}</div>
-                <div style="font-size:11px;color:var(--text3)">${l.subs.length} sub-objectives · ${DOMAINS[l.domain-1].weight}% of exam</div>
-              </div>
-              <div style="font-size:18px;color:var(--text4)">→</div>
-            </button>`).join('')}
-          <button onclick="setTab('cards')" style="width:100%;background:linear-gradient(145deg,rgba(0,229,255,.04),rgba(0,0,0,0));border:1px solid rgba(0,229,255,.2);border-radius:18px;padding:16px;text-align:center;cursor:pointer;font-family:inherit;color:var(--cyan);font-weight:700;font-size:14px;margin-top:4px">
-            🃏 Quick Flashcards →
-          </button>
-        </div>
-      </div>
-    `);
-    return;
-  }
-
-  // Lesson detail
-  render(`
-    <div style="padding:16px 16px 100px">
-      <button class="btn-back" onclick="learnState.domain=0;renderLearn()">← All Domains</button>
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-        <div style="width:40px;height:40px;border-radius:12px;background:${lesson.color}15;border:1px solid ${lesson.color}33;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:${lesson.color}">D${lesson.domain}</div>
-        <div>
-          <h2 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text)">${lesson.title.split(':')[1].trim()}</h2>
-          <div style="font-size:11px;color:var(--text3)">${lesson.subs.length} objectives · ${DOMAINS[lesson.domain-1].weight}% of exam</div>
-        </div>
-      </div>
-      ${lesson.subs.map((sub,si)=>{
-        const isOpen = learnState.openSub===si;
-        return `
-          <div class="lesson-card">
-            <div class="lesson-header" onclick="learnState.openSub=learnState.openSub===${si}?null:${si};renderLearn()">
-              <div style="width:36px;height:36px;border-radius:10px;background:${lesson.color}12;border:1px solid ${lesson.color}25;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:${lesson.color};flex-shrink:0">${sub.id}</div>
-              <div style="flex:1">
-                <div style="font-weight:700;font-size:14px;color:var(--text)">${sub.title}</div>
-                <div style="font-size:11px;color:var(--text3);margin-top:1px">${sub.concepts.length} concepts</div>
-              </div>
-              <div style="font-size:18px;color:var(--text3);transition:transform .2s;transform:${isOpen?'rotate(90deg)':'rotate(0deg)'}">›</div>
-            </div>
-            ${isOpen?`
-            <div class="lesson-body open">
-              ${sub.concepts.map(c=>`
-                <div class="lesson-concept">
-                  <div style="font-size:12px;font-weight:800;color:${lesson.color};margin-bottom:5px;letter-spacing:.3px">${c.h}</div>
-                  <div style="font-size:13px;color:var(--text2);line-height:1.65">${c.b}</div>
-                </div>`).join('')}
-              <div class="lesson-tip">
-                <div style="font-size:10px;font-weight:800;color:var(--yellow);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px">⚡ Exam Tip</div>
-                ${sub.tip}
-              </div>
-              <button class="btn-primary" style="margin-top:14px;font-size:13px;padding:12px" onclick="state.quiz.domain=${lesson.domain};resetQuiz();setTab('quiz')">
-                Practice D${lesson.domain} Questions →
-              </button>
-            </div>`:''}
-          </div>`;
-      }).join('')}
-    </div>
-  `);
-}
-
-
-// ─── RENDER TAB ───────────────────────────────────────────────────────────────
-function renderTab(id){
-  window.scrollTo(0,0);
-  if(id==='home') renderHome();
-  else if(id==='learn') renderLearn();
-  else if(id==='quiz') renderQuiz();
-  else if(id==='game') renderGame();
-  else if(id==='pbq') renderPBQ();
-}
-
-// ─── NAV ─────────────────────────────────────────────────────────────────────
-document.querySelectorAll('#nav .tab').forEach(btn=>{
-  btn.addEventListener('click',()=>setTab(btn.dataset.tab));
-});
-
-// ─── INIT ─────────────────────────────────────────────────────────────────────
 renderHome();
 </script>
 </body>
