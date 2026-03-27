@@ -36,12 +36,13 @@ input:focus,select:focus{outline:none;border-color:var(--cy)!important;box-shado
 #pg{padding-bottom:72px}
 #bnav{position:fixed;bottom:0;left:0;right:0;background:rgba(17,24,39,.97);
       border-top:1px solid var(--bd);backdrop-filter:blur(18px);
-      display:flex;z-index:150;padding-bottom:env(safe-area-inset-bottom,0);
-      overflow-x:auto;scrollbar-width:none}
-#bnav::-webkit-scrollbar{display:none}
-.bnt{flex:0 0 64px;background:transparent;display:flex;flex-direction:column;align-items:center;
+      z-index:150;padding-bottom:env(safe-area-inset-bottom,0)}
+#bnav-inner{display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;
+            scrollbar-width:none;width:100%}
+#bnav-inner::-webkit-scrollbar{display:none}
+.bnt{flex:0 0 68px;background:transparent;display:flex;flex-direction:column;align-items:center;
      justify-content:center;gap:2px;color:var(--tx4);font-size:8px;letter-spacing:.4px;
-     text-transform:uppercase;font-weight:700;padding:10px 4px 8px;position:relative}
+     text-transform:uppercase;font-weight:700;padding:10px 4px 8px;position:relative;border:none}
 .bnt.on{color:var(--cy)}
 .bnt.on::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
                 width:44%;height:2px;background:var(--cy);border-radius:0 0 3px 3px;
@@ -173,6 +174,7 @@ input:focus,select:focus{outline:none;border-color:var(--cy)!important;box-shado
 /* ── HERO ── */
 .hero{position:relative;overflow:hidden;padding:36px 20px 28px}
 @media(min-width:768px){.hero{padding:48px 40px 36px}}
+@media(min-width:1280px){.hero{padding:56px 48px 40px}}
 .hg1{position:absolute;top:-80px;right:-70px;width:280px;height:280px;border-radius:50%;
      background:radial-gradient(circle,rgba(56,189,248,.09) 0%,transparent 70%);pointer-events:none}
 .hg2{position:absolute;bottom:-60px;left:-80px;width:200px;height:200px;border-radius:50%;
@@ -239,10 +241,58 @@ input:focus,select:focus{outline:none;border-color:var(--cy)!important;box-shado
 .fu2{animation:fadeUp .3s .14s ease both}
 .fu3{animation:fadeUp .3s .21s ease both}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .col{display:flex;flex-direction:column;gap:8px}
 .row{display:flex;align-items:center;gap:8px}
 .stitle{font-size:10px;color:var(--tx3);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:12px}
 .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* ── RESPONSIVE LAYOUTS ── */
+/* Desktop: flashcard 2-col (card | stats) */
+.fc-layout{display:block}
+/* Desktop: quiz 2-col answers */
+.ans-grid{display:flex;flex-direction:column;gap:9px}
+/* Desktop: blitz 2-col (question | options) */
+.blitz-layout{display:block}
+/* Desktop: exam home 2-col (readiness | modes) */
+.exam-layout{display:block}
+/* Desktop: match wider */
+.match-wrap{max-width:100%}
+/* Sidebar inner content max-width */
+.inner{width:100%;max-width:720px}
+
+@media(min-width:768px){
+  /* Home: 4-col quick actions */
+  .home-grid{grid-template-columns:repeat(4,1fr)!important}
+  /* Flashcard: side-by-side */
+  .fc-layout{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start}
+  /* Quiz: 2-col answers */
+  .ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  /* Blitz: 2-col on wide */
+  .blitz-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+  /* Exam home: 2-col */
+  .exam-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+  /* max-width tighter at 768 */
+  #pg{max-width:900px;margin:0 auto}
+}
+@media(min-width:1024px){
+  #pg{max-width:1000px}
+  .g2.can4{grid-template-columns:repeat(4,1fr)}
+}
+@media(min-width:1280px){
+  #pg{max-width:1080px}
+}
+/* Sticky exam header — full width within #main */
+.exam-bar{
+  position:sticky;top:0;z-index:50;
+  background:var(--bg2);border-bottom:1px solid var(--bd);
+  padding:12px 20px;
+}
+@media(min-width:768px){.exam-bar{padding:12px 40px}}
+/* Overflow scroll wrapper for tables on mobile */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:16px}
+/* Answer grid — single col on mobile always for PBQ */
+.ans-grid.force-col{display:flex!important;flex-direction:column}
 </style>
 </head>
 <body>
@@ -265,12 +315,14 @@ input:focus,select:focus{outline:none;border-color:var(--cy)!important;box-shado
   <main id="main"><div id="pg"></div></main>
 </div>
 <nav id="bnav">
-  <button class="bnt on" data-tab="home"><span class="bi">🏠</span>Home</button>
-  <button class="bnt" data-tab="cards"><span class="bi">🃏</span>Cards</button>
-  <button class="bnt" data-tab="quiz"><span class="bi">🎯</span>Quiz</button>
-  <button class="bnt" data-tab="exam"><span class="bi">📝</span>Exam</button>
-  <button class="bnt" data-tab="game"><span class="bi">🎮</span>Game</button>
-  <button class="bnt" data-tab="pbq"><span class="bi">🧪</span>PBQ</button>
+  <div id="bnav-inner">
+    <button class="bnt on" data-tab="home"><span class="bi">🏠</span>Home</button>
+    <button class="bnt" data-tab="cards"><span class="bi">🃏</span>Cards</button>
+    <button class="bnt" data-tab="quiz"><span class="bi">🎯</span>Quiz</button>
+    <button class="bnt" data-tab="exam"><span class="bi">📝</span>Exam</button>
+    <button class="bnt" data-tab="game"><span class="bi">🎮</span>Game</button>
+    <button class="bnt" data-tab="pbq"><span class="bi">🧪</span>PBQ</button>
+  </div>
 </nav>
 <script>
 
@@ -898,10 +950,10 @@ const S={
   game:{on:false,score:0,lives:3,streak:0,best:0,timer:60,iv:null,qs:[],qi:0,cur:null,sel:null,df:0},
   pbq:{sim:null},
   fw:{rules:[{s:"",d:"",p:"",a:"ALLOW"},{s:"",d:"",p:"",a:"ALLOW"},{s:"",d:"",p:"",a:"ALLOW"},{s:"",d:"",p:"",a:"ALLOW"}],checked:false,res:[]},
-  logs:{sc:0,ans:{},checked:false},
+  logs:{scenario:0,answers:{},checked:false},
   ports:{pg:0,sP:null,sPort:null,matched:[],wrong:false,moves:0,done:false,sh:[]},
   triage:{pri:[],checked:false,acts:[],actCk:false},
-  net:{placed:{},drag:null,checked:false},
+  net:{placed:{},dragging:null,checked:false},
   exam:{
     mode:null,      // 'sim'|'drill'|'weak'
     drillSize:30,
@@ -918,6 +970,7 @@ const pg=()=>document.getElementById("pg");
 function render(html){pg().innerHTML=html;window.scrollTo(0,0);}
 function dc(id){return DOMAINS[id-1]?.color||"#38bdf8";}
 function sc(p){return p>=80?"var(--gn)":p>=60?"var(--ye)":"var(--pk)";}
+var scoreColor=sc;
 
 function mkchips(cur,fn){
   return [{id:0,name:"All",col:"#38bdf8"},...DOMAINS.map(d=>({id:d.id,name:"D"+d.id,col:d.color}))]
@@ -952,8 +1005,8 @@ function setTab(id){
   document.querySelectorAll(".sbb,.bnt").forEach(function(b){
     b.classList.toggle("on",b.dataset.tab===id);
     // Scroll active tab into view in bottom nav
-    if(b.classList.contains("bnt") && b.dataset.tab===id){
-      b.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});
+    if(b.classList.contains("bnt") && b.dataset.tab===id && document.getElementById('bnav-inner')){
+      document.getElementById('bnav-inner').scrollLeft = b.offsetLeft - (document.getElementById('bnav-inner').offsetWidth/2) + (b.offsetWidth/2);
     }
   });
   renderTab(id);
@@ -1321,12 +1374,10 @@ function renderExamHome(){
     }
   }
 
-  render(
-    "<div class='pg'>"+
-      "<h2 style='font-family:Syne,sans-serif;font-size:22px;font-weight:800;color:var(--tx);margin-bottom:4px'>📝 Exam Simulator</h2>"+
-      "<p style='font-size:13px;color:var(--tx3);margin-bottom:20px'>Real exam format · Domain-weighted · Pass/fail verdict</p>"+
-      readyCard + weakWarn +
-      "<div class='stitle'>Choose Exam Mode</div>"+
+  // On desktop: left col = readiness+history, right col = modes
+  var leftCol = readyCard + weakWarn + histCard;
+  var rightCol =
+    "<div class='stitle'>Choose Exam Mode</div>"+
       // Full Sim
       "<button onclick='startExam(\"sim\",90)' style='width:100%;background:var(--bg2);border:1.5px solid rgba(56,189,248,.25);border-radius:16px;padding:18px 16px;margin-bottom:12px;text-align:left;cursor:pointer;font-family:inherit;transition:all .2s'>"+
         "<div style='display:flex;align-items:center;gap:14px'>"+
@@ -1361,8 +1412,16 @@ function renderExamHome(){
           "</button>";
         }).join("")+
       "</div>"+
-      // Clear history
-      (hist.length ? "<button class='btn btn-s' style='margin-top:20px;font-size:12px' onclick='clearExamHistory()'>Clear History</button>" : "")+
+      (hist.length ? "<button class='btn btn-s' style='margin-top:20px;font-size:12px' onclick='clearExamHistory()'>Clear History</button>" : "");
+
+  render(
+    "<div class='pg'>"+
+      "<h2 style='font-family:Syne,sans-serif;font-size:22px;font-weight:800;color:var(--tx);margin-bottom:4px'>📝 Exam Simulator</h2>"+
+      "<p style='font-size:13px;color:var(--tx3);margin-bottom:20px'>Real exam format · Domain-weighted · Pass/fail verdict</p>"+
+      "<div class='exam-layout'>"+
+        "<div>"+leftCol+"</div>"+
+        "<div>"+rightCol+"</div>"+
+      "</div>"+
     "</div>"
   );
 }
@@ -1378,7 +1437,7 @@ function renderExamQ(){
 
   render(
     // Top bar
-    "<div style='background:var(--bg2);border-bottom:1px solid var(--bd);padding:12px 20px;position:sticky;top:0;z-index:50'>"+
+    "<div class='exam-bar'>"+
       "<div style='display:flex;align-items:center;justify-content:space-between;max-width:1080px;margin:0 auto'>"+
         "<div style='display:flex;align-items:center;gap:14px'>"+
           "<div style='text-align:center'>"+
@@ -1422,7 +1481,7 @@ function renderExamQ(){
       "</div>"+
 
       // Answer options
-      "<div class='col' style='gap:10px;margin-bottom:20px'>"+
+      "<div class='ans-grid force-col' style='margin-bottom:20px'>"+
         q.o.map(function(opt,i){
           var sel = e.ans[e.cur]===i;
           var cls = 'ans'+(sel?' sel':'');
@@ -1573,7 +1632,7 @@ function renderHome(){
       }).join("")+
     "</div></div>"+
     "<div class='pg'>"+
-    "<div class='g2 fu1' style='margin-bottom:20px'>"+
+    "<div class='g2 home-grid fu1' style='margin-bottom:20px'>"+
       [["📖","Lessons","19 sub-objectives","#a78bfa","learn"],["🃏","Flashcards",FC.length+" cards","#38bdf8","cards"],["🎯","Practice Quiz",QZ.length+" questions","#f472b6","quiz"],["🎮","Cyber Blitz","Beat your score","#fbbf24","game"]].map(function(r){
         return "<button data-goto='"+r[4]+"' style='background:var(--bg2);border:1.5px solid "+r[3]+"22;border-radius:16px;padding:18px 14px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;transition:all .2s;font-family:inherit;min-height:90px' onclick='setTab(this.dataset.goto)'>"+  // was onclick with quotes
           "<div style='position:absolute;top:-15px;right:-15px;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,"+r[3]+"18 0%,transparent 70%)'></div>"+
@@ -1682,11 +1741,33 @@ function renderCards(){
       "<button class='cbtn ok' onclick='cardNext(this.dataset.conf)' data-conf='ok'><span style='font-size:20px'>🤔</span><span>Good</span><span style='font-size:10px;font-weight:400;opacity:.7'>Review later</span></button>"+
       "<button class='cbtn easy' onclick='cardNext(this.dataset.conf)' data-conf='easy'><span style='font-size:20px'>😊</span><span>Easy</span><span style='font-size:10px;font-weight:400;opacity:.7'>Got it!</span></button>"+
     "</div>"+
-    "<div class='tipbox' style='margin-top:12px'>"+
+    "":
+    "<p style='text-align:center;font-size:12px;color:var(--tx3);margin-top:14px'>Tap the card to flip it</p>";
+
+  // Build stats panel for desktop side column
+  var statsHtml=
+    "<div>"+
+    "<div class='card' style='padding:16px;margin-bottom:12px'>"+
+      "<div class='stitle'>Domain Progress</div>"+
+      DOMAINS.map(function(d){
+        var total=(s.dom===0?FC:FC.filter(function(c){return c.dm===s.dom;})).filter(function(c){return c.dm===d.id;}).length;
+        if(!total) return '';
+        var seen=(s.known||[]).concat(s.review||[]).filter(function(t){return FC.find(function(c){return c.t===t&&c.dm===d.id;});}).length;
+        var pct2=Math.round(seen/total*100);
+        return "<div style='margin-bottom:9px'>"+
+          "<div style='display:flex;justify-content:space-between;margin-bottom:3px'>"+
+            "<span style='font-size:11px;color:var(--tx3)'>D"+d.id+"</span>"+
+            "<span style='font-size:11px;font-weight:700;color:"+d.color+"'>"+pct2+"%</span>"+
+          "</div>"+
+          "<div class='pbar' style='margin-bottom:0;height:4px'><div class='pbarf' style='width:"+pct2+"%;background:"+d.color+"'></div></div>"+
+        "</div>";
+      }).join("")+
+    "</div>"+
+    "<div class='tipbox'>"+
       "<div style='font-size:10px;font-weight:800;color:var(--ye);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px'>⚡ Spaced Repetition</div>"+
       "Rate honestly — Hard re-queues automatically. Easy retires. Keys: Space=flip · 1=Hard · 2=Good · 3=Easy"+
-    "</div>":
-    "<p style='text-align:center;font-size:12px;color:var(--tx3);margin-top:14px'>Tap the card to flip it</p>";
+    "</div>"+
+    "</div>";
 
   render("<div class='pg'>"+hdr+chips+
     "<div style='display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px;color:var(--tx3)'>"+
@@ -1696,7 +1777,10 @@ function renderCards(){
             "<span style='color:var(--pk)'>✗"+s.hard.length+"</span></span>"+
     "</div>"+
     "<div class='pbar'><div class='pbarf' style='width:"+pct+"%'></div></div>"+
-    cardHtml+confHtml+
+    "<div class='fc-layout'>"+
+      "<div>"+cardHtml+confHtml+"</div>"+
+      statsHtml+
+    "</div>"+
   "</div>");
 }
 
@@ -1745,7 +1829,7 @@ function renderQuiz(){
       "<div style='font-size:11px;color:"+dc(q.d)+";letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;font-weight:700'>Domain "+q.d+"</div>"+
       "<div style='font-family:Syne,sans-serif;font-size:16px;font-weight:700;color:var(--tx);line-height:1.6'>"+q.q+"</div>"+
     "</div>"+
-    "<div class='col' style='gap:9px;margin-bottom:12px'>"+opts+"</div>"+"<div style='font-size:10px;color:var(--tx4);text-align:right;margin-bottom:8px'>Keys: 1 2 3 4 · Enter to continue</div>"+
+    "<div class='ans-grid' style='margin-bottom:12px'>"+opts+"</div>"+"<div style='font-size:10px;color:var(--tx4);text-align:right;margin-bottom:8px'>Keys: 1 2 3 4 · Enter to continue</div>"+
     (s.sel!==null?
       "<div class='explain'>"+
         "<div style='font-size:11px;color:var(--gn);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-weight:700'>Explanation</div>"+
@@ -1778,7 +1862,7 @@ function renderQuizResults(){
       "<div style='font-size:14px;color:var(--tx3);margin-top:4px'>"+score+" / "+qs.length+" correct</div>"+
       "<div style='font-size:13px;margin-top:8px;color:var(--tx3)'>"+(pct>=80?"Exam ready! 🎯":pct>=60?"Keep drilling 💪":"Review notes and retry 📚")+"</div>"+
     "</div>"+
-    "<div class='card' style='margin-bottom:16px'><div class='stitle'>By Domain</div>"+domStats+"</div>"+
+    "<div class='card' style='margin-bottom:16px'><div class='stitle'>By Domain</div><div style='display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:0'>"+domStats+"</div></div>"+
     "<button class='btn btn-p btn-full' style='margin-bottom:10px' onclick='resetQuiz()'>Try Again</button>"+"<button class='btn btn-s btn-full' onclick='setTab(this.dataset.t)' data-t='learn'>📖 Review Lessons</button>"+
   "</div>");
 }
@@ -1859,7 +1943,7 @@ function renderMatch(){
   }).join("");
   render("<div class='pg'>"+hdr+pgChips+
     "<p style='font-size:12px;color:var(--tx3);margin-bottom:14px'>Tap a term then tap its matching definition</p>"+
-    "<div class='g2'><div class='col'><div class='stitle'>Terms</div>"+terms+"</div>"+
+    "<div class='g2' style='max-width:900px'><div class='col'><div class='stitle'>Terms</div>"+terms+"</div>"+
     "<div class='col'><div class='stitle'>Definitions</div>"+defs+"</div></div>"+
   "</div>");
 }
@@ -2016,17 +2100,19 @@ function renderGame(){
       "<span style='line-height:1.4'>"+opt+"</span>"+extra+"</button>";
   }).join("");
   render("<div class='pg'>"+
-    "<div class='ghud'>"+
+    "<div class='ghud' style='max-width:600px;margin:0 auto 14px'>"+
       "<div><div class='gsc'>"+g.score.toLocaleString()+"</div><div style='font-size:10px;color:var(--tx3)'>score</div></div>"+
       "<div id='btr' class='gring "+tc+"'><span id='btv'>"+g.timer+"</span></div>"+
       "<div style='text-align:right'><div style='font-size:18px'>"+"❤️".repeat(g.lives)+"🖤".repeat(3-g.lives)+"</div></div>"+
     "</div>"+
     "<div class='gstreak'>"+(g.streak>=5?"⚡ "+g.streak+" STREAK — 3× POINTS!":g.streak>=3?"🔥 "+g.streak+" streak — 2× points!":g.streak>=1?"✨ "+g.streak+" streak":"")+"</div>"+
-    "<div class='card' style='margin-bottom:14px;border-color:rgba(255,255,255,.05)'>"+
-      "<div style='font-size:11px;color:"+dc(q.d)+";letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;font-weight:700'>Domain "+q.d+"</div>"+
-      "<div style='font-family:Syne,sans-serif;font-size:15px;font-weight:700;color:var(--tx);line-height:1.55;text-align:center'>"+q.q+"</div>"+
+    "<div class='blitz-layout'>"+
+      "<div class='card' style='margin-bottom:14px;border-color:rgba(255,255,255,.05)'>"+
+        "<div style='font-size:11px;color:"+dc(q.d)+";letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;font-weight:700'>Domain "+q.d+"</div>"+
+        "<div style='font-family:Syne,sans-serif;font-size:16px;font-weight:700;color:var(--tx);line-height:1.6;text-align:center'>"+q.q+"</div>"+
+      "</div>"+
+      "<div class='col' style='gap:8px'>"+opts+"</div>"+
     "</div>"+
-    "<div class='col' style='gap:8px'>"+opts+"</div>"+
   "</div>");
 }
 
@@ -2069,39 +2155,6 @@ const FW_CORRECT=[
   {s:"10.0.0.0/24",d:"ANY",p:"80,443",a:"ALLOW",r:"Internal users browse internet"},
 ];
 
-function renderPBQ(){
-  var s=S.pbq;
-  if(!s.sim){
-    var cards=[["fw","🔥","Firewall Config","Configure allow/deny rules from a scenario","#f472b6"],
-               ["logs","📋","Log Analysis","Read server logs and identify attacks","#fbbf24"],
-               ["net","🌐","Network Diagram","Place devices in correct zones","#34d399"],
-               ["ports","🔌","Ports & Protocols","Match protocols to port numbers","#38bdf8"],
-               ["triage","🚨","IR Triage","Prioritize alerts and sequence response","#a78bfa"]];
-    render("<div class='pg'>"+
-      "<h2 style='font-family:Syne,sans-serif;font-size:20px;margin-bottom:6px;color:var(--tx)'>🧪 PBQ Simulations</h2>"+
-      "<p style='font-size:12px;color:var(--tx3);margin-bottom:20px'>Performance-Based Questions — interactive, just like the real exam</p>"+
-      cards.map(function(r){
-        return "<button onclick='S.pbq.sim=this.dataset.s;renderPBQ()' data-s='"+r[0]+"' style='width:100%;background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:18px 16px;text-align:left;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;gap:14px;font-family:inherit'>"+
-          "<div style='font-size:32px;flex-shrink:0'>"+r[1]+"</div>"+
-          "<div><div style='font-family:Syne,sans-serif;font-size:15px;font-weight:700;color:"+r[4]+";margin-bottom:3px'>"+r[2]+"</div>"+
-          "<div style='font-size:12px;color:var(--tx3)'>"+r[3]+"</div></div></button>";
-      }).join("")+
-    "</div>");
-    return;
-  }
-  var titles={fw:"🔥 Firewall Config",logs:"📋 Log Analysis",net:"🌐 Network Diagram",ports:"🔌 Ports & Protocols",triage:"🚨 IR Triage"};
-  var html="<div class='pg'><button class='btn btn-g' onclick='S.pbq.sim=null;renderPBQ()' style='margin-bottom:16px'>← Back to PBQs</button><h2 style='font-family:Syne,sans-serif;font-size:20px;margin-bottom:20px;color:var(--tx)'>"+titles[s.sim]+"</h2>";
-  if(s.sim==="fw")html+=renderFW();
-  else if(s.sim==="logs")html+=renderLogs();
-  else if(s.sim==="net")html+=renderNet();
-  else if(s.sim==="ports")html+=renderPorts();
-  else if(s.sim==="triage")html+=renderTriage();
-  html+="</div>";
-  render(html);
-}
-
-// FW_CORRECT already declared above
-
 
 function renderFW(){
   const s=S.fw;
@@ -2111,18 +2164,18 @@ function renderFW(){
       Configure rules to: Allow HTTPS from internet to web server · Allow web server to query DB (3306) · Block all other DMZ→Internal traffic · Allow internal users to browse HTTP/HTTPS.
     </div>
     <div style="font-size:11px;color:#f9c74f;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">Configure 4 Firewall Rules</div>
-    <div style="overflow-x:auto;margin-bottom:16px">
+    <div class="tbl-wrap">
       <table class="fwtbl">
         <thead><tr><th>#</th><th>Source</th><th>Destination</th><th>Port</th><th>Action</th><th>✓</th></tr></thead>
         <tbody>
           ${s.rules.map((r,i)=>`
-            <tr style="background:${s.checked?(S.fw.results[i]?.ok?'#052e16':'#2d0a0a'):'#080f1a'}">
+            <tr style="background:${s.checked?(S.fw.results[i]?.ok?'var(--gn0)':'var(--pk0)'):'var(--bg)'}">
               <td style="color:#475569;font-weight:700;padding:8px 5px">${i+1}</td>
               <td style="padding:6px 4px"><input class="fw-in" value="${r.s}" placeholder="e.g. ANY" onchange="fwUpdate(${i},'s',this.value)" style="width:88px"></td>
               <td style="padding:6px 4px"><input class="fw-in" value="${r.d}" placeholder="IP/subnet" onchange="fwUpdate(${i},'d',this.value)" style="width:88px"></td>
               <td style="padding:6px 4px"><input class="fw-in" value="${r.p}" placeholder="443" onchange="fwUpdate(${i},'p',this.value)" style="width:60px"></td>
               <td style="padding:6px 4px">
-                <select class="fw-sel" onchange="fwUpdate(${i},'a',this.value)" style="color:${r.a==='ALLOW'?'#22c55e':'#ef4444'}">
+                <select class="fw-sel" onchange="fwUpdate(${i},'a',this.value)" style="color:${r.a==='ALLOW'?'var(--gn)':'var(--pk)'}">
                   <option value="ALLOW" ${r.a==='ALLOW'?'selected':''}>ALLOW</option>
                   <option value="DENY" ${r.a==='DENY'?'selected':''}>DENY</option>
                 </select>
@@ -2134,10 +2187,10 @@ function renderFW(){
     </div>
     ${s.checked?`
       <div class="card" style="margin-bottom:16px">
-        <div style="font-size:11px;color:${S.fw.results.filter(r=>r.ok).length===4?'#22c55e':'#f9c74f'};letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Score: ${S.fw.results.filter(r=>r.ok).length}/4</div>
+        <div style="font-size:11px;color:${S.fw.results.filter(r=>r.ok).length===4?'var(--gn)':'#f9c74f'};letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Score: ${S.fw.results.filter(r=>r.ok).length}/4</div>
         ${S.fw.results.map((r,i)=>`
           <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #0f1929">
-            <div style="font-size:12px;color:${r.ok?'#86efac':'#fca5a5'};font-weight:600;margin-bottom:4px">Rule ${i+1}: ${FW_CORRECT[i].r}</div>
+            <div style="font-size:12px;color:${r.ok?'var(--gn)':'var(--pk)'};font-weight:600;margin-bottom:4px">Rule ${i+1}: ${FW_CORRECT[i].r}</div>
             ${!r.ok?`<div style="font-size:11px;color:#64748b">Expected: ${FW_CORRECT[i].s} → ${FW_CORRECT[i].d} Port:${FW_CORRECT[i].p} ${FW_CORRECT[i].a}</div>`:''}
           </div>`).join('')}
       </div>`:''}
@@ -2215,7 +2268,7 @@ function renderLogs(){
   const sc=LOG_SCENARIOS[s.scenario];
   return `
     <div class="chips" style="margin-bottom:16px">
-      ${LOG_SCENARIOS.map((ls,i)=>`<button class="chip ${s.scenario===i?'active':''}" style="${s.scenario===i?'color:#ff4d6d;border-color:#ff4d6d;background:#ff4d6d18':''};" onclick="setLogScenario(${i})">Scenario ${i+1}</button>`).join('')}
+      ${LOG_SCENARIOS.map((ls,i)=>`<button class="chip${s.scenario===i?' on':''}" style="${s.scenario===i?'color:#ff4d6d;border-color:#ff4d6d;background:#ff4d6d18':''};" onclick="setLogScenario(${i})">Scenario ${i+1}</button>`).join('')}
     </div>
     <div style="font-size:13px;font-weight:700;color:#f9c74f;margin-bottom:10px">${sc.title}</div>
     <div class="logbox">${sc.log}</div>
@@ -2229,11 +2282,11 @@ function renderLogs(){
             let cls='';
             if(s.checked){ if(oi===q.a) cls='correct'; else if(oi===sel) cls='wrong'; }
             else if(oi===sel) cls='selected';
-            return `<button class="answer-btn ${cls}" onclick="logPick(${qi},${oi})">
-              <span class="letter">${['A','B','C','D'][oi]}</span>
+            return `<button class="ans ${cls}" onclick="logPick(${qi},${oi})" style="margin-bottom:0">
+              <span class="ltr">${['A','B','C','D'][oi]}</span>
               <span style="line-height:1.4">${opt}</span>
-              ${s.checked&&oi===q.a?'<span style="margin-left:auto">✓</span>':''}
-              ${s.checked&&oi===sel&&oi!==q.a?'<span style="margin-left:auto">✗</span>':''}
+              ${s.checked&&oi===q.a?'<span style="margin-left:auto;font-size:16px">✓</span>':''}
+              ${s.checked&&oi===sel&&oi!==q.a?'<span style="margin-left:auto;font-size:16px">✗</span>':''}
             </button>`;
           }).join('')}
         </div>
@@ -2283,11 +2336,11 @@ function renderNet(){
     <div style="font-size:11px;color:#475569;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Available Devices (${unplaced.length} remaining)</div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;min-height:44px;background:#080f1a;border-radius:12px;padding:10px;border:1px solid #1e293b;margin-bottom:20px">
       ${unplaced.length===0?'<div style="font-size:12px;color:#334155;align-self:center">All devices placed ✓</div>':
-      unplaced.map(d=>`<button onclick="netSelect('${d}')" style="background:${s.dragging===d?'#0d2d40':'#0a1525'};border:1px solid ${s.dragging===d?'#00d4ff':'#1e293b'};border-radius:8px;padding:7px 12px;color:${s.dragging===d?'#00d4ff':'#94a3b8'};font-size:12px;font-family:inherit;font-weight:600;cursor:pointer">${s.dragging===d?'📌 ':''}${d}</button>`).join('')}
+      unplaced.map(d=>`<button onclick="netSelect('${d}')" style="background:${s.dragging===d?'var(--bg4)':'var(--bg3)'};border:1px solid ${s.dragging===d?'var(--cy)':'var(--bd)'};border-radius:8px;padding:7px 12px;color:${s.dragging===d?'var(--cy)':'var(--tx2)'};font-size:12px;font-family:inherit;font-weight:600;cursor:pointer">${s.dragging===d?'📌 ':''}${d}</button>`).join('')}
     </div>
     ${NET_ZONES.map(z=>{
       const zd=getZoneDevs(z.id);
-      return `<div class="zone ${s.dragging&&z.id!=='internet'?'droptarget':''}" style="border-color:${s.dragging&&z.id!=='internet'?z.color+'44':'#1e293b'}" onclick="netDrop('${z.id}')">
+      return `<div class="zone ${s.dragging&&z.id!=='internet'?'droptarget':''}" style="border-color:${s.dragging&&z.id!=='internet'?z.color+'44':'var(--bd)'}" onclick="netDrop('${z.id}')">
         <div style="display:flex;justify-content:space-between;margin-bottom:8px">
           <span style="font-size:13px;font-weight:700;color:${z.color}">${z.label}</span>
           <span style="font-size:11px;color:#334155">${z.desc}</span>
@@ -2296,14 +2349,14 @@ function renderNet(){
           ${zd.length===0?`<span style="font-size:11px;color:#1e293b">${s.dragging&&z.id!=='internet'?'Drop here →':'Empty'}</span>`:
           zd.map(d=>{
             const ok=s.checked?NET_ZONES.find(zz=>zz.id===z.id)?.accepts.includes(d):null;
-            return `<span class="zone-device" onclick="event.stopPropagation();netRemove('${z.id}','${d}')" style="background:${ok===null?z.color+'18':ok?'#052e16':'#2d0a0a'};border-color:${ok===null?z.color:ok?'#22c55e':'#ef4444'};color:${ok===null?z.color:ok?'#86efac':'#fca5a5'}">${s.checked?(ok?'✓':'✗'):''} ${d}</span>`;
+            return `<span class="zd" onclick="event.stopPropagation();netRemove('${z.id}','${d}')" style="background:${ok===null?z.color+'18':ok?'var(--gn0)':'var(--pk0)'};border-color:${ok===null?z.color:ok?'var(--gn)':'var(--pk)'};color:${ok===null?z.color:ok?'var(--gn)':'var(--pk)'}">${s.checked?(ok?'✓':'✗'):''} ${d}</span>`;
           }).join('')}
         </div>
       </div>`;
     }).join('')}
     ${s.checked?`
       <div class="card" style="margin-bottom:12px">
-        <div style="font-size:14px;font-weight:700;color:${totalCorrect>=6?'#22c55e':'#f9c74f'};margin-bottom:12px;font-family:'Syne',sans-serif">Score: ${totalCorrect}/${NET_DEVICES.length-1} correct</div>
+        <div style="font-size:14px;font-weight:700;color:${totalCorrect>=6?'var(--gn)':'#f9c74f'};margin-bottom:12px;font-family:'Syne',sans-serif">Score: ${totalCorrect}/${NET_DEVICES.length-1} correct</div>
         <div style="font-size:12px;color:#64748b;line-height:1.8">
           <div style="margin-bottom:4px;color:#94a3b8">Correct placements:</div>
           <div>🟡 DMZ: Web Server, WAF, Honeypot</div>
@@ -2447,7 +2500,7 @@ function renderTriage(){
     ${TRIAGE_ALERTS.map(a=>{
       const rank=s.priority.indexOf(a.id)+1;
       const isSel=s.priority.includes(a.id);
-      return `<div onclick="triagePick('${a.id}')" style="background:${isSel?'#0a1525':'#080f1a'};border:1px solid ${isSel?a.color:'#1e293b'};border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;display:flex;align-items:flex-start;gap:12px;transition:all .2s">
+      return `<div onclick="triagePick('${a.id}')" style="background:${isSel?'var(--bg3)':'var(--bg)'};border:1px solid ${isSel?a.color:'var(--bd)'};border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;display:flex;align-items:flex-start;gap:12px;transition:all .2s">
         <div style="width:28px;height:28px;border-radius:8px;background:${a.color}22;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:${a.color};flex-shrink:0">${isSel?rank:a.id}</div>
         <div style="flex:1">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px">
@@ -2455,14 +2508,14 @@ function renderTriage(){
             <span style="font-size:10px;color:${a.color};font-weight:700;flex-shrink:0;margin-left:8px">${a.sev}</span>
           </div>
           <div style="font-size:11px;color:#64748b">${a.detail}</div>
-          ${s.checked?`<div style="margin-top:6px;font-size:11px;color:${s.priority[CORRECT_PRIORITY.indexOf(a.id)]===a.id?'#22c55e':'#ef4444'}">${s.priority[CORRECT_PRIORITY.indexOf(a.id)]===a.id?'✓ Correct!':'✗ Check reasoning below'}</div>`:''}
+          ${s.checked?`<div style="margin-top:6px;font-size:11px;color:${s.priority[CORRECT_PRIORITY.indexOf(a.id)]===a.id?'var(--gn)':'var(--pk)'}">${s.priority[CORRECT_PRIORITY.indexOf(a.id)]===a.id?'✓ Correct!':'✗ Check reasoning below'}</div>`:''}
         </div>
       </div>`;
     }).join('')}
     ${!s.checked&&s.priority.length===TRIAGE_ALERTS.length?`<button class="btn btn-p btn-full" style="margin-bottom:20px" onclick="checkTriage()">Check Priority</button>`:''}
     ${s.checked?`
       <div class="card" style="margin-bottom:20px">
-        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:${s.priority.filter((id,i)=>id===CORRECT_PRIORITY[i]).length>=4?'#22c55e':'#f9c74f'};margin-bottom:10px">Priority Score: ${s.priority.filter((id,i)=>id===CORRECT_PRIORITY[i]).length}/5</div>
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:${s.priority.filter((id,i)=>id===CORRECT_PRIORITY[i]).length>=4?'var(--gn)':'var(--ye)'};margin-bottom:10px">Priority Score: ${s.priority.filter((id,i)=>id===CORRECT_PRIORITY[i]).length}/5</div>
         <div style="font-size:13px;color:#94a3b8;line-height:2">
           <strong style="color:#f1f5f9">Correct order:</strong><br>
           1️⃣ <span style="color:#ef4444">A</span> — Active ransomware = most immediate threat<br>
@@ -2477,12 +2530,12 @@ function renderTriage(){
       const isC=s.actChecked&&i===TRIAGE_ACTIONS.indexOf(action);
       const isW=s.actChecked&&i!==TRIAGE_ACTIONS.indexOf(action);
       return `<div class="order-item ${isC?'correct':isW?'wrong':''}" style="margin-bottom:8px">
-        <span class="oinm" style="background:${isC?'rgba(34,197,94,.2)':isW?'rgba(239,68,68,.2)':'#1e293b'};color:${isC?'#22c55e':isW?'#ef4444':'#64748b'}">${i+1}</span>
-        <span style="font-size:12px;color:${isC?'#86efac':isW?'#fca5a5':'#94a3b8'};flex:1;line-height:1.4">${action}</span>
+        <span class="oinm" style="background:${isC?'rgba(34,197,94,.2)':isW?'rgba(239,68,68,.2)':'var(--bd)'};color:${isC?'var(--gn)':isW?'var(--pk)':'var(--tx3)'}">${i+1}</span>
+        <span style="font-size:12px;color:${isC?'var(--gn)':isW?'var(--pk)':'var(--tx2)'};flex:1;line-height:1.4">${action}</span>
         ${s.actChecked?`<span style="font-size:14px">${isC?'✓':'✗'}</span>`:`
           <div style="display:flex;flex-direction:column;gap:2px">
-            <button onclick="triageUp(${i})" ${i===0?'disabled':''} style="background:transparent;border:none;color:${i===0?'#1e293b':'#475569'};cursor:${i===0?'default':'pointer'};font-size:14px;padding:1px 6px">▲</button>
-            <button onclick="triageDn(${i})" ${i===s.actionOrder.length-1?'disabled':''} style="background:transparent;border:none;color:${i===s.actionOrder.length-1?'#1e293b':'#475569'};cursor:${i===s.actionOrder.length-1?'default':'pointer'};font-size:14px;padding:1px 6px">▼</button>
+            <button onclick="triageUp(${i})" ${i===0?'disabled':''} style="background:transparent;border:none;color:${i===0?'var(--bd)':'#475569'};cursor:${i===0?'default':'pointer'};font-size:14px;padding:1px 6px">▲</button>
+            <button onclick="triageDn(${i})" ${i===s.actionOrder.length-1?'disabled':''} style="background:transparent;border:none;color:${i===s.actionOrder.length-1?'var(--bd)':'#475569'};cursor:${i===s.actionOrder.length-1?'default':'pointer'};font-size:14px;padding:1px 6px">▼</button>
           </div>`}
       </div>`;
     }).join('')}
