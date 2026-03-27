@@ -7,8 +7,11 @@
 <meta name="theme-color" content="#111827"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="Sec+ Study"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
 <title>Security+ Study Hub | secplus.kulaninstitute.org</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/><noscript><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/></noscript>
 <style>
 :root{
   --bg:#111827;--bg2:#1a2235;--bg3:#1f2a40;--bg4:#263047;
@@ -314,7 +317,15 @@ padding:12px 20px;
     <button class="sbb" data-tab="exam"><span class="sbi">📝</span> Exam Simulator</button>
     <div class="sbft">Kulan Institute of Learning<br>secplus.kulaninstitute.org</div>
   </aside>
-  <main id="main"><div id="pg"></div></main>
+  <main id="main">
+    <div id="pg">
+      <div id="loading" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;padding:40px 20px;text-align:center">
+        <div style="font-size:48px;margin-bottom:16px">🔐</div>
+        <div style="font-family:sans-serif;font-size:18px;font-weight:700;color:#38bdf8;margin-bottom:8px">Security+ Study Hub</div>
+        <div style="font-size:13px;color:#505d7e">Loading...</div>
+      </div>
+    </div>
+  </main>
 </div>
 <nav id="bnav">
   <div id="bnav-inner">
@@ -327,6 +338,14 @@ padding:12px 20px;
   </div>
 </nav>
 <script>
+window.onerror = function(msg, src, line, col, err){
+  var pg2 = document.getElementById('pg');
+  if(pg2 && pg2.innerHTML.indexOf('loading') !== -1){
+    pg2.innerHTML = "<div style='padding:40px 20px;text-align:center;font-family:sans-serif'><div style='font-size:48px;margin-bottom:16px'>⚠️</div><div style='font-size:18px;font-weight:700;color:#f472b6;margin-bottom:8px'>Script Error</div><div style='font-size:13px;color:#8d9ac0;margin-bottom:8px'>" + msg + "</div><div style='font-size:11px;color:#505d7e'>Line " + line + " · Try: Ctrl+Shift+R to hard refresh</div></div>";
+  }
+  console.error('onerror:', msg, src, line);
+  return false;
+};
 
 const DOMAINS=[{id:1,name:“General Security Concepts”,weight:12,color:”#38bdf8”},{id:2,name:“Threats, Vulnerabilities & Mitigations”,weight:22,color:”#f472b6”},{id:3,name:“Security Architecture”,weight:18,color:”#34d399”},{id:4,name:“Security Operations”,weight:28,color:”#fbbf24”},{id:5,name:“Security Program Management”,weight:20,color:”#a78bfa”}];
 const FC=[
@@ -1894,7 +1913,7 @@ function renderQuiz(){
 var s=S.quiz;
 if(!s.msel)s.msel=new Set();
 var chips=”<div class='chips'>”+mkchips(s.dom,“setQuizDom”)+”</div>”;
-var hdr=”<h2 style='font-family:Syne,sans-serif;font-size:20px;margin-bottom:16px;color:var(--tx)'>\u{1F3AF} Practice Quiz <span style='font-size:13px;color:var(--tx3);font-weight:400'>”+QZ.length+” questions</span></h2>”;
+var hdr=”<h2 style='font-family:Syne,sans-serif;font-size:20px;margin-bottom:16px;color:var(--tx)'>🎯 Practice Quiz <span style='font-size:13px;color:var(--tx3);font-weight:400'>”+QZ.length+” questions</span></h2>”;
 if(s.done){renderQuizResults();return;}
 var qs=qDeck(),q=qs[s.cur];
 if(!q){s.done=true;renderQuizResults();return;}
@@ -1902,15 +1921,15 @@ var score=s.ans.filter(function(a){return a.c;}).length;
 var submitted=s.sel!==null;
 var multi=isMulti(q);
 
-var badge=multi?”<div style='display:inline-flex;align-items:center;gap:6px;background:var(--ye0);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:6px 12px;margin-bottom:12px'><span style='font-size:13px'>\u2705</span><span style='font-size:12px;font-weight:700;color:var(--ye)'>Select “+q.choose+” — choose all that apply</span></div>”:””;
+var badge=multi?”<div style='display:inline-flex;align-items:center;gap:6px;background:var(--ye0);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:6px 12px;margin-bottom:12px'><span style='font-size:13px'>✅</span><span style='font-size:12px;font-weight:700;color:var(--ye)'>Select “+q.choose+” — choose all that apply</span></div>”:””;
 
 var opts;
 if(!multi){
 opts=q.o.map(function(opt,i){
 var cls=“ans”,extra=””;
 if(submitted){
-if(i===q.a){cls=“ans hit”;extra=”<span style='margin-left:auto;font-size:16px'>\u2713</span>”;}
-else if(i===s.sel){cls=“ans miss”;extra=”<span style='margin-left:auto;font-size:16px'>\u2717</span>”;}
+if(i===q.a){cls=“ans hit”;extra=”<span style='margin-left:auto;font-size:16px'>✓</span>”;}
+else if(i===s.sel){cls=“ans miss”;extra=”<span style='margin-left:auto;font-size:16px'>✗</span>”;}
 else cls=“ans dim”;
 }
 return “<button class='"+cls+"' onclick='quizPick("+i+")'><span class='ltr'>”+[“A”,“B”,“C”,“D”][i]+”</span><span style='line-height:1.4;flex:1'>”+opt+”</span>”+extra+”</button>”;
@@ -1922,14 +1941,14 @@ var isSel=s.msel.has(i);
 var cls=“ans”,extra=””,cbBorder=“var(–bd)”,cbBg=“transparent”,cbIcon=””;
 if(submitted){
 var shouldBe=correctSet.has(i);
-if(shouldBe&&isSel){cls=“ans hit”;cbBorder=“var(–gn)”;cbBg=“var(–gn0)”;cbIcon=”\u2713”;extra=”<span style='margin-left:auto;font-size:15px'>\u2713</span>”;}
+if(shouldBe&&isSel){cls=“ans hit”;cbBorder=“var(–gn)”;cbBg=“var(–gn0)”;cbIcon=“✓”;extra=”<span style='margin-left:auto;font-size:15px'>✓</span>”;}
 else if(shouldBe&&!isSel){cls=“ans hit”;cbBorder=“var(–gn)”;cbBg=“rgba(52,211,153,.04)”;cbIcon=”!”;extra=”<span style='margin-left:auto;font-size:12px;color:var(--gn)'>missed</span>”;}
-else if(!shouldBe&&isSel){cls=“ans miss”;cbBorder=“var(–pk)”;cbBg=“var(–pk0)”;cbIcon=”\u2717”;extra=”<span style='margin-left:auto;font-size:15px'>\u2717</span>”;}
+else if(!shouldBe&&isSel){cls=“ans miss”;cbBorder=“var(–pk)”;cbBg=“var(–pk0)”;cbIcon=“✗”;extra=”<span style='margin-left:auto;font-size:15px'>✗</span>”;}
 else cls=“ans dim”;
 } else {
-if(isSel){cls=“ans sel”;cbBorder=“var(–cy)”;cbBg=“var(–cy0)”;cbIcon=”\u2713”;}
+if(isSel){cls=“ans sel”;cbBorder=“var(–cy)”;cbBg=“var(–cy0)”;cbIcon=“✓”;}
 }
-var cb=”<span style='width:20px;height:20px;border-radius:5px;border:2px solid "+cbBorder+";background:"+cbBg+";display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:"+(cbIcon==="!"?"var(--gn)":cbIcon==="\u2717"?"var(--pk)":"var(--gn)")+"'>”+cbIcon+”</span>”;
+var cb=”<span style='width:20px;height:20px;border-radius:5px;border:2px solid "+cbBorder+";background:"+cbBg+";display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:"+(cbIcon==="!"?"var(--gn)":cbIcon==="✗"?"var(--pk)":"var(--gn)")+"'>”+cbIcon+”</span>”;
 return “<button class='"+cls+"' onclick='quizPick("+i+")'>”+cb+”<span class='ltr'>”+[“A”,“B”,“C”,“D”,“E”][i]+”</span><span style='line-height:1.4;flex:1'>”+opt+”</span>”+extra+”</button>”;
 }).join(””);
 }
@@ -1946,10 +1965,10 @@ var isCorr=submitted?(multi?(function(){var sel=Array.from(s.msel).sort();var co
 var explanation=submitted?
 “<div class='explain' style='margin-top:14px'>”+
 “<div style='font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;color:"+(isCorr?"var(--gn)":"var(--pk)")+"'>”+
-(isCorr?”\u2713 Correct!”:”\u2717 Incorrect”)+(multi?” \u2014 Correct: “+q.a.map(function(i){return [“A”,“B”,“C”,“D”,“E”][i];}).join(”, “):””)+
+(isCorr?“✓ Correct!”:“✗ Incorrect”)+(multi?” — Correct: “+q.a.map(function(i){return [“A”,“B”,“C”,“D”,“E”][i];}).join(”, “):””)+
 “</div>”+
 “<div style='font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:14px'>”+q.e+”</div>”+
-“<button class='btn btn-p btn-full' onclick='quizNext()'>”+(s.cur+1<qs.length?“Next Question \u2192”:“See Results”)+”</button>”+
+“<button class='btn btn-p btn-full' onclick='quizNext()'>”+(s.cur+1<qs.length?“Next Question →”:“See Results”)+”</button>”+
 “</div>”:””;
 
 render(”<div class='pg'>”+hdr+chips+
@@ -1964,7 +1983,7 @@ badge+
 “</div>”+
 “<div class='ans-grid force-col' style='margin-bottom:4px'>”+opts+”</div>”+
 submitBtn+explanation+
-(!submitted?”<div style='font-size:10px;color:var(--tx4);text-align:right;margin-top:8px'>”+(multi?“Select “+q.choose+” then Submit”:“Keys: 1 2 3 4 \u00B7 Enter to continue”)+”</div>”:””)+
+(!submitted?”<div style='font-size:10px;color:var(--tx4);text-align:right;margin-top:8px'>”+(multi?“Select “+q.choose+” then Submit”:“Keys: 1 2 3 4 · Enter to continue”)+”</div>”:””)+
 “</div>”);
 }
 
@@ -1987,14 +2006,14 @@ return “<div style='margin-bottom:12px'>”+
 }).join(””);
 render(”<div class='pg'>”+
 “<div class='card2' style='text-align:center;margin-bottom:16px;padding:32px 20px'>”+
-“<div style='font-size:52px;margin-bottom:10px'>”+(pct>=80?”\u{1F3C6}”:pct>=60?”\u{1F4AA}”:”\u{1F4DA}”)+”</div>”+
+“<div style='font-size:52px;margin-bottom:10px'>”+(pct>=80?“🏆”:pct>=60?“💪”:“📚”)+”</div>”+
 “<div style='font-family:Syne,sans-serif;font-size:52px;font-weight:800;color:"+sc(pct)+"'>”+pct+”%</div>”+
 “<div style='font-size:14px;color:var(--tx3);margin-top:4px'>”+score+” / “+qs.length+” correct</div>”+
 “<div style='font-size:13px;margin-top:8px;color:var(--tx3)'>”+(pct>=80?“Exam ready!”:pct>=60?“Keep drilling”:“Review notes and retry”)+”</div>”+
 “</div>”+
 “<div class='card' style='margin-bottom:16px'><div class='stitle'>By Domain</div><div style='display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:0'>”+domStats+”</div></div>”+
 “<button class='btn btn-p btn-full' style='margin-bottom:10px' onclick='resetQuiz()'>Try Again</button>”+
-“<button class='btn btn-s btn-full' onclick='setTab(this.dataset.t)' data-t='learn'>\u{1F4D6} Review Lessons</button>”+
+“<button class='btn btn-s btn-full' onclick='setTab(this.dataset.t)' data-t='learn'>📖 Review Lessons</button>”+
 “</div>”);
 }
 
@@ -2905,7 +2924,27 @@ function triageDn(i){ const a=S.triage.actionOrder; if(i>=a.length-1)return; [a[
 function checkTriageActions(){ S.triage.actChecked=true; renderPBQ(); }
 function resetTriage(){ S.triage={priority:[],checked:false,actionOrder:shuffle(TRIAGE_ACTIONS),actChecked:false}; renderPBQ(); }
 
+// ── INIT — wrapped so any crash shows a visible message ──────────────────────
+(function(){
+try {
 renderHome();
+} catch(err) {
+var pg2 = document.getElementById(‘pg’);
+if(pg2){
+pg2.innerHTML =
+“<div style='padding:40px 20px;text-align:center;font-family:sans-serif'>” +
+“<div style='font-size:48px;margin-bottom:16px'>⚠️</div>” +
+“<div style='font-size:18px;font-weight:700;color:#f472b6;margin-bottom:8px'>App failed to load</div>” +
+“<div style='font-size:13px;color:#8d9ac0;margin-bottom:16px'>Error: “ + (err.message||‘Unknown’) + “</div>” +
+“<div style='font-size:11px;color:#505d7e;background:#1a2235;border-radius:8px;padding:12px;text-align:left;max-width:500px;margin:0 auto;word-break:break-all'>” +
+(err.stack||’’).split(’\n’).slice(0,4).join(’<br>’) +
+“</div>” +
+“<div style='margin-top:20px;font-size:12px;color:#505d7e'>Try: hard refresh (Ctrl+Shift+R) · Clear browser cache · Open in Chrome</div>” +
+“</div>”;
+}
+console.error(‘INIT CRASH:’, err);
+}
+})();
 </script>
 
 </body>
