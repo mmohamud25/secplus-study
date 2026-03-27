@@ -263,7 +263,7 @@ input:focus,select:focus{outline:none;border-color:var(--cy)!important;box-shado
 </div>
 <nav id="bnav">
   <button class="bnt on" data-tab="home"><span class="bi">🏠</span>Home</button>
-  <button class="bnt" data-tab="learn"><span class="bi">📖</span>Learn</button>
+  <button class="bnt" data-tab="cards"><span class="bi">🃏</span>Cards</button>
   <button class="bnt" data-tab="quiz"><span class="bi">🎯</span>Quiz</button>
   <button class="bnt" data-tab="game"><span class="bi">🎮</span>Game</button>
   <button class="bnt" data-tab="pbq"><span class="bi">🧪</span>PBQ</button>
@@ -934,6 +934,31 @@ function renderTab(id){
 }
 
 
+
+// Keyboard shortcuts: Space=flip, 1/2/3=rate cards, 1-4=quiz answers, Enter=next
+document.addEventListener('keydown', function(e){
+  if(S.tab==='cards' && !e.metaKey && !e.ctrlKey){
+    if(e.code==='Space'){e.preventDefault();if(typeof flipCard!=='undefined')flipCard();}
+    if(S.cards.flipped){
+      if(e.key==='1')cardNext('hard');
+      if(e.key==='2')cardNext('ok');
+      if(e.key==='3')cardNext('easy');
+    }
+  }
+  if(S.tab==='quiz' && !e.metaKey && !e.ctrlKey){
+    if(S.quiz.sel!==null&&(e.key==='Enter'||e.code==='Space')){e.preventDefault();quizNext();}
+    if(S.quiz.sel===null){
+      if(e.key==='1')quizPick(0);
+      if(e.key==='2')quizPick(1);
+      if(e.key==='3')quizPick(2);
+      if(e.key==='4')quizPick(3);
+    }
+  }
+});
+
+function trackStat(k,v){try{var s=JSON.parse(localStorage.getItem('sst')||'{}');s[k]=(s[k]||0)+(v||1);localStorage.setItem('sst',JSON.stringify(s));}catch(e){}}
+function getStats(){try{return JSON.parse(localStorage.getItem('sst')||'{}');}catch(e){return {};}}
+
 function renderHome(){
   var hs=parseInt(localStorage.getItem("bhs")||"0");
   render(
@@ -952,7 +977,7 @@ function renderHome(){
     "</div></div>"+
     "<div class='pg'>"+
     "<div class='g2 fu1' style='margin-bottom:20px'>"+
-      [["📖","Lessons","19 sub-objectives","#a78bfa","learn"],["🎮","Cyber Blitz","Beat your score","#fbbf24","game"],["🎯","Practice Quiz",QZ.length+" questions","#f472b6","quiz"],["🧪","PBQ Sims","Real exam format","#34d399","pbq"]].map(function(r){
+      [["📖","Lessons","19 sub-objectives","#a78bfa","learn"],["🃏","Flashcards",FC.length+" cards","#38bdf8","cards"],["🎯","Practice Quiz",QZ.length+" questions","#f472b6","quiz"],["🎮","Cyber Blitz","Beat your score","#fbbf24","game"]].map(function(r){
         return "<button data-goto='"+r[4]+"' style='background:var(--bg2);border:1.5px solid "+r[3]+"22;border-radius:16px;padding:18px 14px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;transition:all .2s;font-family:inherit;min-height:90px' onclick='setTab(this.dataset.goto)'>"+  // was onclick with quotes
           "<div style='position:absolute;top:-15px;right:-15px;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,"+r[3]+"18 0%,transparent 70%)'></div>"+
           "<div style='font-size:26px'>"+r[0]+"</div>"+
@@ -1004,9 +1029,9 @@ function cardNext(conf){
   var card=deck[s.idx];
   if(!card){resetCards();return;}
   if(!s.hard)s.hard=[];
-  if(conf==="hard"){if(!s.hard.includes(card.t))s.hard.push(card.t);if(!s.review.includes(card.t))s.review.push(card.t);}
+  if(conf==="hard"){if(!s.hard.includes(card.t))s.hard.push(card.t);if(!s.review.includes(card.t))s.review.push(card.t);trackStat('hard');}
   else if(conf==="ok"){if(!s.review.includes(card.t))s.review.push(card.t);}
-  else{s.hard=s.hard.filter(t=>t!==card.t);if(!s.known.includes(card.t))s.known.push(card.t);}
+  else{s.hard=s.hard.filter(t=>t!==card.t);if(!s.known.includes(card.t))s.known.push(card.t);trackStat('easy');}
   s.flipped=false;s.idx++;
   renderCards();
 }
@@ -1062,7 +1087,7 @@ function renderCards(){
     "</div>"+
     "<div class='tipbox' style='margin-top:12px'>"+
       "<div style='font-size:10px;font-weight:800;color:var(--ye);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px'>⚡ Spaced Repetition</div>"+
-      "Rate honestly — Hard cards re-queue automatically. Easy cards are retired. This is how memory science works."+
+      "Rate honestly — Hard re-queues automatically. Easy retires. Keys: Space=flip · 1=Hard · 2=Good · 3=Easy"+
     "</div>":
     "<p style='text-align:center;font-size:12px;color:var(--tx3);margin-top:14px'>Tap the card to flip it</p>";
 
@@ -1079,9 +1104,14 @@ function renderCards(){
 }
 
 
-function qDeck(){return S.quiz.dom===0?QZ:QZ.filter(q=>q.d===S.quiz.dom);}
-function setQuizDom(d){S.quiz={dom:d,cur:0,sel:null,ans:[],done:false};renderQuiz();}
-function resetQuiz(){S.quiz={dom:S.quiz.dom,cur:0,sel:null,ans:[],done:false};renderQuiz();}
+function qDeck(){
+  // Randomized each reset — Desirable Difficulty (Bjork) — varied order improves retention
+  var base=S.quiz.dom===0?[...QZ]:QZ.filter(q=>q.d===S.quiz.dom);
+  if(!S.quiz._shuffled){S.quiz._shuffled=shuffle(base);}
+  return S.quiz._shuffled;
+}
+function setQuizDom(d){S.quiz={dom:d,cur:0,sel:null,ans:[],done:false,_shuffled:null};renderQuiz();}
+function resetQuiz(){S.quiz={dom:S.quiz.dom,cur:0,sel:null,ans:[],done:false,_shuffled:null};renderQuiz();}
 function quizPick(i){
   var s=S.quiz,qs=qDeck(),q=qs[s.cur];
   if(s.sel!==null)return;
@@ -1118,7 +1148,7 @@ function renderQuiz(){
       "<div style='font-size:11px;color:"+dc(q.d)+";letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;font-weight:700'>Domain "+q.d+"</div>"+
       "<div style='font-family:Syne,sans-serif;font-size:16px;font-weight:700;color:var(--tx);line-height:1.6'>"+q.q+"</div>"+
     "</div>"+
-    "<div class='col' style='gap:9px;margin-bottom:14px'>"+opts+"</div>"+
+    "<div class='col' style='gap:9px;margin-bottom:12px'>"+opts+"</div>"+"<div style='font-size:10px;color:var(--tx4);text-align:right;margin-bottom:8px'>Keys: 1 2 3 4 · Enter to continue</div>"+
     (s.sel!==null?
       "<div class='explain'>"+
         "<div style='font-size:11px;color:var(--gn);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-weight:700'>Explanation</div>"+
@@ -1152,7 +1182,7 @@ function renderQuizResults(){
       "<div style='font-size:13px;margin-top:8px;color:var(--tx3)'>"+(pct>=80?"Exam ready! 🎯":pct>=60?"Keep drilling 💪":"Review notes and retry 📚")+"</div>"+
     "</div>"+
     "<div class='card' style='margin-bottom:16px'><div class='stitle'>By Domain</div>"+domStats+"</div>"+
-    "<button class='btn btn-p btn-full' onclick='resetQuiz()'>Try Again</button>"+
+    "<button class='btn btn-p btn-full' style='margin-bottom:10px' onclick='resetQuiz()'>Try Again</button>"+"<button class='btn btn-s btn-full' onclick='setTab(\"learn\")'>📖 Review Lessons</button>"+
   "</div>");
 }
 
@@ -1441,8 +1471,42 @@ const FW_CORRECT=[
   {s:"10.0.0.0/24",d:"ANY",p:"80,443",a:"ALLOW",r:"Internal users browse internet"},
 ];
 
+function renderPBQ(){
+  var s=S.pbq;
+  if(!s.sim){
+    var cards=[["fw","🔥","Firewall Config","Configure allow/deny rules from a scenario","#f472b6"],
+               ["logs","📋","Log Analysis","Read server logs and identify attacks","#fbbf24"],
+               ["net","🌐","Network Diagram","Place devices in correct zones","#34d399"],
+               ["ports","🔌","Ports & Protocols","Match protocols to port numbers","#38bdf8"],
+               ["triage","🚨","IR Triage","Prioritize alerts and sequence response","#a78bfa"]];
+    render("<div class='pg'>"+
+      "<h2 style='font-family:Syne,sans-serif;font-size:20px;margin-bottom:6px;color:var(--tx)'>🧪 PBQ Simulations</h2>"+
+      "<p style='font-size:12px;color:var(--tx3);margin-bottom:20px'>Performance-Based Questions — interactive, just like the real exam</p>"+
+      cards.map(function(r){
+        return "<button onclick='S.pbq.sim=this.dataset.s;renderPBQ()' data-s='"+r[0]+"' style='width:100%;background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:18px 16px;text-align:left;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;gap:14px;font-family:inherit'>"+
+          "<div style='font-size:32px;flex-shrink:0'>"+r[1]+"</div>"+
+          "<div><div style='font-family:Syne,sans-serif;font-size:15px;font-weight:700;color:"+r[4]+";margin-bottom:3px'>"+r[2]+"</div>"+
+          "<div style='font-size:12px;color:var(--tx3)'>"+r[3]+"</div></div></button>";
+      }).join("")+
+    "</div>");
+    return;
+  }
+  var titles={fw:"🔥 Firewall Config",logs:"📋 Log Analysis",net:"🌐 Network Diagram",ports:"🔌 Ports & Protocols",triage:"🚨 IR Triage"};
+  var html="<div class='pg'><button class='btn btn-g' onclick='S.pbq.sim=null;renderPBQ()' style='margin-bottom:16px'>← Back to PBQs</button><h2 style='font-family:Syne,sans-serif;font-size:20px;margin-bottom:20px;color:var(--tx)'>"+titles[s.sim]+"</h2>";
+  if(s.sim==="fw")html+=renderFW();
+  else if(s.sim==="logs")html+=renderLogs();
+  else if(s.sim==="net")html+=renderNet();
+  else if(s.sim==="ports")html+=renderPorts();
+  else if(s.sim==="triage")html+=renderTriage();
+  html+="</div>";
+  render(html);
+}
+
+// FW_CORRECT already declared above
+
+
 function renderFW(){
-  const s=state.fw;
+  const s=S.fw;
   return `
     <div style="background:rgba(10,16,32,.8);border:1px solid #1e3a5f;border-radius:12px;padding:14px;margin-bottom:20px;font-size:13px;color:#94a3b8;line-height:1.7">
       <strong style="color:#00d4ff">Scenario:</strong> Web server (192.168.10.5) is in the DMZ. Internal network is 10.0.0.0/24.<br>
@@ -1454,7 +1518,7 @@ function renderFW(){
         <thead><tr><th>#</th><th>Source</th><th>Destination</th><th>Port</th><th>Action</th><th>✓</th></tr></thead>
         <tbody>
           ${s.rules.map((r,i)=>`
-            <tr style="background:${s.checked?(state.fw.results[i]?.ok?'#052e16':'#2d0a0a'):'#080f1a'}">
+            <tr style="background:${s.checked?(S.fw.results[i]?.ok?'#052e16':'#2d0a0a'):'#080f1a'}">
               <td style="color:#475569;font-weight:700;padding:8px 5px">${i+1}</td>
               <td style="padding:6px 4px"><input class="fw-in" value="${r.s}" placeholder="e.g. ANY" onchange="fwUpdate(${i},'s',this.value)" style="width:88px"></td>
               <td style="padding:6px 4px"><input class="fw-in" value="${r.d}" placeholder="IP/subnet" onchange="fwUpdate(${i},'d',this.value)" style="width:88px"></td>
@@ -1465,15 +1529,15 @@ function renderFW(){
                   <option value="DENY" ${r.a==='DENY'?'selected':''}>DENY</option>
                 </select>
               </td>
-              <td style="font-size:14px;text-align:center">${s.checked?(state.fw.results[i]?.ok?'✅':'❌'):'—'}</td>
+              <td style="font-size:14px;text-align:center">${s.checked?(S.fw.results[i]?.ok?'✅':'❌'):'—'}</td>
             </tr>`).join('')}
         </tbody>
       </table>
     </div>
     ${s.checked?`
       <div class="card" style="margin-bottom:16px">
-        <div style="font-size:11px;color:${state.fw.results.filter(r=>r.ok).length===4?'#22c55e':'#f9c74f'};letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Score: ${state.fw.results.filter(r=>r.ok).length}/4</div>
-        ${state.fw.results.map((r,i)=>`
+        <div style="font-size:11px;color:${S.fw.results.filter(r=>r.ok).length===4?'#22c55e':'#f9c74f'};letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Score: ${S.fw.results.filter(r=>r.ok).length}/4</div>
+        ${S.fw.results.map((r,i)=>`
           <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #0f1929">
             <div style="font-size:12px;color:${r.ok?'#86efac':'#fca5a5'};font-weight:600;margin-bottom:4px">Rule ${i+1}: ${FW_CORRECT[i].r}</div>
             ${!r.ok?`<div style="font-size:11px;color:#64748b">Expected: ${FW_CORRECT[i].s} → ${FW_CORRECT[i].d} Port:${FW_CORRECT[i].p} ${FW_CORRECT[i].a}</div>`:''}
@@ -1485,11 +1549,11 @@ function renderFW(){
 }
 
 function fwUpdate(i,field,val){
-  state.fw.rules[i][field]=val;
-  if(state.fw.checked){ state.fw.checked=false; state.fw.results=[]; renderPBQ(); }
+  S.fw.rules[i][field]=val;
+  if(S.fw.checked){ S.fw.checked=false; S.fw.results=[]; renderPBQ(); }
 }
 function checkFW(){
-  state.fw.results = state.fw.rules.map((r,i)=>{
+  S.fw.results = S.fw.rules.map((r,i)=>{
     const c=FW_CORRECT[i];
     const sOk=r.s.trim().toUpperCase()===c.s.toUpperCase()||r.s.includes(c.s.split('.')[0]);
     const dOk=r.d.includes(c.d.split('/')[0].split('.').slice(0,3).join('.'))||r.d.trim().toUpperCase()===c.d.toUpperCase();
@@ -1497,9 +1561,9 @@ function checkFW(){
     const aOk=r.a===c.a;
     return {ok:sOk&&dOk&&pOk&&aOk};
   });
-  state.fw.checked=true; renderPBQ();
+  S.fw.checked=true; renderPBQ();
 }
-function resetFW(){ Object.assign(state.fw,{rules:[{s:'',d:'',p:'',a:'ALLOW'},{s:'',d:'',p:'',a:'ALLOW'},{s:'',d:'',p:'',a:'ALLOW'},{s:'',d:'',p:'',a:'ALLOW'}],checked:false,results:[]}); renderPBQ(); }
+function resetFW(){ Object.assign(S.fw,{rules:[{s:'',d:'',p:'',a:'ALLOW'},{s:'',d:'',p:'',a:'ALLOW'},{s:'',d:'',p:'',a:'ALLOW'},{s:'',d:'',p:'',a:'ALLOW'}],checked:false,results:[]}); renderPBQ(); }
 
 // ─── PBQ: LOGS ────────────────────────────────────────────────────────────────
 const LOG_SCENARIOS=[
@@ -1549,7 +1613,7 @@ const LOG_SCENARIOS=[
 ];
 
 function renderLogs(){
-  const s=state.logs;
+  const s=S.logs;
   const sc=LOG_SCENARIOS[s.scenario];
   return `
     <div class="chips" style="margin-bottom:16px">
@@ -1587,10 +1651,10 @@ function renderLogs(){
   `;
 }
 
-function setLogScenario(i){ state.logs={scenario:i,answers:{},checked:false}; renderPBQ(); }
-function logPick(qi,oi){ if(state.logs.checked)return; state.logs.answers[qi]=oi; renderPBQ(); }
-function checkLogs(){ state.logs.checked=true; renderPBQ(); }
-function resetLogs(){ state.logs={scenario:state.logs.scenario,answers:{},checked:false}; renderPBQ(); }
+function setLogScenario(i){ S.logs={scenario:i,answers:{},checked:false}; renderPBQ(); }
+function logPick(qi,oi){ if(S.logs.checked)return; S.logs.answers[qi]=oi; renderPBQ(); }
+function checkLogs(){ S.logs.checked=true; renderPBQ(); }
+function resetLogs(){ S.logs={scenario:S.logs.scenario,answers:{},checked:false}; renderPBQ(); }
 
 // ─── PBQ: NETWORK DIAGRAM ─────────────────────────────────────────────────────
 const NET_ZONES=[
@@ -1603,7 +1667,7 @@ const NET_ZONES=[
 const NET_DEVICES=["Firewall","WAF","IDS","Web Server","Database","VPN Gateway","NGFW","Honeypot"];
 
 function renderNet(){
-  const s=state.net;
+  const s=S.net;
   const placed=s.placed||{};
   const getZoneDevs=(zid)=>Object.entries(placed).filter(([k])=>k.startsWith(zid+'-')).map(([,v])=>v);
   const placedAll=Object.values(placed);
@@ -1655,27 +1719,27 @@ function renderNet(){
   `;
 }
 
-function netSelect(d){ state.net.dragging = state.net.dragging===d?null:d; renderPBQ(); }
+function netSelect(d){ S.net.dragging = S.net.dragging===d?null:d; renderPBQ(); }
 function netDrop(zid){
-  if(!state.net.dragging||zid==='internet') return;
-  const d=state.net.dragging;
-  const placed=state.net.placed;
+  if(!S.net.dragging||zid==='internet') return;
+  const d=S.net.dragging;
+  const placed=S.net.placed;
   Object.keys(placed).forEach(k=>{ if(placed[k]===d) delete placed[k]; });
   placed[`${zid}-${d}`]=d;
-  state.net.dragging=null;
+  S.net.dragging=null;
   renderPBQ();
 }
 function netRemove(zid,d){
-  if(state.net.checked) return;
-  delete state.net.placed[`${zid}-${d}`];
+  if(S.net.checked) return;
+  delete S.net.placed[`${zid}-${d}`];
   renderPBQ();
 }
-function checkNet(){ state.net.checked=true; renderPBQ(); }
-function resetNet(){ state.net={placed:{},dragging:null,checked:false}; renderPBQ(); }
+function checkNet(){ S.net.checked=true; renderPBQ(); }
+function resetNet(){ S.net={placed:{},dragging:null,checked:false}; renderPBQ(); }
 
 // ─── PBQ: PORTS ───────────────────────────────────────────────────────────────
 function renderPorts(){
-  const s=state.ports;
+  const s=S.ports;
   const PAGE=8;
   const pagePairs=PORTS_ALL.slice(s.page*PAGE,(s.page+1)*PAGE);
   const totalPages=Math.ceil(PORTS_ALL.length/PAGE);
@@ -1719,22 +1783,22 @@ function renderPorts(){
 
 function setPortsPage(i){
   const PAGE=8; const pp=PORTS_ALL.slice(i*PAGE,(i+1)*PAGE);
-  Object.assign(state.ports,{page:i,selP:null,selPort:null,matched:[],wrong:false,moves:0,done:false,shuffled:shuffle(pp.map(p=>p.port))});
+  Object.assign(S.ports,{page:i,selP:null,selPort:null,matched:[],wrong:false,moves:0,done:false,shuffled:shuffle(pp.map(p=>p.port))});
   renderPBQ();
 }
-function resetPorts(){ setPortsPage(state.ports.page); }
+function resetPorts(){ setPortsPage(S.ports.page); }
 function portSelP(p){
-  if(state.ports.matched.some(m=>m.p===p)) return;
-  state.ports.selP = state.ports.selP===p?null:p;
+  if(S.ports.matched.some(m=>m.p===p)) return;
+  S.ports.selP = S.ports.selP===p?null:p;
   checkPortPair();
 }
 function portSelPort(port){
-  if(state.ports.matched.some(m=>m.port===port)) return;
-  state.ports.selPort = state.ports.selPort===port?null:port;
+  if(S.ports.matched.some(m=>m.port===port)) return;
+  S.ports.selPort = S.ports.selPort===port?null:port;
   checkPortPair();
 }
 function checkPortPair(){
-  const s=state.ports;
+  const s=S.ports;
   if(!s.selP||!s.selPort){ renderPBQ(); return; }
   s.moves++;
   const PAGE=8; const pagePairs=PORTS_ALL.slice(s.page*PAGE,(s.page+1)*PAGE);
@@ -1774,7 +1838,7 @@ const TRIAGE_ACTIONS=[
 const CORRECT_ACTIONS=[0,1,2,3,4,5,6,7];
 
 function renderTriage(){
-  const s=state.triage;
+  const s=S.triage;
   if(!s.actionOrder||s.actionOrder.length===0) s.actionOrder=shuffle(TRIAGE_ACTIONS);
 
   return `
@@ -1830,17 +1894,17 @@ function renderTriage(){
 }
 
 function triagePick(id){
-  if(state.triage.checked) return;
-  const p=state.triage.priority;
-  if(p.includes(id)) state.triage.priority=p.filter(x=>x!==id);
+  if(S.triage.checked) return;
+  const p=S.triage.priority;
+  if(p.includes(id)) S.triage.priority=p.filter(x=>x!==id);
   else if(p.length<TRIAGE_ALERTS.length) p.push(id);
   renderPBQ();
 }
-function checkTriage(){ state.triage.checked=true; renderPBQ(); }
-function triageUp(i){ if(i===0)return; const a=state.triage.actionOrder; [a[i-1],a[i]]=[a[i],a[i-1]]; renderPBQ(); }
-function triageDn(i){ const a=state.triage.actionOrder; if(i>=a.length-1)return; [a[i],a[i+1]]=[a[i+1],a[i]]; renderPBQ(); }
-function checkTriageActions(){ state.triage.actChecked=true; renderPBQ(); }
-function resetTriage(){ state.triage={priority:[],checked:false,actionOrder:shuffle(TRIAGE_ACTIONS),actChecked:false}; renderPBQ(); }
+function checkTriage(){ S.triage.checked=true; renderPBQ(); }
+function triageUp(i){ if(i===0)return; const a=S.triage.actionOrder; [a[i-1],a[i]]=[a[i],a[i-1]]; renderPBQ(); }
+function triageDn(i){ const a=S.triage.actionOrder; if(i>=a.length-1)return; [a[i],a[i+1]]=[a[i+1],a[i]]; renderPBQ(); }
+function checkTriageActions(){ S.triage.actChecked=true; renderPBQ(); }
+function resetTriage(){ S.triage={priority:[],checked:false,actionOrder:shuffle(TRIAGE_ACTIONS),actChecked:false}; renderPBQ(); }
 
 renderHome();
 </script>
