@@ -997,15 +997,15 @@ const shuffle=a=>[…a].sort(()=>Math.random()-.5);
 const S={
 tab:“home”,
 cards:{dom:0,idx:0,flipped:false,known:[],review:[],hard:[]},
-quiz:{dom:0,cur:0,sel:null,ans:[],done:false},
+quiz:{dom:0,cur:0,sel:null,msel:null,ans:[],done:false,_shuffled:null},
 match:{pg:0,sT:null,sM:null,matched:[],wrong:false,moves:0,done:false,sh:[]},
 learn:{dom:0,open:null},
 game:{on:false,score:0,lives:3,streak:0,best:0,timer:60,iv:null,qs:[],qi:0,cur:null,sel:null,df:0},
 pbq:{sim:null},
 fw:{rules:[{s:””,d:””,p:””,a:“ALLOW”},{s:””,d:””,p:””,a:“ALLOW”},{s:””,d:””,p:””,a:“ALLOW”},{s:””,d:””,p:””,a:“ALLOW”}],checked:false,res:[]},
 logs:{scenario:0,answers:{},checked:false},
-ports:{pg:0,sP:null,sPort:null,matched:[],wrong:false,moves:0,done:false,sh:[]},
-triage:{pri:[],checked:false,acts:[],actCk:false},
+ports:{pg:0,sP:null,sPort:null,matched:[],wrong:false,moves:0,done:false,shuffled:[]},
+triage:{priority:[],checked:false,actionOrder:[],actChecked:false},
 net:{placed:{},dragging:null,checked:false},
 exam:{
 mode:null,      // ‘sim’|‘drill’|‘weak’
@@ -1017,7 +1017,7 @@ paused:false
 },
 };
 S.match.sh=shuffle(MATCH.slice(0,MPGSZ).map(p=>p.m));
-S.ports.sh=shuffle(PORTS_ALL.slice(0,8).map(p=>p.port));
+S.ports.shuffled=shuffle(PORTS_ALL.slice(0,8).map(p=>p.port));
 
 const pg=()=>document.getElementById(“pg”);
 function render(html){pg().innerHTML=html;window.scrollTo(0,0);}
@@ -1996,6 +1996,40 @@ render(”<div class='pg'>”+
 “<button class='btn btn-p btn-full' style='margin-bottom:10px' onclick='resetQuiz()'>Try Again</button>”+
 “<button class='btn btn-s btn-full' onclick='setTab(this.dataset.t)' data-t='learn'>\u{1F4D6} Review Lessons</button>”+
 “</div>”);
+}
+
+// ── MATCH GAME HELPERS (lost during quiz engine rebuild) ──────────────────────
+function matchPg(){ return MATCH.slice(S.match.pg*MPGSZ,(S.match.pg+1)*MPGSZ); }
+function setMatchPg(i){
+var pp=MATCH.slice(i*MPGSZ,(i+1)*MPGSZ);
+Object.assign(S.match,{pg:i,sT:null,sM:null,matched:[],wrong:false,moves:0,done:false,sh:shuffle(pp.map(function(p){return p.m;}))});
+renderMatch();
+}
+function matchSelT(t){
+if(S.match.matched.includes(t))return;
+S.match.sT=S.match.sT===t?null:t;
+checkMatchPair();
+}
+function matchSelM(m){
+var pg2=matchPg();
+if(S.match.matched.some(function(t){return pg2.find(function(p){return p.t===t;})&&pg2.find(function(p){return p.t===t;}).m===m;}))return;
+S.match.sM=S.match.sM===m?null:m;
+checkMatchPair();
+}
+function checkMatchPair(){
+var s=S.match,pg2=matchPg();
+if(!s.sT||!s.sM){renderMatch();return;}
+s.moves++;
+var pair=pg2.find(function(p){return p.t===s.sT&&p.m===s.sM;});
+if(pair){
+s.matched.push(s.sT);s.sT=null;s.sM=null;
+if(s.matched.length===pg2.length)s.done=true;
+} else {
+s.wrong=true;renderMatch();
+setTimeout(function(){s.wrong=false;s.sT=null;s.sM=null;renderMatch();},700);
+return;
+}
+renderMatch();
 }
 
 function matchByIdx(isT, idx){
