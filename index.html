@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- v20260328-0350 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -6,8 +7,11 @@
 <meta name="theme-color" content="#111827"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="Sec+ Study"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
 <title>Security+ Study Hub | secplus.kulaninstitute.org</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/><noscript><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/></noscript>
 <style>
 :root{
   --bg:#111827;--bg2:#1a2235;--bg3:#1f2a40;--bg4:#263047;
@@ -312,7 +316,15 @@ input:focus,select:focus{outline:none;border-color:var(--cy)!important;box-shado
     <button class="sbb" data-tab="exam"><span class="sbi">📝</span> Exam Simulator</button>
     <div class="sbft">Kulan Institute of Learning<br>secplus.kulaninstitute.org</div>
   </aside>
-  <main id="main"><div id="pg"></div></main>
+  <main id="main">
+    <div id="pg">
+      <div id="loading" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;padding:40px 20px;text-align:center">
+        <div style="font-size:48px;margin-bottom:16px">🔐</div>
+        <div style="font-family:sans-serif;font-size:18px;font-weight:700;color:#38bdf8;margin-bottom:8px">Security+ Study Hub</div>
+        <div style="font-size:13px;color:#505d7e">Loading...</div>
+      </div>
+    </div>
+  </main>
 </div>
 <nav id="bnav">
   <div id="bnav-inner">
@@ -325,6 +337,15 @@ input:focus,select:focus{outline:none;border-color:var(--cy)!important;box-shado
   </div>
 </nav>
 <script>
+window.onerror = function(msg, src, line, col, err){
+  var pg2 = document.getElementById('pg');
+  if(pg2 && pg2.innerHTML.indexOf('loading') !== -1){
+    pg2.innerHTML = "<div style='padding:40px 20px;text-align:center;font-family:sans-serif'><div style='font-size:48px;margin-bottom:16px'>⚠️</div><div style='font-size:18px;font-weight:700;color:#f472b6;margin-bottom:8px'>Script Error</div><div style='font-size:13px;color:#8d9ac0;margin-bottom:8px'>" + msg + "</div><div style='font-size:11px;color:#505d7e'>Line " + line + " · Try: Ctrl+Shift+R to hard refresh</div></div>";
+  }
+  console.error('onerror:', msg, src, line);
+  return false;
+};
+
 
 const DOMAINS=[{id:1,name:"General Security Concepts",weight:12,color:"#38bdf8"},{id:2,name:"Threats, Vulnerabilities & Mitigations",weight:22,color:"#f472b6"},{id:3,name:"Security Architecture",weight:18,color:"#34d399"},{id:4,name:"Security Operations",weight:28,color:"#fbbf24"},{id:5,name:"Security Program Management",weight:20,color:"#a78bfa"}];
 const FC=[
@@ -937,6 +958,58 @@ const LESSONS=[
 ];
 
 
+// ── MULTI-SELECT QUESTIONS (type:'multi', a:[array], choose:N) ──────────────
+// Mixed into QZ — the quiz engine checks q.type==='multi' and handles differently
+const MQ=[
+  // Domain 1 — 8 questions
+  {type:"multi",choose:2,q:"Which TWO of the following are examples of 'Something You Have' authentication factors?",o:["Password","Hardware token","Fingerprint scan","Smart card"],a:[1,3],d:1,e:"Something You Have = physical objects you possess. Hardware token and smart card are both possession factors. Password=Know, Fingerprint=Are."},
+  {type:"multi",choose:2,q:"Which TWO algorithms use asymmetric (public/private key) cryptography?",o:["AES-256","RSA","3DES","ECC"],a:[1,3],d:1,e:"RSA and ECC are asymmetric algorithms using key pairs. AES-256 and 3DES are symmetric — they use a single shared key."},
+  {type:"multi",choose:3,q:"Which THREE are components of the CIA Triad?",o:["Confidentiality","Authentication","Integrity","Authorization","Availability"],a:[0,2,4],d:1,e:"CIA Triad = Confidentiality, Integrity, Availability. Authentication and Authorization are important concepts but are NOT part of the CIA Triad itself."},
+  {type:"multi",choose:2,q:"Which TWO access control models use labels and clearances enforced by the SYSTEM rather than the data owner?",o:["DAC","MAC","RBAC","Rule-Based AC"],a:[1,3],d:1,e:"MAC (Mandatory) and Rule-Based AC both have access enforced by the system through labels and admin-defined rules — not at the discretion of the resource owner."},
+  {type:"multi",choose:2,q:"Which TWO of the following provide non-repudiation?",o:["Symmetric encryption","Digital signatures","TLS in transit","PKI certificates with private key signing"],a:[1,3],d:1,e:"Digital signatures (hash encrypted with private key) and PKI certificate-based private key signing both provide non-repudiation. Symmetric encryption uses a shared key — either party could have sent the message."},
+  {type:"multi",choose:2,q:"A security team wants to implement MFA. Which TWO factor combinations represent TRUE multi-factor authentication?",o:["Password + PIN","Fingerprint + Retina scan","Password + Hardware token","Smart card + PIN"],a:[2,3],d:1,e:"True MFA requires DIFFERENT factor types. Password+Hardware token = Know+Have. Smart card+PIN = Have+Know. Password+PIN = Know+Know (same type = NOT MFA). Fingerprint+Retina = Are+Are (same type = NOT MFA)."},
+  {type:"multi",choose:2,q:"Which TWO of the following are PKI components responsible for verifying identity before a certificate is issued?",o:["Certificate Authority (CA)","Registration Authority (RA)","Certificate Revocation List (CRL)","OCSP Responder"],a:[0,1],d:1,e:"CA issues and signs certificates. RA verifies the identity of requestors on behalf of the CA. CRL and OCSP check revocation status — they do not verify identity before issuance."},
+  {type:"multi",choose:2,q:"Which TWO statements about hashing are correct?",o:["Hashing is reversible with the right key","A hash always produces a fixed-length output","Salting a hash defeats rainbow table attacks","MD5 is currently recommended for password storage"],a:[1,2],d:1,e:"Hashing produces a fixed-length one-way digest. Salting adds a unique random value before hashing, making precomputed rainbow tables useless. Hashing is NOT reversible, and MD5 is broken."},
+  // Domain 2 — 9 questions
+  {type:"multi",choose:2,q:"Which TWO attack types are specifically categorized as password attacks?",o:["SYN Flood","Credential Stuffing","Evil Twin","Password Spraying"],a:[1,3],d:2,e:"Credential Stuffing (using breached pairs) and Password Spraying (few passwords against many accounts) are both password attacks. SYN Flood is a DoS attack. Evil Twin is a wireless attack."},
+  {type:"multi",choose:2,q:"An attacker wants to intercept live network traffic between a victim and their bank. Which TWO techniques could enable this?",o:["ARP Poisoning","SQL Injection","Evil Twin AP","Stored XSS"],a:[0,2],d:2,e:"ARP Poisoning redirects LAN traffic through the attacker. Evil Twin forces clients to connect through a rogue AP. Both enable man-in-the-middle interception of live traffic."},
+  {type:"multi",choose:3,q:"Which THREE are characteristics of an Advanced Persistent Threat (APT)?",o:["Targets random victims opportunistically","Long dwell time measured in months","Uses living-off-the-land techniques","Low sophistication — script-based","Stealthy and patient behavior"],a:[1,2,4],d:2,e:"APTs are characterized by: long dwell time (months/years), using legitimate tools to blend in (LotL), and patient stealthy behavior. They are NOT random or low-sophistication."},
+  {type:"multi",choose:2,q:"Which TWO malware types are specifically designed to hide their presence from antivirus software and the operating system?",o:["Ransomware","Rootkit","Fileless Malware","Cryptojacker"],a:[1,2],d:2,e:"Rootkits operate at kernel level and hide processes/files from the OS and AV. Fileless malware runs only in memory with no disk files — signature-based AV cannot detect what it cannot scan."},
+  {type:"multi",choose:2,q:"Which TWO web application attacks involve injecting malicious content that executes in another user's browser?",o:["SQL Injection","Stored XSS","CSRF","Reflected XSS"],a:[1,3],d:2,e:"Both Stored XSS (script saved in DB, runs for all visitors) and Reflected XSS (script in URL, runs for the clicker) inject malicious JavaScript that executes in the victim's browser."},
+  {type:"multi",choose:2,q:"A security analyst sees massive UDP traffic to random ports combined with ICMP broadcast amplification. Which TWO attack types are occurring simultaneously?",o:["Credential Stuffing","Volumetric DDoS","Smurf Attack","SQL Injection"],a:[1,2],d:2,e:"Volumetric DDoS (UDP flood exhausting bandwidth) and Smurf Attack (ICMP broadcast amplification with spoofed victim IP) are both happening simultaneously — a combined DDoS scenario."},
+  {type:"multi",choose:3,q:"Which THREE are Indicators of Compromise (IOCs) suggesting a system has been compromised?",o:["CPU running at 97% with mining pool connections","New unauthorized admin account created","System passed last vulnerability scan","Antivirus service suddenly stopped","All backups completed successfully"],a:[0,1,3],d:2,e:"IOCs include: 97% CPU with mining connections (cryptojacking), unauthorized admin account (persistence), AV service stopped (defense evasion). Passing a vulnerability scan and successful backups are NOT IOCs."},
+  {type:"multi",choose:2,q:"Which TWO techniques are classified as 'living-off-the-land' attacks?",o:["Dropping a custom malware executable","Using PowerShell to run malicious commands","Using WMIC to enumerate network hosts","Installing a commercial RAT tool"],a:[1,2],d:2,e:"Living-off-the-land (LotL) uses built-in OS tools — PowerShell and WMIC are both native Windows tools that attackers abuse. Custom executables and commercial RAT tools are NOT LotL."},
+  {type:"multi",choose:2,q:"Which TWO actions would BEST protect against credential stuffing attacks?",o:["Implementing MFA on all accounts","Requiring complex passwords of 8+ characters","Monitoring for logins from unusual locations","Enforcing account lockout after 3 failed attempts"],a:[0,2],d:2,e:"Credential stuffing uses valid credentials from breached sites. MFA stops them even with correct passwords. Behavioral monitoring detects unusual login patterns. Lockout actually has limited effect since stuffing uses correct credentials."},
+  // Domain 3 — 7 questions
+  {type:"multi",choose:2,q:"Which TWO cloud deployment models give an organization DEDICATED infrastructure not shared with other tenants?",o:["Public Cloud","Private Cloud","Hybrid Cloud","Hosted Private Cloud"],a:[1,3],d:3,e:"Private Cloud (on-premises) and Hosted Private Cloud (managed by a third party but dedicated) both provide dedicated infrastructure. Public and Hybrid clouds share resources with other tenants."},
+  {type:"multi",choose:3,q:"Under the IaaS shared responsibility model, which THREE are the CUSTOMER'S responsibility?",o:["Physical data center security","Operating system patching","Application code security","Hypervisor maintenance","Data encryption and classification"],a:[1,2,4],d:3,e:"In IaaS: Customer owns OS patching, application security, and data. Provider owns physical security and hypervisor. This is the most commonly tested aspect of the shared responsibility model."},
+  {type:"multi",choose:2,q:"An organization needs to recover from disaster. Which TWO metrics determine how current the restored data must be and how fast systems must be back online?",o:["MTBF","RPO","MTTR","RTO"],a:[1,3],d:3,e:"RPO (Recovery Point Objective) = max data loss in time — determines backup frequency. RTO (Recovery Time Objective) = max acceptable downtime — determines site/recovery type needed. MTBF and MTTR measure reliability, not recovery targets."},
+  {type:"multi",choose:2,q:"Which TWO network security devices operate inline and can ACTIVELY BLOCK malicious traffic?",o:["IDS","IPS","NGFW","Honeypot"],a:[1,2],d:3,e:"IPS (Intrusion Prevention System) and NGFW (Next-Generation Firewall) both sit inline in the traffic path and can actively block threats. IDS is passive (alerts only). Honeypot is a decoy — it does not block traffic."},
+  {type:"multi",choose:2,q:"Which TWO backup types require the FEWEST backup files to fully restore a system?",o:["Daily incrementals","Full backup alone","Full + latest differential","Full + entire incremental chain"],a:[1,2],d:3,e:"A single Full backup alone (1 file) restores everything. Full + latest Differential (2 files) restores to differential date. Incremental chains require full + every incremental since. Differential only needs the last one."},
+  {type:"multi",choose:2,q:"Which TWO technologies are specifically designed to protect web applications against Layer 7 attacks like SQL injection and XSS?",o:["Stateful Firewall","WAF (Web Application Firewall)","NGFW with DPI","IDS"],a:[1,2],d:3,e:"WAF specifically understands HTTP/HTTPS and blocks web attacks. NGFW with Deep Packet Inspection can also inspect application-layer content. Standard stateful firewall works at L3-4 and cannot inspect web application content."},
+  {type:"multi",choose:2,q:"Which TWO are key security risks unique to container environments compared to traditional VMs?",o:["Cannot be encrypted","Share the host OS kernel increasing blast radius","Cannot communicate over networks","Container breakout can expose all containers on the host"],a:[1,3],d:3,e:"Containers share the host OS kernel — a kernel exploit could escape the container and affect all others. Container breakout exposes the entire host. VMs have isolated kernels making lateral movement between VMs much harder."},
+  // Domain 4 — 9 questions
+  {type:"multi",choose:2,q:"Which TWO actions should be performed FIRST when responding to an active ransomware infection?",o:["Restore from backup immediately","Isolate infected systems from the network","Pay the ransom to stop encryption","Collect volatile memory from infected systems"],a:[1,3],d:4,e:"Containment first: Isolate infected systems to stop the spread. Then collect volatile memory (RAM) before any power-off — it contains decryption keys, running processes, and malware artifacts. Restoring before eradication causes reinfection."},
+  {type:"multi",choose:3,q:"Which THREE items must be collected in order from MOST to LEAST volatile during forensic investigation?",o:["Hard drive image","CPU cache and registers","Swap/temp files","RAM and running processes","Archived backup logs"],a:[1,3,2],d:4,e:"Order of volatility (most to least): CPU cache/registers → RAM/running processes → Swap/temp files → Hard drive → Archived logs. Always collect most volatile first as it disappears fastest."},
+  {type:"multi",choose:2,q:"Which TWO tools would BEST detect an insider threat who is slowly exfiltrating small amounts of data daily?",o:["Antivirus software","UEBA (behavioral analytics)","NetFlow analysis with baselines","Full Disk Encryption"],a:[1,2],d:4,e:"UEBA detects behavioral anomalies (unusual data access volumes, off-hours activity). NetFlow analysis with baselines detects abnormal outbound transfer patterns over time. AV detects malware not data theft behavior. FDE protects data at rest but doesn't detect exfiltration."},
+  {type:"multi",choose:2,q:"An organization wants to test its incident response plan. Which TWO exercises involve NO actual system interaction?",o:["Red Team Assessment","Tabletop Exercise","Penetration Test","Simulation/Walkthrough Exercise"],a:[1,3],d:4,e:"Tabletop exercises discuss scenarios verbally in a conference room. Walkthrough/simulation exercises follow playbooks on paper. Red Team and Pen Tests involve actual technical testing against real or simulated systems."},
+  {type:"multi",choose:2,q:"Which TWO controls BEST limit the damage if an employee's credentials are stolen?",o:["Strong password policy","MFA on all accounts","Application whitelisting","Just-in-Time privileged access"],a:[1,3],d:4,e:"MFA makes stolen credentials insufficient — attacker also needs the second factor. JIT access limits the time window and scope of any privileged action. Password complexity doesn't help if credentials are already stolen. Whitelisting prevents malware execution but not credential use."},
+  {type:"multi",choose:3,q:"Which THREE are valid phases of the NIST Incident Response lifecycle?",o:["Preparation","Identification","Containment","Weaponization","Eradication"],a:[0,2,4],d:4,e:"NIST IR phases: Preparation, Detection & Analysis, Containment, Eradication, Recovery, Lessons Learned. Identification is used in the Cyber Kill Chain, not NIST IR. Weaponization is an attacker phase (Lockheed Kill Chain)."},
+  {type:"multi",choose:2,q:"Which TWO SIEM correlation rules would BEST detect an account takeover attack?",o:["High CPU usage on a server","Multiple failed logins followed by success from new geolocation","Successful login at 2AM from a country where no employees work","Standard backup job completion"],a:[1,2],d:4,e:"Both failed→success login correlation and impossible/unusual geography are classic account takeover indicators. CPU spikes and successful backups are not account takeover indicators."},
+  {type:"multi",choose:2,q:"Which TWO describe the PRIMARY difference between a vulnerability scan and a penetration test?",o:["Vulnerability scans require more authorization","Penetration tests exploit discovered vulnerabilities to prove impact","Vulnerability scans identify potential weaknesses without exploitation","Penetration tests are fully automated while scans are manual"],a:[1,2],d:4,e:"Pen tests exploit vulnerabilities to demonstrate real-world impact. Vulnerability scans identify and report potential weaknesses without exploiting them. Both require authorization. Neither is fully automated or manual exclusively."},
+  {type:"multi",choose:2,q:"Which TWO controls are MOST effective at preventing privilege creep in an organization?",o:["Strong password policy","Periodic user access reviews","MFA on admin accounts","Role-based access control with access recertification"],a:[1,3],d:4,e:"Periodic access reviews identify and remove excess permissions accumulated over time. RBAC with access recertification ensures permissions are formally revalidated when roles change. Password strength and MFA don't address accumulation of stale permissions."},
+  // Domain 5 — 7 questions
+  {type:"multi",choose:2,q:"Which TWO are quantitative risk analysis formulas used to calculate expected financial loss?",o:["SLE = Asset Value × Exposure Factor","Risk = Likelihood × Impact","ALE = SLE × ARO","BIA = MTD × RTO"],a:[0,2],d:5,e:"SLE (Single Loss Expectancy) = Asset Value × Exposure Factor calculates loss from ONE incident. ALE (Annual Loss Expectancy) = SLE × ARO calculates expected yearly loss. Risk = Likelihood × Impact is a qualitative framework."},
+  {type:"multi",choose:2,q:"Which TWO regulations specifically address the protection of HEALTHCARE patient data?",o:["PCI DSS","HIPAA","GDPR","SOC 2"],a:[1,2],d:5,e:"HIPAA (US) protects PHI (Protected Health Information) for healthcare organizations. GDPR (EU) covers ALL personal data including health data when EU citizens are involved. PCI DSS covers payment cards. SOC 2 is a general security audit framework."},
+  {type:"multi",choose:3,q:"Under GDPR, which THREE rights can an EU citizen exercise regarding their personal data?",o:["Right to sell their data","Right to erasure (be forgotten)","Right to access a copy of their data","Right to determine data center location","Right to data portability"],a:[1,2,4],d:5,e:"GDPR provides: Right to Erasure (delete when no longer needed), Right of Access (get a copy), Right to Portability (receive in usable format). Individuals cannot sell their data or dictate data center locations."},
+  {type:"multi",choose:2,q:"Which TWO risk responses are being used when a company buys cyber insurance AND stops collecting unnecessary customer data?",o:["Mitigation and Avoidance","Transference and Avoidance","Mitigation and Transference","Acceptance and Mitigation"],a:[1,0],d:5,e:"Cyber insurance = Transference (shifting financial risk to insurer). Stopping data collection = Avoidance (eliminating the risk activity entirely). Both strategies are being used simultaneously — Transference + Avoidance."},
+  {type:"multi",choose:2,q:"Which TWO vendor contract clauses are MOST important from a supply chain security perspective?",o:["Payment terms and SLA uptime","Right-to-audit and security breach notification requirements","NDA confidentiality obligations","Data retention and portability rights"],a:[1,2],d:5,e:"Right-to-audit allows independent security assessment of vendors. Breach notification requirements ensure timely alert when vendor incidents affect your data. Both are critical supply chain risk management controls."},
+  {type:"multi",choose:2,q:"A CISO is conducting a risk assessment. Which TWO factors MUST be considered to properly prioritize vulnerability remediation beyond just the CVSS score?",o:["Vendor's headquarters location","Asset criticality and business impact","Exploitability in the wild","Number of users with access"],a:[1,2],d:5,e:"Risk-based prioritization requires: Asset criticality (what's the impact if this is compromised) and Exploitability in the wild (is it actively being exploited now). CVSS alone is insufficient without business context."},
+  {type:"multi",choose:2,q:"Which TWO frameworks are MANDATORY compliance requirements rather than voluntary standards?",o:["NIST CSF","PCI DSS for card processors","ISO 27001","HIPAA for covered entities"],a:[1,3],d:5,e:"PCI DSS is contractually mandatory for any organization processing payment cards. HIPAA is US law — mandatory for covered healthcare entities and their business associates. NIST CSF and ISO 27001 are voluntary frameworks (though ISO 27001 can be contractually required)."},
+];
+// Add multi-select questions to QZ pool
+QZ.push(...MQ);
+
 const MPGSZ=12;
 const PORTS_ALL=[{p:"HTTPS",port:"443"},{p:"SSH",port:"22"},{p:"RDP",port:"3389"},{p:"DNS",port:"53"},{p:"SMTP",port:"25"},{p:"LDAP",port:"389"},{p:"SNMP",port:"161"},{p:"Kerberos",port:"88"},{p:"RADIUS",port:"1812"},{p:"FTP",port:"21"},{p:"HTTP",port:"80"},{p:"LDAPS",port:"636"},{p:"FTPS",port:"990"},{p:"IMAP",port:"143"},{p:"RPC",port:"135"}];
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
@@ -944,15 +1017,15 @@ const shuffle=a=>[...a].sort(()=>Math.random()-.5);
 const S={
   tab:"home",
   cards:{dom:0,idx:0,flipped:false,known:[],review:[],hard:[]},
-  quiz:{dom:0,cur:0,sel:null,ans:[],done:false},
+  quiz:{dom:0,cur:0,sel:null,msel:null,ans:[],done:false,_shuffled:null},
   match:{pg:0,sT:null,sM:null,matched:[],wrong:false,moves:0,done:false,sh:[]},
   learn:{dom:0,open:null},
   game:{on:false,score:0,lives:3,streak:0,best:0,timer:60,iv:null,qs:[],qi:0,cur:null,sel:null,df:0},
   pbq:{sim:null},
   fw:{rules:[{s:"",d:"",p:"",a:"ALLOW"},{s:"",d:"",p:"",a:"ALLOW"},{s:"",d:"",p:"",a:"ALLOW"},{s:"",d:"",p:"",a:"ALLOW"}],checked:false,res:[]},
   logs:{scenario:0,answers:{},checked:false},
-  ports:{pg:0,sP:null,sPort:null,matched:[],wrong:false,moves:0,done:false,sh:[]},
-  triage:{pri:[],checked:false,acts:[],actCk:false},
+  ports:{pg:0,sP:null,sPort:null,matched:[],wrong:false,moves:0,done:false,shuffled:[]},
+  triage:{priority:[],checked:false,actionOrder:[],actChecked:false},
   net:{placed:{},dragging:null,checked:false},
   exam:{
     mode:null,      // 'sim'|'drill'|'weak'
@@ -964,7 +1037,7 @@ const S={
   },
 };
 S.match.sh=shuffle(MATCH.slice(0,MPGSZ).map(p=>p.m));
-S.ports.sh=shuffle(PORTS_ALL.slice(0,8).map(p=>p.port));
+S.ports.shuffled=shuffle(PORTS_ALL.slice(0,8).map(p=>p.port));
 
 const pg=()=>document.getElementById("pg");
 function render(html){pg().innerHTML=html;window.scrollTo(0,0);}
@@ -1785,67 +1858,143 @@ function renderCards(){
 }
 
 
-function qDeck(){
-  // Randomized each reset — Desirable Difficulty (Bjork) — varied order improves retention
-  var base=S.quiz.dom===0?[...QZ]:QZ.filter(q=>q.d===S.quiz.dom);
-  if(!S.quiz._shuffled){S.quiz._shuffled=shuffle(base);}
-  return S.quiz._shuffled;
-}
-function setQuizDom(d){S.quiz={dom:d,cur:0,sel:null,ans:[],done:false,_shuffled:null};renderQuiz();}
-function resetQuiz(){S.quiz={dom:S.quiz.dom,cur:0,sel:null,ans:[],done:false,_shuffled:null};renderQuiz();}
+function isMulti(q){ return q && q.type==='multi'; }
+
+function setQuizDom(d){S.quiz={dom:d,cur:0,sel:null,msel:new Set(),ans:[],done:false,_shuffled:null};renderQuiz();}
+function resetQuiz(){S.quiz={dom:S.quiz.dom,cur:0,sel:null,msel:new Set(),ans:[],done:false,_shuffled:null};renderQuiz();}
+
 function quizPick(i){
   var s=S.quiz,qs=qDeck(),q=qs[s.cur];
-  if(s.sel!==null)return;
-  s.sel=i;s.ans.push({c:i===q.a,d:q.d});renderQuiz();
+  if(!isMulti(q)){
+    if(s.sel!==null)return;
+    s.sel=i;
+    var correct=i===q.a;
+    s.ans.push({c:correct,d:q.d});
+    renderQuiz();
+    if(correct&&s.cur<qs.length-1){
+      setTimeout(function(){if(!s.done&&s.sel!==null){s.sel=null;s.cur++;renderQuiz();}},600);
+    }
+  } else {
+    if(s.sel!==null)return;
+    if(!s.msel)s.msel=new Set();
+    if(s.msel.has(i))s.msel.delete(i);
+    else if(s.msel.size<q.choose)s.msel.add(i);
+    renderQuiz();
+  }
 }
+
+function quizSubmitMulti(){
+  var s=S.quiz,qs=qDeck(),q=qs[s.cur];
+  if(!isMulti(q)||s.sel!==null)return;
+  if(!s.msel||s.msel.size===0)return;
+  var selected=Array.from(s.msel).sort();
+  var correct=q.a.slice().sort();
+  var isCorrect=selected.length===correct.length&&selected.every(function(v,x){return v===correct[x];});
+  s.sel='submitted';
+  s.ans.push({c:isCorrect,d:q.d});
+  renderQuiz();
+}
+
 function quizNext(){
   var s=S.quiz,qs=qDeck();
   s.sel=null;
+  s.msel=new Set();
   if(s.cur+1<qs.length)s.cur++;else s.done=true;
   renderQuiz();
 }
+
+function qDeck(){
+  var base=S.quiz.dom===0?[...QZ]:QZ.filter(function(q){return q.d===S.quiz.dom;});
+  if(!S.quiz._shuffled){S.quiz._shuffled=shuffle(base);}
+  return S.quiz._shuffled;
+}
+
 function renderQuiz(){
   var s=S.quiz;
+  if(!s.msel)s.msel=new Set();
   var chips="<div class='chips'>"+mkchips(s.dom,"setQuizDom")+"</div>";
   var hdr="<h2 style='font-family:Syne,sans-serif;font-size:20px;margin-bottom:16px;color:var(--tx)'>🎯 Practice Quiz <span style='font-size:13px;color:var(--tx3);font-weight:400'>"+QZ.length+" questions</span></h2>";
   if(s.done){renderQuizResults();return;}
   var qs=qDeck(),q=qs[s.cur];
-  var score=s.ans.filter(a=>a.c).length;
-  var opts=q.o.map(function(opt,i){
-    var cls="ans",extra="";
-    if(s.sel!==null){
-      if(i===q.a){cls="ans hit";extra="<span style='margin-left:auto;font-size:16px'>✓</span>";}
-      else if(i===s.sel){cls="ans miss";extra="<span style='margin-left:auto;font-size:16px'>✗</span>";}
-      else cls="ans dim";
-    }
-    return "<button class='"+cls+"' onclick='quizPick("+i+")'><span class='ltr'>"+["A","B","C","D"][i]+"</span><span style='line-height:1.4'>"+opt+"</span>"+extra+"</button>";
-  }).join("");
+  if(!q){s.done=true;renderQuizResults();return;}
+  var score=s.ans.filter(function(a){return a.c;}).length;
+  var submitted=s.sel!==null;
+  var multi=isMulti(q);
+
+  var badge=multi?"<div style='display:inline-flex;align-items:center;gap:6px;background:var(--ye0);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:6px 12px;margin-bottom:12px'><span style='font-size:13px'>✅</span><span style='font-size:12px;font-weight:700;color:var(--ye)'>Select "+q.choose+" — choose all that apply</span></div>":"";
+
+  var opts;
+  if(!multi){
+    opts=q.o.map(function(opt,i){
+      var cls="ans",extra="";
+      if(submitted){
+        if(i===q.a){cls="ans hit";extra="<span style='margin-left:auto;font-size:16px'>✓</span>";}
+        else if(i===s.sel){cls="ans miss";extra="<span style='margin-left:auto;font-size:16px'>✗</span>";}
+        else cls="ans dim";
+      }
+      return "<button class='"+cls+"' onclick='quizPick("+i+")'><span class='ltr'>"+["A","B","C","D"][i]+"</span><span style='line-height:1.4;flex:1'>"+opt+"</span>"+extra+"</button>";
+    }).join("");
+  } else {
+    var correctSet=new Set(q.a);
+    opts=q.o.map(function(opt,i){
+      var isSel=s.msel.has(i);
+      var cls="ans",extra="",cbBorder="var(--bd)",cbBg="transparent",cbIcon="";
+      if(submitted){
+        var shouldBe=correctSet.has(i);
+        if(shouldBe&&isSel){cls="ans hit";cbBorder="var(--gn)";cbBg="var(--gn0)";cbIcon="✓";extra="<span style='margin-left:auto;font-size:15px'>✓</span>";}
+        else if(shouldBe&&!isSel){cls="ans hit";cbBorder="var(--gn)";cbBg="rgba(52,211,153,.04)";cbIcon="!";extra="<span style='margin-left:auto;font-size:12px;color:var(--gn)'>missed</span>";}
+        else if(!shouldBe&&isSel){cls="ans miss";cbBorder="var(--pk)";cbBg="var(--pk0)";cbIcon="✗";extra="<span style='margin-left:auto;font-size:15px'>✗</span>";}
+        else cls="ans dim";
+      } else {
+        if(isSel){cls="ans sel";cbBorder="var(--cy)";cbBg="var(--cy0)";cbIcon="✓";}
+      }
+      var cb="<span style='width:20px;height:20px;border-radius:5px;border:2px solid "+cbBorder+";background:"+cbBg+";display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:"+(cbIcon==="!"?"var(--gn)":cbIcon==="✗"?"var(--pk)":"var(--gn)")+"'>"+cbIcon+"</span>";
+      return "<button class='"+cls+"' onclick='quizPick("+i+")'>"+cb+"<span class='ltr'>"+["A","B","C","D","E"][i]+"</span><span style='line-height:1.4;flex:1'>"+opt+"</span>"+extra+"</button>";
+    }).join("");
+  }
+
+  var submitBtn="";
+  if(multi&&!submitted){
+    var canSub=s.msel.size===q.choose;
+    submitBtn="<div style='margin-top:12px'><button class='btn btn-p btn-full' onclick='quizSubmitMulti()' style='opacity:"+(canSub?1:.4)+"'>"+
+      (canSub?"Submit "+q.choose+" Answers":"Select "+q.choose+" answers ("+s.msel.size+"/"+q.choose+" chosen)")+
+    "</button></div>";
+  }
+
+  var isCorr=submitted?(multi?(function(){var sel=Array.from(s.msel).sort();var cor=q.a.slice().sort();return sel.length===cor.length&&sel.every(function(v,x){return v===cor[x];});}()):(s.sel===q.a)):false;
+  var explanation=submitted?
+    "<div class='explain' style='margin-top:14px'>"+
+      "<div style='font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;color:"+(isCorr?"var(--gn)":"var(--pk)")+"'>"+
+        (isCorr?"✓ Correct!":"✗ Incorrect")+(multi?" — Correct: "+q.a.map(function(i){return ["A","B","C","D","E"][i];}).join(", "):"")+
+      "</div>"+
+      "<div style='font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:14px'>"+q.e+"</div>"+
+      "<button class='btn btn-p btn-full' onclick='quizNext()'>"+(s.cur+1<qs.length?"Next Question →":"See Results")+"</button>"+
+    "</div>":"";
+
   render("<div class='pg'>"+hdr+chips+
     "<div style='display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px;color:var(--tx3)'>"+
       "<span>Q "+(s.cur+1)+" / "+qs.length+"</span><span style='color:var(--gn)'>"+score+" correct</span>"+
     "</div>"+
     "<div class='pbar'><div class='pbarf' style='width:"+(s.cur/qs.length*100)+"%'></div></div>"+
-    "<div class='card' style='margin-bottom:14px'>"+
-      "<div style='font-size:11px;color:"+dc(q.d)+";letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;font-weight:700'>Domain "+q.d+"</div>"+
+    "<div class='card' style='margin-bottom:12px'>"+
+      "<div style='font-size:11px;color:"+dc(q.d)+";letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;font-weight:700'>Domain "+q.d+"</div>"+
+      badge+
       "<div style='font-family:Syne,sans-serif;font-size:16px;font-weight:700;color:var(--tx);line-height:1.6'>"+q.q+"</div>"+
     "</div>"+
-    "<div class='ans-grid' style='margin-bottom:12px'>"+opts+"</div>"+"<div style='font-size:10px;color:var(--tx4);text-align:right;margin-bottom:8px'>Keys: 1 2 3 4 · Enter to continue</div>"+
-    (s.sel!==null?
-      "<div class='explain'>"+
-        "<div style='font-size:11px;color:var(--gn);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-weight:700'>Explanation</div>"+
-        "<div style='font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:14px'>"+q.e+"</div>"+
-        "<button class='btn btn-p btn-full' onclick='quizNext()'>"+(s.cur+1<qs.length?"Next Question →":"See Results")+"</button>"+
-      "</div>":"")+
+    "<div class='ans-grid force-col' style='margin-bottom:4px'>"+opts+"</div>"+
+    submitBtn+explanation+
+    (!submitted?"<div style='font-size:10px;color:var(--tx4);text-align:right;margin-top:8px'>"+(multi?"Select "+q.choose+" then Submit":"Keys: 1 2 3 4 · Enter to continue")+"</div>":"")+
   "</div>");
 }
+
 function renderQuizResults(){
   var s=S.quiz,qs=qDeck();
-  var score=s.ans.filter(a=>a.c).length;
+  var score=s.ans.filter(function(a){return a.c;}).length;
   var pct=Math.round(score/qs.length*100);
   var domStats=DOMAINS.map(function(d){
-    var da=s.ans.filter(a=>a.d===d.id);
+    var da=s.ans.filter(function(a){return a.d===d.id;});
     if(!da.length)return "";
-    var dc2=da.filter(a=>a.c).length;
+    var dc2=da.filter(function(a){return a.c;}).length;
     var dp=Math.round(dc2/da.length*100);
     return "<div style='margin-bottom:12px'>"+
       "<div style='display:flex;justify-content:space-between;margin-bottom:4px'>"+
@@ -1860,40 +2009,47 @@ function renderQuizResults(){
       "<div style='font-size:52px;margin-bottom:10px'>"+(pct>=80?"🏆":pct>=60?"💪":"📚")+"</div>"+
       "<div style='font-family:Syne,sans-serif;font-size:52px;font-weight:800;color:"+sc(pct)+"'>"+pct+"%</div>"+
       "<div style='font-size:14px;color:var(--tx3);margin-top:4px'>"+score+" / "+qs.length+" correct</div>"+
-      "<div style='font-size:13px;margin-top:8px;color:var(--tx3)'>"+(pct>=80?"Exam ready! 🎯":pct>=60?"Keep drilling 💪":"Review notes and retry 📚")+"</div>"+
+      "<div style='font-size:13px;margin-top:8px;color:var(--tx3)'>"+(pct>=80?"Exam ready!":pct>=60?"Keep drilling":"Review notes and retry")+"</div>"+
     "</div>"+
     "<div class='card' style='margin-bottom:16px'><div class='stitle'>By Domain</div><div style='display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:0'>"+domStats+"</div></div>"+
-    "<button class='btn btn-p btn-full' style='margin-bottom:10px' onclick='resetQuiz()'>Try Again</button>"+"<button class='btn btn-s btn-full' onclick='setTab(this.dataset.t)' data-t='learn'>📖 Review Lessons</button>"+
+    "<button class='btn btn-p btn-full' style='margin-bottom:10px' onclick='resetQuiz()'>Try Again</button>"+
+    "<button class='btn btn-s btn-full' onclick='setTab(this.dataset.t)' data-t='learn'>📖 Review Lessons</button>"+
   "</div>");
 }
 
 
-function matchPg(){return MATCH.slice(S.match.pg*MPGSZ,(S.match.pg+1)*MPGSZ);}
+
+
+// ── MATCH GAME HELPERS (lost during quiz engine rebuild) ──────────────────────
+function matchPg(){ return MATCH.slice(S.match.pg*MPGSZ,(S.match.pg+1)*MPGSZ); }
 function setMatchPg(i){
   var pp=MATCH.slice(i*MPGSZ,(i+1)*MPGSZ);
-  Object.assign(S.match,{pg:i,sT:null,sM:null,matched:[],wrong:false,moves:0,done:false,sh:shuffle(pp.map(p=>p.m))});
+  Object.assign(S.match,{pg:i,sT:null,sM:null,matched:[],wrong:false,moves:0,done:false,sh:shuffle(pp.map(function(p){return p.m;}))});
   renderMatch();
 }
 function matchSelT(t){
   if(S.match.matched.includes(t))return;
-  S.match.sT=S.match.sT===t?null:t;checkMatchPair();
+  S.match.sT=S.match.sT===t?null:t;
+  checkMatchPair();
 }
 function matchSelM(m){
   var pg2=matchPg();
-  if(S.match.matched.some(t=>pg2.find(p=>p.t===t)?.m===m))return;
-  S.match.sM=S.match.sM===m?null:m;checkMatchPair();
+  if(S.match.matched.some(function(t){return pg2.find(function(p){return p.t===t;})&&pg2.find(function(p){return p.t===t;}).m===m;}))return;
+  S.match.sM=S.match.sM===m?null:m;
+  checkMatchPair();
 }
 function checkMatchPair(){
   var s=S.match,pg2=matchPg();
   if(!s.sT||!s.sM){renderMatch();return;}
   s.moves++;
-  var pair=pg2.find(p=>p.t===s.sT&&p.m===s.sM);
+  var pair=pg2.find(function(p){return p.t===s.sT&&p.m===s.sM;});
   if(pair){
     s.matched.push(s.sT);s.sT=null;s.sM=null;
     if(s.matched.length===pg2.length)s.done=true;
-  }else{
+  } else {
     s.wrong=true;renderMatch();
-    setTimeout(function(){s.wrong=false;s.sT=null;s.sM=null;renderMatch();},700);return;
+    setTimeout(function(){s.wrong=false;s.sT=null;s.sM=null;renderMatch();},700);
+    return;
   }
   renderMatch();
 }
@@ -2120,11 +2276,15 @@ function renderGame(){
 function renderPBQ(){
   var s=S.pbq;
   if(!s.sim){
-    var cards=[["fw","🔥","Firewall Config","Configure allow/deny rules from a scenario","#f472b6"],
-               ["logs","📋","Log Analysis","Read server logs and identify attacks","#fbbf24"],
-               ["net","🌐","Network Diagram","Place devices in correct zones","#34d399"],
-               ["ports","🔌","Ports & Protocols","Match protocols to port numbers","#38bdf8"],
-               ["triage","🚨","IR Triage","Prioritize alerts and sequence response","#a78bfa"]];
+    var cards=[
+      ["fw","🔥","Firewall Config","Configure allow/deny rules from a scenario","var(--pk)"],
+      ["logs","📋","Log Analysis","Read server logs and identify attacks","var(--ye)"],
+      ["cli","💻","Command Line Analysis","Read terminal output and identify threats","var(--gn)"],
+      ["net","🌐","Network Diagram","Place devices in correct zones","var(--cy)"],
+      ["acm","🔐","Access Control Matrix","Assign permissions using least privilege","var(--pu)"],
+      ["ports","🔌","Ports & Protocols","Match protocols to port numbers","var(--or)"],
+      ["ddc","📦","Drag & Categorize","Classify controls, attacks and devices","#fb923c"],
+      ["triage","🚨","IR Triage","Prioritize alerts and sequence response","var(--pk)"]];
     render("<div class='pg'>"+
       "<h2 style='font-family:Syne,sans-serif;font-size:20px;margin-bottom:6px;color:var(--tx)'>🧪 PBQ Simulations</h2>"+
       "<p style='font-size:12px;color:var(--tx3);margin-bottom:20px'>Performance-Based Questions — interactive, just like the real exam</p>"+
@@ -2137,16 +2297,367 @@ function renderPBQ(){
     "</div>");
     return;
   }
-  var titles={fw:"🔥 Firewall Config",logs:"📋 Log Analysis",net:"🌐 Network Diagram",ports:"🔌 Ports & Protocols",triage:"🚨 IR Triage"};
+  var titles={fw:"🔥 Firewall Config",logs:"📋 Log Analysis",cli:"💻 Command Line Analysis",net:"🌐 Network Diagram",acm:"🔐 Access Control Matrix",ports:"🔌 Ports & Protocols",ddc:"📦 Drag & Categorize",triage:"🚨 IR Triage"};
   var html="<div class='pg'><button class='btn btn-g' onclick='S.pbq.sim=null;renderPBQ()' style='margin-bottom:16px'>← Back to PBQs</button><h2 style='font-family:Syne,sans-serif;font-size:20px;margin-bottom:20px;color:var(--tx)'>"+titles[s.sim]+"</h2>";
   if(s.sim==="fw")html+=renderFW();
   else if(s.sim==="logs")html+=renderLogs();
+  else if(s.sim==="cli")html+=renderCLI();
   else if(s.sim==="net")html+=renderNet();
+  else if(s.sim==="acm")html+=renderACM();
   else if(s.sim==="ports")html+=renderPorts();
+  else if(s.sim==="ddc")html+=renderDDC();
   else if(s.sim==="triage")html+=renderTriage();
   html+="</div>";
   render(html);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PBQ: COMMAND LINE ANALYSIS
+// ═══════════════════════════════════════════════════════════════════════════════
+const CLI_SCENARIOS=[
+  {
+    title:"Linux Server — Suspicious Process Investigation",
+    prompt:[
+      "$ whoami",
+      "root",
+      "$ netstat -antp | grep ESTABLISHED",
+      "tcp  0  0  10.0.1.45:22     192.168.1.10:54821  ESTABLISHED  1234/sshd",
+      "tcp  0  0  10.0.1.45:4444   185.220.101.47:6789  ESTABLISHED  3892/python3",
+      "tcp  0  0  10.0.1.45:443    192.168.1.10:61204  ESTABLISHED  1234/sshd",
+      "$ ps aux | grep 3892",
+      "root  3892  99.1  2.3  python3 /tmp/.hidden/update.py",
+      "$ ls -la /tmp/.hidden/",
+      "total 24",
+      "-rwxr-xr-x 1 root root 8192 Jan 15 03:22 update.py",
+      "-rw-r--r-- 1 root root  421 Jan 15 03:22 .config",
+      "$ cat /tmp/.hidden/.config",
+      "{\"c2\":\"185.220.101.47\",\"port\":6789,\"beacon\":30,\"encrypt\":\"aes256\"}"
+    ].join("\n"),
+    qs:[
+      {q:"What does the connection on port 4444 to 185.220.101.47 indicate?",o:["A legitimate software update","C2 beaconing to an external attacker","A scheduled backup to cloud storage","SSH tunneling for remote administration"],a:1,e:"Port 4444 is a common attacker port. python3 in /tmp/.hidden with a C2 config connecting to an external IP = classic C2 beaconing malware."},
+      {q:"What does '99.1' in the ps output for PID 3892 indicate?",o:["The process has 99.1% memory usage","The process is consuming 99.1% CPU","The process has been running 99.1 minutes","The process priority level is 99.1"],a:1,e:"In 'ps aux', the third column is %CPU. 99.1% CPU from a hidden process in /tmp = cryptojacking or active malware execution."},
+      {q:"What is the FIRST action to take after confirming this compromise?",o:["Delete /tmp/.hidden/ immediately","Kill process 3892 and keep monitoring","Isolate the server to stop C2 communication","Reboot to clear the malicious process"],a:2,e:"Containment first — isolate to break the C2 channel. Deleting before isolation lets the attacker respond. Rebooting loses RAM evidence. Killing the process alone doesn't prevent re-execution."}
+    ]
+  },
+  {
+    title:"Windows Event Log — Lateral Movement",
+    prompt:[
+      "C:\\> Get-WinEvent -LogName Security | Where-Object {$_.Id -in 4624,4625,4648}",
+      "",
+      "TimeCreated : 2024-01-15 02:14:33",
+      "Id          : 4625 (Failed logon)",
+      "Message     : Account: administrator  Failure: 0xC000006D  IP: 10.0.0.87",
+      "",
+      "TimeCreated : 2024-01-15 02:14:51  [x847 similar events]",
+      "Id          : 4625 (Failed logon)",
+      "Message     : Account: administrator  Failure: 0xC000006D  IP: 10.0.0.87",
+      "",
+      "TimeCreated : 2024-01-15 02:26:44",
+      "Id          : 4624 (Successful logon)",
+      "Message     : Account: administrator  Logon Type: 3  IP: 10.0.0.87",
+      "",
+      "TimeCreated : 2024-01-15 02:26:47",
+      "Id          : 4648 (Explicit credentials logon)",
+      "Message     : Account: svcbackup01  Target: FS-SERVER-02  IP: 10.0.0.87"
+    ].join("\n"),
+    qs:[
+      {q:"Event ID 4625 appearing 847 times against one account indicates:",o:["Credential stuffing from external source","Brute force against the administrator account","Password spraying across multiple accounts","Admin mistyping their password"],a:1,e:"847 failed attempts against a SINGLE account from the same IP = brute force. Credential stuffing uses many different accounts. Password spraying tries few passwords against many accounts."},
+      {q:"Windows Logon Type 3 in Event ID 4624 indicates:",o:["Interactive console login","Remote Desktop (RDP) login","Network logon (file share, net use)","Service account startup"],a:2,e:"Logon Type 3 = Network logon — accessing resources over the network. Commonly used in lateral movement after obtaining credentials."},
+      {q:"Event ID 4648 showing svcbackup01 connecting to FS-SERVER-02 immediately after admin login indicates:",o:["Legitimate backup service starting","Pass-the-hash to access a second server","Attacker using a backdoor account for lateral movement","Administrator doing routine maintenance"],a:2,e:"Attacker logged in as administrator (4624), then immediately used a new backdoor account (svcbackup01) to access FS-SERVER-02 — lateral movement using a persistence account just created."}
+    ]
+  },
+  {
+    title:"Nmap Scan — Vulnerability Assessment",
+    prompt:[
+      "$ nmap -sV -sC -O 192.168.1.15 --open",
+      "",
+      "Host: 192.168.1.15 (webserver.corp.local)",
+      "PORT     STATE  SERVICE    VERSION",
+      "21/tcp   open   ftp        vsftpd 2.3.4",
+      "22/tcp   open   ssh        OpenSSH 7.4",
+      "80/tcp   open   http       Apache 2.4.49",
+      "443/tcp  open   https      Apache 2.4.49",
+      "3306/tcp open   mysql      MySQL 5.5.62",
+      "8080/tcp open   http       Squid 3.5",
+      "",
+      "NSE Scripts:",
+      "|_ftp-anon: Anonymous FTP login allowed",
+      "| http-methods: GET POST PUT DELETE OPTIONS allowed",
+      "|_vuln: CVE-2021-41773 Apache Path Traversal/RCE - VULNERABLE"
+    ].join("\n"),
+    qs:[
+      {q:"Which finding is the MOST critical and requires urgent remediation?",o:["SSH on port 22","CVE-2021-41773 Apache 2.4.49 Path Traversal/RCE","MySQL 5.5.62 on port 3306","Anonymous FTP login allowed"],a:1,e:"CVE-2021-41773 is a critical actively-exploited RCE in Apache 2.4.49. Remote Code Execution = complete system compromise. Highest priority despite FTP misconfiguration also being serious."},
+      {q:"Port 3306 (MySQL) being open on a web server is a risk because:",o:["MySQL uses too much bandwidth","Databases should only be accessible to the web app internally, not network-wide","MySQL is an outdated protocol","MySQL conflicts with Apache"],a:1,e:"Databases must NEVER be directly accessible from the network. MySQL should listen only on localhost (127.0.0.1). Network-accessible databases are a critical segmentation failure."},
+      {q:"HTTP methods PUT and DELETE being allowed creates which specific risk?",o:["These methods slow the server","PUT allows file upload (webshells); DELETE allows file removal","These methods require authentication","PUT and DELETE are required by modern web apps"],a:1,e:"PUT can upload malicious files including webshells. DELETE allows removing server files. These methods must be disabled unless explicitly required. Combined with the Apache RCE — extremely dangerous."}
+    ]
+  }
+];
+
+function renderCLI(){
+  const s=S.logs; // reuse logs state with scenario/answers/checked
+  const scenario=CLI_SCENARIOS[s.scenario]||CLI_SCENARIOS[0];
+  const scenarioChips=CLI_SCENARIOS.map((sc2,i)=>{
+    const on=s.scenario===i;
+    return `<button class="chip${on?' on':''}" style="${on?'color:var(--gn);border-color:var(--gn);background:var(--gn0)':''}" onclick="setCLIScenario(${i})">Scenario ${i+1}</button>`;
+  }).join('');
+  const qHtml=scenario.qs.map((q,qi)=>{
+    const sel=s.answers[qi];
+    const opts=q.o.map((opt,oi)=>{
+      let cls='';
+      if(s.checked){if(oi===q.a)cls='hit';else if(oi===sel)cls='miss';else cls='dim';}
+      else if(oi===sel)cls='sel';
+      const tick=s.checked&&oi===q.a?'<span style="margin-left:auto;font-size:16px">✓</span>':'';
+      const cross=s.checked&&oi===sel&&oi!==q.a?'<span style="margin-left:auto;font-size:16px">✗</span>':'';
+      return `<button class="ans ${cls}" onclick="logPick(${qi},${oi})"><span class="ltr">${['A','B','C','D'][oi]}</span><span style="line-height:1.4;flex:1">${opt}</span>${tick}${cross}</button>`;
+    }).join('');
+    const expl=s.checked?`<div class="explain" style="margin-top:10px"><div style="font-size:10px;font-weight:800;color:var(--gn);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Explanation</div><div style="font-size:13px;color:var(--tx2);line-height:1.65">${q.e}</div></div>`:'';
+    return `<div class="card" style="margin-bottom:12px"><div style="font-size:11px;color:var(--tx3);margin-bottom:8px;font-weight:700">Q${qi+1} of ${scenario.qs.length}</div><div style="font-family:Syne,sans-serif;font-size:15px;font-weight:700;color:var(--tx);line-height:1.6;margin-bottom:14px">${q.q}</div><div class="col" style="gap:8px">${opts}</div>${expl}</div>`;
+  }).join('');
+  const answered=Object.keys(s.answers).length;
+  const total=scenario.qs.length;
+  const correct=scenario.qs.filter((q,i)=>s.answers[i]===q.a).length;
+  const submitBtn=!s.checked
+    ?`<button class="btn btn-p btn-full" style="opacity:${answered<total?.5:1}" onclick="checkLogs()">Submit Answers (${answered}/${total} answered)</button>`
+    :`<div class="card2" style="text-align:center;padding:24px;margin-bottom:12px">
+        <div style="font-size:40px;margin-bottom:8px">${correct===total?'🏆':'💪'}</div>
+        <div style="font-family:Syne,sans-serif;font-size:32px;font-weight:800;color:${sc(Math.round(correct/total*100))};">${correct}/${total}</div>
+        <button class="btn btn-p btn-full" style="margin-top:12px" onclick="resetLogs()">Try Again</button>
+      </div>`;
+  return `<div class="chips">${scenarioChips}</div>
+    <div style="font-size:14px;font-weight:700;color:var(--gn);margin-bottom:10px">${scenario.title}</div>
+    <div style="background:var(--bg);border:1px solid var(--gn);border-radius:12px;padding:14px;margin-bottom:16px;overflow-x:auto">
+      <pre style="font-family:monospace;font-size:11px;color:var(--gn);line-height:1.85;white-space:pre;margin:0">${scenario.prompt}</pre>
+    </div>
+    ${qHtml}${submitBtn}`;
+}
+function setCLIScenario(i){ S.logs={scenario:i,answers:{},checked:false}; renderPBQ(); }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PBQ: ACCESS CONTROL MATRIX
+// ═══════════════════════════════════════════════════════════════════════════════
+const ACM_SCENARIOS=[
+  {
+    title:"Hospital IT System — Role-Based Access Control",
+    desc:"A hospital is configuring RBAC for its EHR system. Assign the correct permissions to each role based on least privilege. Use the checkboxes to grant only the access each role requires.",
+    roles:["ER Nurse","Billing Clerk","IT Admin","Chief of Medicine","Security Auditor"],
+    resources:["Read patient records","Write/update patient records","View billing data","Modify billing data","Install software","View all system logs","Override any access","Run security reports"],
+    correct:{
+      "ER Nurse":[0,1],
+      "Billing Clerk":[2,3],
+      "IT Admin":[4,5],
+      "Chief of Medicine":[0,1,2,6],
+      "Security Auditor":[5,7]
+    },
+    explanations:{
+      "ER Nurse":"ER Nurses need Read + Write patient records. They have no business need for billing, software installation, logs, or override access.",
+      "Billing Clerk":"Billing Clerks need Read + Write billing data only. Medical records and system administration are outside their role.",
+      "IT Admin":"IT Admins need to install software and view system logs for troubleshooting. They should NOT access patient records (Separation of Duties).",
+      "Chief of Medicine":"Chief of Medicine needs full patient record access and billing oversight, plus override capability for emergencies. No IT admin functions.",
+      "Security Auditor":"Security Auditors need read-only access to all logs and security reports. They should not have operational access — Separation of Duties."
+    }
+  },
+  {
+    title:"Financial Services — Segregation of Duties",
+    desc:"A bank is implementing access controls for its trading platform. Assign permissions to enforce Separation of Duties — no single person should be able to initiate AND approve transactions.",
+    roles:["Junior Trader","Senior Trader","Compliance Officer","Risk Manager","IT Operations"],
+    resources:["Initiate trades <$10K","Initiate trades >$10K","Approve trades <$10K","Approve trades >$10K","View all trades","Override trade limits","Generate compliance reports","Patch trading systems"],
+    correct:{
+      "Junior Trader":[0,4],
+      "Senior Trader":[0,1,4],
+      "Compliance Officer":[4,6],
+      "Risk Manager":[4,5,6],
+      "IT Operations":[7]
+    },
+    explanations:{
+      "Junior Trader":"Junior Traders can initiate small trades and view their own trades. They cannot approve their own trades (Separation of Duties) or access large trade initiation.",
+      "Senior Trader":"Senior Traders can initiate all trade sizes and view trades but CANNOT approve — this would violate Separation of Duties (initiating AND approving = fraud risk).",
+      "Compliance Officer":"Compliance Officers review and report — they need view access and report generation. No trading or approval capability to maintain independence.",
+      "Risk Manager":"Risk Managers need to monitor all activity, override limits when necessary, and generate reports. They should not initiate trades.",
+      "IT Operations":"IT Operations patches and maintains the system. They should have NO access to trading functions (Separation of Duties — technical vs business functions)."
+    }
+  }
+];
+
+var acmState={scenario:0,selected:{},checked:false};
+
+function renderACM(){
+  const s=acmState;
+  const scenario=ACM_SCENARIOS[s.scenario];
+  if(!s.selected[s.scenario]) s.selected[s.scenario]={};
+  const sel=s.selected[s.scenario];
+  const chips=ACM_SCENARIOS.map((_,i)=>{
+    const on=s.scenario===i;
+    return `<button class="chip${on?' on':''}" style="${on?'color:var(--pu);border-color:var(--pu);background:var(--pu0)':''}" onclick="setACMScenario(${i})">Scenario ${i+1}</button>`;
+  }).join('');
+  const toggleACM=(role,ri)=>{
+    if(s.checked)return;
+    if(!sel[role])sel[role]=[];
+    const idx=sel[role].indexOf(ri);
+    if(idx>=0)sel[role].splice(idx,1);else sel[role].push(ri);
+    renderPBQ();
+  };
+  // Build matrix table
+  const thead='<tr><th style="padding:8px 6px;font-size:11px;color:var(--tx3);border-bottom:1px solid var(--bd);background:var(--bg3);font-weight:700;text-align:left;position:sticky;left:0;z-index:2">Resource</th>'+
+    scenario.roles.map(role=>`<th style="padding:8px 10px;font-size:11px;color:var(--cy);border-bottom:1px solid var(--bd);background:var(--bg3);font-weight:700;text-align:center;min-width:90px">${role}</th>`).join('')+'</tr>';
+  const tbody=scenario.resources.map((res,ri)=>{
+    const cells=scenario.roles.map(role=>{
+      const isSel=(sel[role]||[]).includes(ri);
+      const isCorrect=s.checked?((scenario.correct[role]||[]).includes(ri)):null;
+      const wasSel=isSel;
+      let bg='transparent',border='var(--bd)',color='var(--tx3)',icon='';
+      if(s.checked){
+        const shouldBe=(scenario.correct[role]||[]).includes(ri);
+        if(shouldBe&&wasSel){bg='var(--gn0)';border='var(--gn)';icon='✓';}
+        else if(shouldBe&&!wasSel){bg='rgba(52,211,153,.04)';border='var(--gn)';icon='!';}
+        else if(!shouldBe&&wasSel){bg='var(--pk0)';border='var(--pk)';icon='✗';}
+      } else if(isSel){bg='var(--cy0)';border='var(--cy)';icon='✓';}
+      return `<td style="padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center"><button onclick="(${toggleACM.toString()})(${JSON.stringify(role)},${ri})" style="width:28px;height:28px;border-radius:6px;border:1.5px solid ${border};background:${bg};cursor:${s.checked?'default':'pointer'};font-size:12px;font-weight:800;color:${icon==='!'?'var(--gn)':icon==='✗'?'var(--pk)':'var(--gn)'}">${icon}</button></td>`;
+    }).join('');
+    return `<tr><td style="padding:8px 6px;font-size:12px;color:var(--tx2);border-bottom:1px solid rgba(255,255,255,.04);position:sticky;left:0;background:var(--bg2);z-index:1;white-space:nowrap">${res}</td>${cells}</tr>`;
+  }).join('');
+
+  let score=0,total=0;
+  let explHtml='';
+  if(s.checked){
+    scenario.roles.forEach(role=>{
+      const corr=scenario.correct[role]||[];
+      const got=sel[role]||[];
+      const correct=corr.slice().sort().join(',')=== got.slice().sort().join(',');
+      if(correct)score++;
+      total++;
+    });
+    explHtml='<div class="card" style="margin-bottom:16px"><div class="stitle">Role Explanations</div>'+
+      scenario.roles.map(role=>{
+        const corr=scenario.correct[role]||[];
+        const got=sel[role]||[];
+        const correct=corr.slice().sort().join(',')=== got.slice().sort().join(',');
+        return `<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.04)">
+          <div style="font-size:12px;font-weight:700;color:${correct?'var(--gn)':'var(--pk)'};margin-bottom:4px">${correct?'✓':'✗'} ${role}</div>
+          <div style="font-size:12px;color:var(--tx2);line-height:1.6">${scenario.explanations[role]}</div>
+        </div>`;
+      }).join('')+'</div>';
+  }
+
+  return `<div class="chips">${chips}</div>
+    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--tx2);line-height:1.7">
+      <strong style="color:var(--pu)">Scenario:</strong> ${scenario.desc}
+    </div>
+    <p style="font-size:12px;color:var(--tx3);margin-bottom:12px">Tap cells to grant access. Apply least privilege — grant ONLY what each role needs.</p>
+    <div class="tbl-wrap" style="margin-bottom:16px">
+      <table style="width:100%;border-collapse:collapse;background:var(--bg2);border-radius:12px;overflow:hidden;border:1px solid var(--bd)">
+        <thead>${thead}</thead><tbody>${tbody}</tbody>
+      </table>
+    </div>
+    ${s.checked?
+      `<div class="card2" style="text-align:center;padding:20px;margin-bottom:16px">
+        <div style="font-family:Syne,sans-serif;font-size:32px;font-weight:800;color:${sc(Math.round(score/total*100))}">${score}/${total} roles correct</div>
+        <div style="font-size:13px;color:var(--tx3);margin-top:4px">${Math.round(score/total*100)}% accuracy</div>
+      </div>`+explHtml+
+      '<button class="btn btn-p btn-full" onclick="acmState.selected={};acmState.checked=false;renderPBQ()">Try Again</button>'
+      :
+      '<button class="btn btn-p btn-full" onclick="acmState.checked=true;renderPBQ()">Check Access Matrix</button>'
+    }`;
+}
+function setACMScenario(i){ acmState={scenario:i,selected:{},checked:false}; renderPBQ(); }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PBQ: DRAG-AND-DROP CATEGORIZATION
+// ═══════════════════════════════════════════════════════════════════════════════
+const DDC_SCENARIOS=[
+  {
+    title:"Security Control Classification",
+    desc:"Categorize each security control by BOTH its category (Technical/Managerial/Operational/Physical) AND its type (Preventive/Detective/Corrective/Deterrent).",
+    items:["Security camera monitoring server room","Firewall blocking inbound traffic","Password complexity policy document","Security awareness training program","Antivirus software removing malware","Guard checking badges at entrance","SIEM alert on failed logins","Incident response plan","Backup and restore procedure","Motion-activated lighting"],
+    categories:["Technical","Managerial","Operational","Physical"],
+    correct:{"Security camera monitoring server room":"Physical","Firewall blocking inbound traffic":"Technical","Password complexity policy document":"Managerial","Security awareness training program":"Operational","Antivirus software removing malware":"Technical","Guard checking badges at entrance":"Physical","SIEM alert on failed logins":"Technical","Incident response plan":"Managerial","Backup and restore procedure":"Operational","Motion-activated lighting":"Physical"}
+  },
+  {
+    title:"Attack Type Classification",
+    desc:"Classify each attack scenario into the correct attack category.",
+    items:["Attacker sends 5 million SYN packets to a web server","Malicious script injected into database affects all site visitors","Attacker registers 'amaz0n.com' to intercept shoppers","Infected USB drive left in company parking lot","Attacker calls employee posing as IT helpdesk","Malware deletes shadow copies before encrypting files","Attacker uses stolen NTLM hash without cracking it","DNS queries used to exfiltrate data in encoded chunks"],
+    categories:["DoS/DDoS","Web Attack","Social Engineering","Malware","Credential Attack","Covert Channel"],
+    correct:{"Attacker sends 5 million SYN packets to a web server":"DoS/DDoS","Malicious script injected into database affects all site visitors":"Web Attack","Attacker registers 'amaz0n.com' to intercept shoppers":"Social Engineering","Infected USB drive left in company parking lot":"Social Engineering","Attacker calls employee posing as IT helpdesk":"Social Engineering","Malware deletes shadow copies before encrypting files":"Malware","Attacker uses stolen NTLM hash without cracking it":"Credential Attack","DNS queries used to exfiltrate data in encoded chunks":"Covert Channel"}
+  },
+  {
+    title:"Network Device Placement",
+    desc:"Classify where each device/technology belongs in a network architecture.",
+    items:["Web Application Firewall","Honeypot","Database server","Public DNS resolver","IDS sensor","VPN concentrator","RADIUS server","Load balancer for web apps"],
+    categories:["DMZ","Internal Network","Perimeter","Secure Zone"],
+    correct:{"Web Application Firewall":"DMZ","Honeypot":"DMZ","Database server":"Secure Zone","Public DNS resolver":"DMZ","IDS sensor":"Internal Network","VPN concentrator":"Perimeter","RADIUS server":"Internal Network","Load balancer for web apps":"DMZ"}
+  }
+];
+
+var ddcState={scenario:0,placed:{},drag:null,checked:false};
+
+function renderDDC(){
+  const s=ddcState;
+  const scenario=DDC_SCENARIOS[s.scenario];
+  const chips=DDC_SCENARIOS.map((_,i)=>{
+    const on=s.scenario===i;
+    return `<button class="chip${on?' on':''}" style="${on?'color:var(--or);border-color:var(--or);background:rgba(251,146,60,.1)':''}" onclick="setDDCScenario(${i})">Scenario ${i+1}</button>`;
+  }).join('');
+
+  const catColors={"Technical":"var(--cy)","Managerial":"var(--pu)","Operational":"var(--ye)","Physical":"var(--gn)","DoS/DDoS":"var(--pk)","Web Attack":"var(--or)","Social Engineering":"var(--ye)","Malware":"var(--pk)","Credential Attack":"var(--pu)","Covert Channel":"var(--tx2)","DMZ":"var(--ye)","Internal Network":"var(--gn)","Perimeter":"var(--cy)","Secure Zone":"var(--pu)"};
+  const placedItems=Object.keys(s.placed);
+  const unplaced=scenario.items.filter(item=>!placedItems.includes(item));
+
+  // Tray
+  const tray='<div style="display:flex;flex-wrap:wrap;gap:8px;padding:12px;background:var(--bg);border:1px solid var(--bd);border-radius:12px;min-height:52px;margin-bottom:16px">'+
+    (unplaced.length===0?'<span style="font-size:12px;color:var(--gn);padding:4px">All items placed ✓</span>':
+    unplaced.map(item=>{
+      const isSel=s.drag===item;
+      return `<button onclick="ddcSelect(${JSON.stringify(item)})" style="background:${isSel?'var(--cy0)':'var(--bg3)'};border:1.5px solid ${isSel?'var(--cy)':'var(--bd)'};border-radius:8px;padding:7px 12px;color:${isSel?'var(--cy)':'var(--tx2)'};font-size:12px;cursor:pointer;font-family:inherit;font-weight:500">${isSel?'📌 ':''}${item}</button>`;
+    }).join(''))+
+  '</div>';
+
+  // Category zones
+  const zones=scenario.categories.map(cat=>{
+    const catColor=catColors[cat]||'var(--cy)';
+    const itemsInCat=Object.entries(s.placed).filter(([,v])=>v===cat).map(([k])=>k);
+    const chips2=itemsInCat.map(item=>{
+      const isCorrect=s.checked?scenario.correct[item]===cat:null;
+      const clr=isCorrect===null?catColor:isCorrect?'var(--gn)':'var(--pk)';
+      return `<span onclick="event.stopPropagation();ddcRemove(${JSON.stringify(item)})" style="display:inline-flex;align-items:center;gap:4px;background:${isCorrect===null?catColor+'15':isCorrect?'var(--gn0)':'var(--pk0)'};border:1px solid ${clr};border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;color:${clr};cursor:pointer;margin:3px">${s.checked?(isCorrect?'✓ ':'✗ '):''}${item}</span>`;
+    }).join('');
+    const isTarget=s.drag&&!s.checked;
+    return `<div onclick="ddcDrop(${JSON.stringify(cat)})" style="background:${isTarget?catColor+'08':'rgba(255,255,255,.02)'};border:2px solid ${isTarget?catColor+'66':'var(--bd)'};border-radius:12px;padding:12px;margin-bottom:10px;transition:all .15s;cursor:${isTarget?'pointer':'default'}">
+      <div style="font-size:12px;font-weight:800;color:${catColor};margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+        <span>${cat}</span>
+        ${isTarget?`<span style="font-size:11px;color:${catColor};opacity:.7">Drop here →</span>`:''}
+      </div>
+      <div style="min-height:28px;display:flex;flex-wrap:wrap">${chips2||'<span style="font-size:11px;color:var(--tx4)">Empty</span>'}</div>
+    </div>`;
+  }).join('');
+
+  let score=0,total=scenario.items.length;
+  if(s.checked){
+    scenario.items.forEach(item=>{if(s.placed[item]===scenario.correct[item])score++;});
+  }
+
+  return `<div class="chips">${chips}</div>
+    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:12px;padding:13px;margin-bottom:16px;font-size:13px;color:var(--tx2);line-height:1.6">
+      <strong style="color:var(--or)">Task:</strong> ${scenario.desc}
+    </div>
+    <div class="stitle">Items Tray — Tap to select, then tap a category to place</div>
+    ${tray}
+    <div class="stitle">Categories</div>
+    ${zones}
+    ${s.checked?
+      `<div class="card2" style="text-align:center;padding:20px;margin-bottom:16px">
+        <div style="font-family:Syne,sans-serif;font-size:32px;font-weight:800;color:${sc(Math.round(score/total*100))}">${score}/${total} correct</div>
+        <div style="font-size:12px;color:var(--tx3);margin-top:4px">${Math.round(score/total*100)}%</div>
+      </div>
+      <button class="btn btn-p btn-full" style="margin-bottom:10px" onclick="ddcState.placed={};ddcState.drag=null;ddcState.checked=false;renderPBQ()">Try Again</button>`
+      :
+      `<button class="btn btn-p btn-full" style="opacity:${unplaced.length===0?1:.4}" onclick="${unplaced.length===0?'ddcState.checked=true;renderPBQ()':''}">
+        ${unplaced.length===0?'Check Answers':'Place all items first ('+unplaced.length+' remaining)'}
+      </button>`
+    }`;
+}
+function ddcSelect(item){ ddcState.drag=ddcState.drag===item?null:item; renderPBQ(); }
+function ddcDrop(cat){ if(!ddcState.drag||ddcState.checked)return; ddcState.placed[ddcState.drag]=cat; ddcState.drag=null; renderPBQ(); }
+function ddcRemove(item){ if(ddcState.checked)return; delete ddcState.placed[item]; renderPBQ(); }
+function setDDCScenario(i){ ddcState={scenario:i,placed:{},drag:null,checked:false}; renderPBQ(); }
 
 const FW_CORRECT=[
   {s:"ANY",d:"192.168.10.5",p:"443",a:"ALLOW",r:"Internet HTTPS to web server"},
@@ -2159,18 +2670,18 @@ const FW_CORRECT=[
 function renderFW(){
   const s=S.fw;
   return `
-    <div style="background:rgba(10,16,32,.8);border:1px solid #1e3a5f;border-radius:12px;padding:14px;margin-bottom:20px;font-size:13px;color:#94a3b8;line-height:1.7">
-      <strong style="color:#00d4ff">Scenario:</strong> Web server (192.168.10.5) is in the DMZ. Internal network is 10.0.0.0/24.<br>
+    <div style="background:var(--bg3);border:1px solid var(--bd2);border-radius:12px;padding:14px;margin-bottom:20px;font-size:13px;color:var(--tx2);line-height:1.7">
+      <strong style="color:var(--cy)">Scenario:</strong> Web server (192.168.10.5) is in the DMZ. Internal network is 10.0.0.0/24.<br>
       Configure rules to: Allow HTTPS from internet to web server · Allow web server to query DB (3306) · Block all other DMZ→Internal traffic · Allow internal users to browse HTTP/HTTPS.
     </div>
-    <div style="font-size:11px;color:#f9c74f;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">Configure 4 Firewall Rules</div>
+    <div style="font-size:11px;color:var(--ye);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">Configure 4 Firewall Rules</div>
     <div class="tbl-wrap">
       <table class="fwtbl">
         <thead><tr><th>#</th><th>Source</th><th>Destination</th><th>Port</th><th>Action</th><th>✓</th></tr></thead>
         <tbody>
           ${s.rules.map((r,i)=>`
             <tr style="background:${s.checked?(S.fw.results[i]?.ok?'var(--gn0)':'var(--pk0)'):'var(--bg)'}">
-              <td style="color:#475569;font-weight:700;padding:8px 5px">${i+1}</td>
+              <td style="color:var(--tx3);font-weight:700;padding:8px 5px">${i+1}</td>
               <td style="padding:6px 4px"><input class="fw-in" value="${r.s}" placeholder="e.g. ANY" onchange="fwUpdate(${i},'s',this.value)" style="width:88px"></td>
               <td style="padding:6px 4px"><input class="fw-in" value="${r.d}" placeholder="IP/subnet" onchange="fwUpdate(${i},'d',this.value)" style="width:88px"></td>
               <td style="padding:6px 4px"><input class="fw-in" value="${r.p}" placeholder="443" onchange="fwUpdate(${i},'p',this.value)" style="width:60px"></td>
@@ -2191,7 +2702,7 @@ function renderFW(){
         ${S.fw.results.map((r,i)=>`
           <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #0f1929">
             <div style="font-size:12px;color:${r.ok?'var(--gn)':'var(--pk)'};font-weight:600;margin-bottom:4px">Rule ${i+1}: ${FW_CORRECT[i].r}</div>
-            ${!r.ok?`<div style="font-size:11px;color:#64748b">Expected: ${FW_CORRECT[i].s} → ${FW_CORRECT[i].d} Port:${FW_CORRECT[i].p} ${FW_CORRECT[i].a}</div>`:''}
+            ${!r.ok?`<div style="font-size:11px;color:var(--tx3)">Expected: ${FW_CORRECT[i].s} → ${FW_CORRECT[i].d} Port:${FW_CORRECT[i].p} ${FW_CORRECT[i].a}</div>`:''}
           </div>`).join('')}
       </div>`:''}
     <button class="btn btn-p btn-full" style="margin-bottom:10px" onclick="checkFW()">Submit Rules</button>
@@ -2265,41 +2776,41 @@ const LOG_SCENARIOS=[
 
 function renderLogs(){
   const s=S.logs;
-  const sc=LOG_SCENARIOS[s.scenario];
-  return `
-    <div class="chips" style="margin-bottom:16px">
-      ${LOG_SCENARIOS.map((ls,i)=>`<button class="chip${s.scenario===i?' on':''}" style="${s.scenario===i?'color:#ff4d6d;border-color:#ff4d6d;background:#ff4d6d18':''};" onclick="setLogScenario(${i})">Scenario ${i+1}</button>`).join('')}
-    </div>
-    <div style="font-size:13px;font-weight:700;color:#f9c74f;margin-bottom:10px">${sc.title}</div>
-    <div class="logbox">${sc.log}</div>
-    ${sc.qs.map((q,qi)=>{
-      const sel=s.answers[qi];
-      return `<div class="card" style="margin-bottom:14px">
-        <div style="font-size:12px;color:#64748b;margin-bottom:8px">Question ${qi+1} of ${sc.qs.length}</div>
-        <div style="font-size:14px;font-weight:600;color:#f1f5f9;line-height:1.6;margin-bottom:12px;font-family:'Syne',sans-serif">${q.q}</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          ${q.o.map((opt,oi)=>{
-            let cls='';
-            if(s.checked){ if(oi===q.a) cls='correct'; else if(oi===sel) cls='wrong'; }
-            else if(oi===sel) cls='selected';
-            return `<button class="ans ${cls}" onclick="logPick(${qi},${oi})" style="margin-bottom:0">
-              <span class="ltr">${['A','B','C','D'][oi]}</span>
-              <span style="line-height:1.4">${opt}</span>
-              ${s.checked&&oi===q.a?'<span style="margin-left:auto;font-size:16px">✓</span>':''}
-              ${s.checked&&oi===sel&&oi!==q.a?'<span style="margin-left:auto;font-size:16px">✗</span>':''}
-            </button>`;
-          }).join('')}
-        </div>
-        ${s.checked?`<div class="explain"><div style="font-size:11px;color:#22c55e;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Explanation</div><div style="font-size:12px;color:#94a3b8;line-height:1.6">${q.e}</div></div>`:''}
+  const scenario=LOG_SCENARIOS[s.scenario];
+  const scenarioChips=LOG_SCENARIOS.map((ls,i)=>{
+    const on=s.scenario===i;
+    const st=on?'color:var(--pk);border-color:var(--pk);background:var(--pk0)':'';
+    return `<button class="chip${on?' on':''}" style="${st}" onclick="setLogScenario(${i})">Scenario ${i+1}</button>`;
+  }).join('');
+  const qHtml=scenario.qs.map((q,qi)=>{
+    const sel=s.answers[qi];
+    const opts=q.o.map((opt,oi)=>{
+      let cls='';
+      if(s.checked){ if(oi===q.a)cls='hit'; else if(oi===sel)cls='miss'; else cls='dim'; }
+      else if(oi===sel) cls='sel';
+      const tick=s.checked&&oi===q.a?'<span style="margin-left:auto;font-size:16px">✓</span>':'';
+      const cross=s.checked&&oi===sel&&oi!==q.a?'<span style="margin-left:auto;font-size:16px">✗</span>':'';
+      return `<button class="ans ${cls}" onclick="logPick(${qi},${oi})"><span class="ltr">${['A','B','C','D'][oi]}</span><span style="line-height:1.4;flex:1">${opt}</span>${tick}${cross}</button>`;
+    }).join('');
+    const expl=s.checked?`<div class="explain" style="margin-top:10px"><div style="font-size:10px;font-weight:800;color:var(--gn);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Explanation</div><div style="font-size:13px;color:var(--tx2);line-height:1.65">${q.e}</div></div>`:'';
+    return `<div class="card" style="margin-bottom:12px"><div style="font-size:11px;color:var(--tx3);margin-bottom:8px;font-weight:700">Q${qi+1} of ${scenario.qs.length}</div><div style="font-family:Syne,sans-serif;font-size:15px;font-weight:700;color:var(--tx);line-height:1.6;margin-bottom:14px">${q.q}</div><div class="col" style="gap:8px">${opts}</div>${expl}</div>`;
+  }).join('');
+  const answered=Object.keys(s.answers).length;
+  const total=scenario.qs.length;
+  const correct=scenario.qs.filter((q,i)=>s.answers[i]===q.a).length;
+  const pct=Math.round(correct/total*100);
+  const submitBtn=!s.checked
+    ?`<button class="btn btn-p btn-full" style="opacity:${answered<total?.5:1}" onclick="checkLogs()">Submit Answers (${answered}/${total} answered)</button>`
+    :`<div class="card2" style="text-align:center;padding:24px;margin-bottom:12px">
+        <div style="font-size:44px;margin-bottom:8px">${correct===total?'🏆':'💪'}</div>
+        <div style="font-family:Syne,sans-serif;font-size:36px;font-weight:800;color:${sc(pct)};margin-bottom:4px">${correct}/${total}</div>
+        <div style="font-size:13px;color:var(--tx3);margin-bottom:16px">${pct>=80?'Excellent!':pct>=60?'Good effort!':'Review and retry'}</div>
+        <button class="btn btn-p btn-full" onclick="resetLogs()">Try Again</button>
       </div>`;
-    }).join('')}
-    ${!s.checked?`<button class="btn btn-p btn-full" style="opacity:${Object.keys(s.answers).length<sc.qs.length?.5:1}" onclick="checkLogs()">Submit Answers</button>`:
-    `<div class="card" style="text-align:center;margin-bottom:12px">
-      <div style="font-size:36px;margin-bottom:8px">${sc.qs.filter((q,i)=>s.answers[i]===q.a).length===sc.qs.length?'🏆':'💪'}</div>
-      <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:${scoreColor(Math.round(sc.qs.filter((q,i)=>s.answers[i]===q.a).length/sc.qs.length*100))};margin-bottom:6px">${sc.qs.filter((q,i)=>s.answers[i]===q.a).length}/${sc.qs.length}</div>
-      <button class="btn btn-p btn-full" style="margin-top:10px" onclick="resetLogs()">Try Again</button>
-    </div>`}
-  `;
+  return `<div class="chips">${scenarioChips}</div>
+    <div style="font-size:14px;font-weight:700;color:var(--ye);margin-bottom:10px">${scenario.title}</div>
+    <div class="logbox">${scenario.log}</div>
+    ${qHtml}${submitBtn}`;
 }
 
 function setLogScenario(i){ S.logs={scenario:i,answers:{},checked:false}; renderPBQ(); }
@@ -2330,17 +2841,17 @@ function renderNet(){
   }).length;
 
   return `
-    <div style="background:rgba(10,16,32,.8);border:1px solid #1e3a5f;border-radius:12px;padding:14px;margin-bottom:20px;font-size:13px;color:#94a3b8;line-height:1.7">
-      <strong style="color:#00d4ff">Task:</strong> Tap a device from the tray below, then tap the zone where it belongs. Tap a placed device to remove it.
+    <div style="background:var(--bg3);border:1px solid var(--bd2);border-radius:12px;padding:14px;margin-bottom:20px;font-size:13px;color:var(--tx2);line-height:1.7">
+      <strong style="color:var(--cy)">Task:</strong> Tap a device from the tray below, then tap the zone where it belongs. Tap a placed device to remove it.
     </div>
-    <div style="font-size:11px;color:#475569;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Available Devices (${unplaced.length} remaining)</div>
+    <div style="font-size:11px;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Available Devices (${unplaced.length} remaining)</div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;min-height:44px;background:#080f1a;border-radius:12px;padding:10px;border:1px solid #1e293b;margin-bottom:20px">
       ${unplaced.length===0?'<div style="font-size:12px;color:#334155;align-self:center">All devices placed ✓</div>':
       unplaced.map(d=>`<button onclick="netSelect('${d}')" style="background:${s.dragging===d?'var(--bg4)':'var(--bg3)'};border:1px solid ${s.dragging===d?'var(--cy)':'var(--bd)'};border-radius:8px;padding:7px 12px;color:${s.dragging===d?'var(--cy)':'var(--tx2)'};font-size:12px;font-family:inherit;font-weight:600;cursor:pointer">${s.dragging===d?'📌 ':''}${d}</button>`).join('')}
     </div>
     ${NET_ZONES.map(z=>{
       const zd=getZoneDevs(z.id);
-      return `<div class="zone ${s.dragging&&z.id!=='internet'?'droptarget':''}" style="border-color:${s.dragging&&z.id!=='internet'?z.color+'44':'var(--bd)'}" onclick="netDrop('${z.id}')">
+      return `<div class="zone ${s.dragging&&z.id!=='internet'?'zt':''}" style="border-color:${s.dragging&&z.id!=='internet'?z.color+'44':'var(--bd)'}" onclick="netDrop('${z.id}')">
         <div style="display:flex;justify-content:space-between;margin-bottom:8px">
           <span style="font-size:13px;font-weight:700;color:${z.color}">${z.label}</span>
           <span style="font-size:11px;color:#334155">${z.desc}</span>
@@ -2357,8 +2868,8 @@ function renderNet(){
     ${s.checked?`
       <div class="card" style="margin-bottom:12px">
         <div style="font-size:14px;font-weight:700;color:${totalCorrect>=6?'var(--gn)':'#f9c74f'};margin-bottom:12px;font-family:'Syne',sans-serif">Score: ${totalCorrect}/${NET_DEVICES.length-1} correct</div>
-        <div style="font-size:12px;color:#64748b;line-height:1.8">
-          <div style="margin-bottom:4px;color:#94a3b8">Correct placements:</div>
+        <div style="font-size:12px;color:var(--tx3);line-height:1.8">
+          <div style="margin-bottom:4px;color:var(--tx2)">Correct placements:</div>
           <div>🟡 DMZ: Web Server, WAF, Honeypot</div>
           <div>🔵 Perimeter: Firewall or NGFW</div>
           <div>🟢 Internal: IDS, VPN Gateway</div>
@@ -2398,38 +2909,40 @@ function renderPorts(){
   const isPortMatched=port=>s.matched.some(m=>m.port===port);
 
   if(s.done) return `
-    <div class="card" style="text-align:center;padding:32px">
-      <div style="font-size:48px;margin-bottom:12px">🎉</div>
-      <div style="font-family:'Syne',sans-serif;font-size:20px;color:#f1f5f9;margin-bottom:8px">Set ${s.page+1} Complete!</div>
-      <div style="font-size:14px;color:#64748b;margin-bottom:24px">${s.moves} moves</div>
+    <div class="card2" style="text-align:center;padding:36px 20px">
+      <div style="font-size:52px;margin-bottom:12px">🎉</div>
+      <div style="font-family:Syne,sans-serif;font-size:22px;color:var(--tx);margin-bottom:8px">Set ${s.page+1} Complete!</div>
+      <div style="font-size:14px;color:var(--tx3);margin-bottom:24px">${s.moves} moves</div>
       <div style="display:flex;gap:10px">
-        <button class="btn btn-p btn-full" style="flex:1" onclick="resetPorts()">Again</button>
-        ${s.page+1<totalPages?`<button class="btn btn-p btn-full" style="flex:1;background:linear-gradient(135deg,#06d6a0,#059669);color:#000" onclick="setPortsPage(${s.page+1})">Next Set →</button>`:''}
+        <button class="btn btn-p" style="flex:1" onclick="resetPorts()">Play Again</button>
+        ${s.page+1<totalPages?`<button class="btn btn-gn" style="flex:1" onclick="setPortsPage(${s.page+1})">Next Set →</button>`:''}
       </div>
     </div>`;
 
+  const pgChips=Array.from({length:totalPages},(_,i)=>{
+    const on=s.page===i;
+    return `<button class="chip${on?' on':''}" style="${on?'color:var(--gn);border-color:var(--gn);background:var(--gn0)':''}" onclick="setPortsPage(${i})">Set ${i+1}</button>`;
+  }).join('');
+
+  const protos=pagePairs.map(({p})=>{
+    const isM=isProtoMatched(p),isSel=s.selP===p,isW=s.wrong&&isSel;
+    const cls=isM?'mbhit':isW?'mbmiss':isSel?'mbon':'';
+    return `<button class="mb ${cls}" onclick="portSelP('${p}')">${isM?'✓ ':''}${p}</button>`;
+  }).join('');
+
+  const ports=s.shuffled.map(port=>{
+    const isM=isPortMatched(port),isSel=s.selPort===port,isW=s.wrong&&isSel;
+    const cls=isM?'mbhit':isW?'mbmiss':isSel?'mbon':'';
+    return `<button class="mb ${cls}" style="font-family:monospace;font-size:16px;font-weight:700;text-align:center" onclick="portSelPort('${port}')">${isM?'✓ ':''}${port}</button>`;
+  }).join('');
+
   return `
-    <div class="chips" style="margin-bottom:14px">
-      ${Array.from({length:totalPages},(_,i)=>`<button class="chip ${s.page===i?'active':''}" style="${s.page===i?'color:#06d6a0;border-color:#06d6a0;background:#06d6a018':''};" onclick="setPortsPage(${i})">Set ${i+1}</button>`).join('')}
-    </div>
-    <p style="font-size:12px;color:#475569;margin-bottom:14px">Tap a protocol then its matching port · ${s.matched.length}/${pagePairs.length} matched · ${s.moves} moves</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <div style="font-size:10px;color:#475569;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">Protocols</div>
-        ${pagePairs.map(({p})=>{
-          const isM=isProtoMatched(p), isSel=s.selP===p, isW=s.wrong&&isSel;
-          return `<button class="match-btn ${isM?'matched':isW?'wrong':isSel?'selected':''}" onclick="portSelP('${p}')">${isM?'✓ ':''}${p}</button>`;
-        }).join('')}
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <div style="font-size:10px;color:#475569;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">Ports</div>
-        ${s.shuffled.map(port=>{
-          const isM=isPortMatched(port), isSel=s.selPort===port, isW=s.wrong&&isSel;
-          return `<button class="match-btn ${isM?'matched':isW?'wrong':isSel?'selected':''}" style="font-family:'Courier New',monospace;font-size:16px;font-weight:700" onclick="portSelPort('${port}')">${isM?'✓ ':''}${port}</button>`;
-        }).join('')}
-      </div>
-    </div>
-  `;
+    <div class="chips">${pgChips}</div>
+    <p style="font-size:12px;color:var(--tx3);margin-bottom:14px">Tap a protocol then its matching port number · <span style="color:var(--gn)">${s.matched.length}/${pagePairs.length} matched</span> · ${s.moves} moves</p>
+    <div class="g2" style="gap:10px">
+      <div class="col" style="gap:6px"><div class="stitle">Protocols</div>${protos}</div>
+      <div class="col" style="gap:6px"><div class="stitle">Port Numbers</div>${ports}</div>
+    </div>`;
 }
 
 function setPortsPage(i){
@@ -2493,10 +3006,10 @@ function renderTriage(){
   if(!s.actionOrder||s.actionOrder.length===0) s.actionOrder=shuffle(TRIAGE_ACTIONS);
 
   return `
-    <div style="background:rgba(10,16,32,.8);border:1px solid #1e3a5f;border-radius:12px;padding:14px;margin-bottom:20px;font-size:13px;color:#94a3b8;line-height:1.7">
+    <div style="background:var(--bg3);border:1px solid var(--bd2);border-radius:12px;padding:14px;margin-bottom:20px;font-size:13px;color:var(--tx2);line-height:1.7">
       Your SOC receives these simultaneous alerts at 2:47 AM. Prioritize and sequence your response.
     </div>
-    <div style="font-size:11px;color:#f9c74f;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">Step 1 — Tap alerts in priority order (1st = most urgent)</div>
+    <div style="font-size:11px;color:var(--ye);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">Step 1 — Tap alerts in priority order (1st = most urgent)</div>
     ${TRIAGE_ALERTS.map(a=>{
       const rank=s.priority.indexOf(a.id)+1;
       const isSel=s.priority.includes(a.id);
@@ -2504,10 +3017,10 @@ function renderTriage(){
         <div style="width:28px;height:28px;border-radius:8px;background:${a.color}22;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:${a.color};flex-shrink:0">${isSel?rank:a.id}</div>
         <div style="flex:1">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-            <span style="font-size:12px;font-weight:700;color:#f1f5f9">${a.title}</span>
+            <span style="font-size:12px;font-weight:700;color:var(--tx)">${a.title}</span>
             <span style="font-size:10px;color:${a.color};font-weight:700;flex-shrink:0;margin-left:8px">${a.sev}</span>
           </div>
-          <div style="font-size:11px;color:#64748b">${a.detail}</div>
+          <div style="font-size:11px;color:var(--tx3)">${a.detail}</div>
           ${s.checked?`<div style="margin-top:6px;font-size:11px;color:${s.priority[CORRECT_PRIORITY.indexOf(a.id)]===a.id?'var(--gn)':'var(--pk)'}">${s.priority[CORRECT_PRIORITY.indexOf(a.id)]===a.id?'✓ Correct!':'✗ Check reasoning below'}</div>`:''}
         </div>
       </div>`;
@@ -2516,21 +3029,21 @@ function renderTriage(){
     ${s.checked?`
       <div class="card" style="margin-bottom:20px">
         <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:${s.priority.filter((id,i)=>id===CORRECT_PRIORITY[i]).length>=4?'var(--gn)':'var(--ye)'};margin-bottom:10px">Priority Score: ${s.priority.filter((id,i)=>id===CORRECT_PRIORITY[i]).length}/5</div>
-        <div style="font-size:13px;color:#94a3b8;line-height:2">
-          <strong style="color:#f1f5f9">Correct order:</strong><br>
-          1️⃣ <span style="color:#ef4444">A</span> — Active ransomware = most immediate threat<br>
-          2️⃣ <span style="color:#f97316">D</span> — Active exfiltration in progress (may be linked)<br>
-          3️⃣ <span style="color:#f97316">B</span> — Brute force still active — block before it succeeds<br>
-          4️⃣ <span style="color:#22c55e">E</span> — Backup failure matters for recovery — fix before you need it<br>
-          5️⃣ <span style="color:#f9c74f">C</span> — Cert expires in 14 days — not an active threat
+        <div style="font-size:13px;color:var(--tx2);line-height:2">
+          <strong style="color:var(--tx)">Correct order:</strong><br>
+          1️⃣ <span style="color:var(--pk)">A</span> — Active ransomware = most immediate threat<br>
+          2️⃣ <span style="color:var(--or)">D</span> — Active exfiltration in progress (may be linked)<br>
+          3️⃣ <span style="color:var(--or)">B</span> — Brute force still active — block before it succeeds<br>
+          4️⃣ <span style="color:var(--gn)">E</span> — Backup failure matters for recovery — fix before you need it<br>
+          5️⃣ <span style="color:var(--ye)">C</span> — Cert expires in 14 days — not an active threat
         </div>
       </div>`:''}
     <div style="font-size:11px;color:#a855f7;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">Step 2 — Use ▲▼ to sequence response actions</div>
     ${s.actionOrder.map((action,i)=>{
       const isC=s.actChecked&&i===TRIAGE_ACTIONS.indexOf(action);
       const isW=s.actChecked&&i!==TRIAGE_ACTIONS.indexOf(action);
-      return `<div class="order-item ${isC?'correct':isW?'wrong':''}" style="margin-bottom:8px">
-        <span class="oinm" style="background:${isC?'rgba(34,197,94,.2)':isW?'rgba(239,68,68,.2)':'var(--bd)'};color:${isC?'var(--gn)':isW?'var(--pk)':'var(--tx3)'}">${i+1}</span>
+      return `<div class="oi ${isC?'oihit':isW?'oimiss':''}" style="margin-bottom:8px">
+        <span class="oinm" style="background:${isC?'var(--gn0)':isW?'var(--pk0)':'var(--bg4)'};color:${isC?'var(--gn)':isW?'var(--pk)':'var(--tx3)'}">${i+1}</span>
         <span style="font-size:12px;color:${isC?'var(--gn)':isW?'var(--pk)':'var(--tx2)'};flex:1;line-height:1.4">${action}</span>
         ${s.actChecked?`<span style="font-size:14px">${isC?'✓':'✗'}</span>`:`
           <div style="display:flex;flex-direction:column;gap:2px">
@@ -2557,7 +3070,27 @@ function triageDn(i){ const a=S.triage.actionOrder; if(i>=a.length-1)return; [a[
 function checkTriageActions(){ S.triage.actChecked=true; renderPBQ(); }
 function resetTriage(){ S.triage={priority:[],checked:false,actionOrder:shuffle(TRIAGE_ACTIONS),actChecked:false}; renderPBQ(); }
 
-renderHome();
+// ── INIT — wrapped so any crash shows a visible message ──────────────────────
+(function(){
+  try {
+    renderHome();
+  } catch(err) {
+    var pg2 = document.getElementById('pg');
+    if(pg2){
+      pg2.innerHTML =
+        "<div style='padding:40px 20px;text-align:center;font-family:sans-serif'>" +
+        "<div style='font-size:48px;margin-bottom:16px'>⚠️</div>" +
+        "<div style='font-size:18px;font-weight:700;color:#f472b6;margin-bottom:8px'>App failed to load</div>" +
+        "<div style='font-size:13px;color:#8d9ac0;margin-bottom:16px'>Error: " + (err.message||'Unknown') + "</div>" +
+        "<div style='font-size:11px;color:#505d7e;background:#1a2235;border-radius:8px;padding:12px;text-align:left;max-width:500px;margin:0 auto;word-break:break-all'>" +
+        (err.stack||'').split('\n').slice(0,4).join('<br>') +
+        "</div>" +
+        "<div style='margin-top:20px;font-size:12px;color:#505d7e'>Try: hard refresh (Ctrl+Shift+R) · Clear browser cache · Open in Chrome</div>" +
+        "</div>";
+    }
+    console.error('INIT CRASH:', err);
+  }
+})();
 </script>
 </body>
 </html>
