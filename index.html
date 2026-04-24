@@ -2228,7 +2228,7 @@ function startExam(mode, size){
     mode:mode, drillSize:size||30,
     qs:qs, cur:0, sel:null, ans:[],
     msel:{},
-    done:false, started:true,
+    done:false, started:true, reviewing:false,
     timer:secs, maxTimer:secs,
     iv:null, paused:false,
     flagged:[]
@@ -2308,6 +2308,7 @@ function examSubmitMulti(){
 function finishExam(timeUp){
   clearInterval(S.exam.iv);
   S.exam.done = true;
+  S.exam.reviewing = false;
   clearExamSession();
   S.exam.timeUp = timeUp;
   var e = S.exam;
@@ -2355,6 +2356,7 @@ function finishExam(timeUp){
 // ── Main Exam render dispatcher ──────────────────────────────────────────────
 function renderExam(){
   var e = S.exam;
+  if(e.reviewing)   { renderFlagReview(); return; }
   if(!e.started)    { renderExamHome(); return; }
   if(e.done)        { renderExamResults(); return; }
   renderExamQ();
@@ -2573,7 +2575,7 @@ function renderExamQ(){
             "<div id='exam-tpb' style='height:100%;border-radius:2px;transition:width 1s linear;background:linear-gradient(90deg,var(--gn),var(--cy));width:"+(e.timer/e.maxTimer*100)+"%'></div>"+
           "</div>"+
         "</div>"+
-        "<button onclick='S.exam.reviewing=true;renderExam()' style='background:var(--pk0);border:1px solid rgba(244,114,182,.3);border-radius:10px;padding:8px 14px;color:var(--pk);font-size:12px;font-weight:700;font-family:inherit;cursor:pointer'>Submit Exam</button>"+
+        "<button onclick='submitExam()' style='background:var(--pk0);border:1px solid rgba(244,114,182,.3);border-radius:10px;padding:8px 14px;color:var(--pk);font-size:12px;font-weight:700;font-family:inherit;cursor:pointer'>Submit Exam</button>"+
       "</div>"+
     "</div>"+
 
@@ -2635,7 +2637,7 @@ function renderExamQ(){
         "<button class='btn btn-s' style='flex:1' onclick='examNav(-1)' "+(e.cur===0?'disabled':'')+">← Prev</button>"+
         (e.cur < e.qs.length-1 ?
           "<button class='btn btn-p' style='flex:1' onclick='examNav(1)'>Next →</button>" :
-          "<button class='btn btn-gn' style='flex:1' onclick='S.exam.reviewing=true;renderExam()'>Submit &amp; Review 🚩</button>"
+          "<button class='btn btn-gn' style='flex:1' onclick='submitExam()'>Submit &amp; Review 🚩</button>"
         )+
       "</div>"+
 
@@ -4033,10 +4035,7 @@ function checkFW(){
   });
   S.fw.checked=true; renderPBQ();
 }
-function fwUpdate(i,field,val){
-  S.fw.rules[i][field]=val;
-  if(S.fw.checked){S.fw.checked=false;S.fw.results=[];}
-}
+
 function resetFW(){
   const scIdx=S.fw.scenario||0;
   const sc=FW_SCENARIOS[scIdx];
@@ -4827,14 +4826,6 @@ function renderFlagReview() {
   render(html);
 }
 
-// Override renderExam to handle flag review state
-var _origRenderExam = typeof renderExam !== 'undefined' ? renderExam : null;
-function renderExam() {
-  if (S.exam.reviewing) { renderFlagReview(); return; }
-  if (!S.exam.started)  { renderExamHome();  return; }
-  if (S.exam.done)      { renderExamResults(); return; }
-  renderExamQ();
-}
 
 // ── 3. PERFORMANCE TREND CHART ────────────────────────────────────────────────
 function renderTrendChart() {
@@ -5308,26 +5299,25 @@ renderExamQ = function() {
   } catch(err) {}
 };
 
-// Patch examNext to enforce no-go-back
-var _origExamNext = typeof examNext !== 'undefined' ? examNext : null;
-if (_origExamNext) {
-  examNext = function() {
-    if (isNoGoBack() && S.exam.ans[S.exam.cur] === undefined) {
-      // Force answer before advancing
-      var warn = document.getElementById('nogb-warn');
-      if (!warn) {
-        var el = document.createElement('div');
-        el.id = 'nogb-warn';
-        el.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#dc2626;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;z-index:9999';
-        el.textContent = '⚠️ No Going Back mode: answer this question first';
-        document.body.appendChild(el);
-        setTimeout(function(){ el.remove(); }, 2000);
-      }
-      return;
+// Patch examNav to enforce no-go-back mode
+var _origExamNav = examNav;
+examNav = function(dir) {
+  if (dir > 0 && isNoGoBack() && S.exam.ans[S.exam.cur] === undefined) {
+    // Warn user they must answer before moving forward
+    var warn = document.getElementById('nogb-warn');
+    if (!warn) {
+      var el = document.createElement('div');
+      el.id = 'nogb-warn';
+      el.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#dc2626;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;z-index:9999;white-space:nowrap';
+      el.textContent = '⚠️ No Going Back mode — answer before advancing';
+      document.body.appendChild(el);
+      setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 2000);
     }
-    _origExamNext();
-  };
-}
+    return;
+  }
+  _origExamNav(dir);
+};
+window.examNav = examNav;
 
 // ── EXPOSE helpers on window for inline onclick handlers ─────────────────────
 window.startAcronymDrill  = startAcronymDrill;
@@ -6344,7 +6334,7 @@ function initSwipeGestures() {
     // Exam: swipe left = next question (if answered)
     if (S.tab === 'exam' && S.exam.started && !S.exam.done) {
       if (dx < 0 && S.exam.ans[S.exam.cur] !== undefined) {
-        if (typeof examNext === 'function') examNext();
+        examNav(1);
       }
       return;
     }
@@ -6485,6 +6475,20 @@ document.addEventListener('DOMContentLoaded', function() {
 initSwipeGestures();
 
 
+
+// ── SUBMIT EXAM — clean single entry point ────────────────────────────────────
+function submitExam() {
+  S.exam.reviewing = true;
+  var flagged = S.exam.flagged || [];
+  if (!flagged.length) {
+    // No flagged questions — go straight to finish
+    S.exam.reviewing = false;
+    finishExam(false);
+  } else {
+    renderFlagReview();
+  }
+}
+window.submitExam = submitExam;
 </script>
 </body>
 </html>
