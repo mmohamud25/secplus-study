@@ -342,9 +342,14 @@ input:focus,select:focus{outline:none;border-color:var(--cy)!important;box-shado
   <main id="main">
     <div id="pg">
       <div id="loading" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;padding:40px 20px;text-align:center">
-        <div style="font-size:48px;margin-bottom:16px">🔐</div>
-        <div style="font-family:sans-serif;font-size:18px;font-weight:700;color:#38bdf8;margin-bottom:8px">Security+ Study Hub</div>
-        <div style="font-size:13px;color:#505d7e">Loading...</div>
+        <div style="font-size:52px;margin-bottom:16px;animation:spin 2s linear infinite;display:inline-block">🔐</div>
+        <div style="font-family:Syne,sans-serif;font-size:20px;font-weight:800;color:#38bdf8;margin-bottom:6px">Security+ Study Hub</div>
+        <div style="font-size:13px;color:#0D9488;margin-bottom:20px;font-weight:600">Loading 1,303 questions...</div>
+        <div style="width:200px;height:4px;background:#1a2235;border-radius:4px;overflow:hidden;margin-bottom:12px">
+          <div id="load-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#0D9488,#38bdf8);border-radius:4px;transition:width .4s ease"></div>
+        </div>
+        <div id="load-status" style="font-size:11px;color:#505d7e">Initializing...</div>
+        <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
       </div>
     </div>
   </main>
@@ -1919,7 +1924,7 @@ const NEW_QZ=[
 {q:'A security team wants to improve their threat detection by understanding exactly what data sources to collect for each MITRE ATT&CK technique. Which resource specifically maps detection data sources to ATT&CK techniques?',o:['NIST CSF — voluntary framework organizing cybersecurity activities into five core functions that organizations use to assess maturity and prioritize security investments','MITRE ATT&CK data component and detection sections within each technique','CVE database — while related to security, this does not directly address the specific requirement described in this scenario','OWASP Top 10 — while related to security, this does not directly address the specific requirement described in this scenario'],a:1,d:4,e:'MITRE ATT&CK technique pages include \'Detection\' sections that specify which data sources (Process creation logs, Network traffic, File access logs, API calls) would reveal each technique. This enables SOC teams to systematically identify logging gaps — if you don\'t have the required data source, you cannot detect the technique, regardless of SIEM rules.'},
 {q:'An organization implements purple team exercises. What distinguishes a purple team from a traditional red/blue team structure?',o:['Purple teams have more members than red or blue teams — while related to this topic, this does not address the specific scenario, threat, or requirement described in this question','Purple team exercises involve the red team (attackers) and blue team (defenders) working collaboratively — the red team explains their techniques while blue team improves detection and response in real-time','Purple teams only test physical security — while related to this topic, this does not address the specific scenario, threat, or requirement described in this question','Purple teams replace both red and blue teams — while related to this topic, this does not address the specific scenario, threat, or requirement described in this question'],a:1,d:4,e:'Purple teaming is collaborative — red team executes a technique, blue team attempts detection, then both teams review what was detected or missed and improve detection capabilities together. Traditional red vs blue is adversarial with no collaboration until the final report. Purple teams accelerate detection improvement by enabling immediate feedback loops.'},
 {q:'A company\'s log management system automatically deletes logs older than 30 days to save storage. A security audit requires reviewing logs from 6 months ago. What risk does the deletion policy create?',o:['No risk — 30 days of logs is sufficient for all purposes — while related to this topic, this does not address the specific scenario, threat, or requirement described in this question','Forensic and compliance gaps — many incidents have dwell times exceeding 30 days, and regulations often require 6-12 months of log retention for audit and forensic purposes','Storage optimization is always the correct priority — while related to this topic, this does not address the specific scenario, threat, or requirement described in this question','Only a compliance risk with no security impact — while related to this topic, this does not address the specific scenario, threat, or requirement described in this question'],a:1,d:4,e:'30-day log retention creates forensic gaps — attackers often maintain access for months (dwell time) and the earliest indicators of compromise would be beyond the retention window. Compliance regulations often require 6-12 months (PCI DSS: 12 months, with 3 months immediately available). Log retention policy must balance storage costs with security and compliance requirements.'}
-];QZ.push(...NEW_QZ);
+];// NEW_QZ deferred — loaded in phase1()
 
 // === EXHIBIT + DEEP SCENARIO QUESTIONS ===
 const EXHIBIT_QZ=[
@@ -1984,8 +1989,7 @@ const EXHIBIT_QZ=[
 {q:'A company deploys an AI email gateway that quarantines 2,400 emails in its first week. Security review finds 1,800 (75%) are legitimate business emails from valid partners, and 600 (25%) are actual phishing. The CISO calls an emergency meeting. What is the PRIMARY concern and recommended action?',o:['A 25% phishing detection rate is acceptable — phishing is inherently difficult to detect — while this addresses a related security concern, it does not target the specific vulnerability or attack vector described in this scenario','The 75% false positive rate is operationally catastrophic and will erode security posture — employees will demand mass exemptions or bypass scanning when important emails are blocked, leaving the organization MORE vulnerable. Action: immediately switch to monitor-only mode, tune the model on confirmed samples, re-enable blocking only after achieving <5% false positive rate','Replace with a rule-based system immediately — while this addresses a related security concern, it does not target the specific vulnerability or attack vector described in this scenario','The 600 blocked phishing emails justify the false positive rate — while this addresses a related security concern, it does not target the specific vulnerability or attack vector described in this scenario'],a:1,d:4,e:'A 75% false positive rate means 3 legitimate emails are blocked for every phishing email caught. Secondary risk: security tools with excessive false positives drive workarounds — exemption lists grow, users demand quarantine bypasses, and the tool becomes ineffective through exception sprawl. ML-based security tools require training on organization-specific traffic before blocking mode. Standard deployment: monitor-only for 2-4 weeks collecting true/false positive samples, feed confirmed samples back to the model, enable blocking gradually after accuracy targets are met.'},
 {q:'A security engineer finishes hardening a new Linux database server and runs a vulnerability scan returning 0 findings. They declare the server \'hardened and ready for production.\' The security team lead objects. Why is a clean vulnerability scan insufficient evidence of complete hardening?',o:['Vulnerability scans always miss some CVEs — penetration testing is required — while this addresses a related security concern, it does not target the specific vulnerability or attack vector described in this scenario','A vulnerability scan identifies known CVEs in installed software versions — it does NOT assess security configuration. Hardening requires additional assessment: CIS Benchmark checks (unnecessary services disabled, default accounts removed, SSH hardened, minimal filesystem permissions, audit logging enabled, host-based firewall configured). A server with no CVEs but running 12 unnecessary services, default credentials, and no firewall rules is not hardened — it has no known software vulnerabilities, which is a different security property','More than one scanner should be used before declaring a server hardened — while this addresses a related security concern, it does not target the specific vulnerability or attack vector described in this scenario','The scan should have been run before applying configurations, not after — while this addresses a related security concern, it does not target the specific vulnerability or attack vector described in this scenario'],a:1,d:4,e:'Vulnerability scanning = known CVE detection (software version checks). Hardening = security configuration (CIS Benchmarks, STIG). Both are needed. A fully patched server running unnecessary services (attack surface), default passwords (authentication weakness), world-readable sensitive files (permission failure), and no audit logging (detection gap) is not hardened. The CIS-CAT tool or manual CIS Benchmark review assesses configuration security — the complement to vulnerability scanning.'},
 {q:'An organization\'s CISO receives a report that their ACH payment processor vendor suffered a ransomware attack. The vendor cannot confirm whether customer data was accessed. Legal asks: \'Do we have notification obligations now or do we wait for the vendor to confirm data exfiltration?\' What is the correct legal analysis?',o:['Wait for confirmation — notification triggers only when exfiltration is confirmed — while this addresses a related security concern, it does not target the specific vulnerability or attack vector described in this scenario','Under GLBA, FFIEC guidance, and most state breach notification laws, the trigger is \\\'reasonable belief\\\' that unauthorized access occurred — not confirmed exfiltration. A ransomware attack on systems processing customer data meets this threshold. Begin breach response procedures immediately: assess data scope, engage legal counsel, evaluate state-by-state notification requirements, notify federal regulators (OCC/FDIC per FFIEC guidance), and prepare customer notification. The institution cannot outsource its regulatory obligations to the vendor','No notification needed — vendor breaches are entirely the vendor\\\'s regulatory responsibility — while this addresses a related security concern, it does not target the specific vulnerability or attack vector described in this scenario','Only notify regulators, not customers, until exfiltration is confirmed — while this addresses a related security concern, it does not target the specific vulnerability or attack vector described in this scenario'],a:1,d:5,e:'Breach notification obligations under GLBA, state laws (NY SHIELD, CCPA, etc.), and sector regulations use \'reasonable belief of unauthorized access\' as the trigger — not confirmed theft. Ransomware attacks on systems containing customer data satisfy this threshold in most jurisdictions. Institutions must act on the reasonable belief standard: (1) Begin breach assessment, (2) Engage legal, (3) Notify federal regulators per FFIEC/OCC timelines (typically 36-72 hours for significant incidents), (4) Comply with applicable state notification laws. Waiting for vendor confirmation risks regulatory non-compliance.'}
-];QZ.push(...EXHIBIT_QZ);
-QZ.push(...MQ);
+];// EXHIBIT_QZ + MQ deferred — loaded in phase2()
 
 const MPGSZ=12;
 const PORTS_ALL=[{p:"HTTPS",port:"443"},{p:"SSH",port:"22"},{p:"RDP",port:"3389"},{p:"DNS",port:"53"},{p:"SMTP",port:"25"},{p:"LDAP",port:"389"},{p:"SNMP",port:"161"},{p:"Kerberos",port:"88"},{p:"RADIUS",port:"1812"},{p:"FTP",port:"21"},{p:"HTTP",port:"80"},{p:"LDAPS",port:"636"},{p:"FTPS",port:"990"},{p:"IMAP",port:"143"},{p:"RPC",port:"135"}];
@@ -2066,6 +2070,10 @@ function setTab(id){
     }
   });
   renderTab(id);
+  // Scroll to top and fix inputs after every tab switch
+  var mc = document.getElementById('main-content');
+  if (mc) mc.scrollTop = 0;
+  setTimeout(fixInputTypes, 150);
 }
 document.querySelectorAll(".sbb,.bnt").forEach(b=>b.addEventListener("click",()=>setTab(b.dataset.tab)));
 
@@ -4431,24 +4439,59 @@ function resetTriage(){ S.triage={priority:[],checked:false,actionOrder:shuffle(
 
 // ── INIT — wrapped so any crash shows a visible message ──────────────────────
 (function(){
-  try {
-    renderHome();
-  } catch(err) {
-    var pg2 = document.getElementById('pg');
-    if(pg2){
-      pg2.innerHTML =
-        "<div style='padding:40px 20px;text-align:center;font-family:sans-serif'>" +
-        "<div style='font-size:48px;margin-bottom:16px'>⚠️</div>" +
-        "<div style='font-size:18px;font-weight:700;color:#f472b6;margin-bottom:8px'>App failed to load</div>" +
-        "<div style='font-size:13px;color:#8d9ac0;margin-bottom:16px'>Error: " + (err.message||'Unknown') + "</div>" +
-        "<div style='font-size:11px;color:#505d7e;background:#1a2235;border-radius:8px;padding:12px;text-align:left;max-width:500px;margin:0 auto;word-break:break-all'>" +
-        (err.stack||'').split('\n').slice(0,4).join('<br>') +
-        "</div>" +
-        "<div style='margin-top:20px;font-size:12px;color:#505d7e'>Try: hard refresh (Ctrl+Shift+R) · Clear browser cache · Open in Chrome</div>" +
-        "</div>";
-    }
-    console.error('INIT CRASH:', err);
+  // Show loading screen immediately — let browser paint before heavy JS
+  var pgEl = document.getElementById('pg');
+  var loadEl = document.getElementById('loading');
+  if (loadEl) loadEl.style.display = 'flex';
+
+  function setLoadProgress(pct, msg) {
+    var bar = document.getElementById('load-bar');
+    var status = document.getElementById('load-status');
+    if (bar) bar.style.width = pct + '%';
+    if (status) status.textContent = msg;
   }
+
+  // Phase 1: Load main question bank (600+ questions)
+  function phase1() {
+    setLoadProgress(20, 'Loading question bank...');
+    try { QZ.push.apply(QZ, NEW_QZ); } catch(e) {}
+    setLoadProgress(70, 'Loading scenario questions...');
+    setTimeout(phase2, 0);
+  }
+
+  // Phase 2: Load exhibit + multi questions
+  function phase2() {
+    try {
+      QZ.push.apply(QZ, EXHIBIT_QZ);
+      QZ.push.apply(QZ, MQ);
+    } catch(e) {}
+    setLoadProgress(95, 'Almost ready...');
+    setTimeout(phase3, 0);
+  }
+
+  // Phase 3: App is ready — render home screen
+  function phase3() {
+    try {
+      setLoadProgress(100, 'Ready!');
+      setTimeout(function(){
+      if (loadEl) loadEl.style.display = 'none';
+      renderHome();
+      }, 200);
+    } catch(err) {
+      if (pgEl) {
+        pgEl.innerHTML =
+          "<div style='padding:40px 20px;text-align:center;font-family:sans-serif'>" +
+          "<div style='font-size:48px;margin-bottom:16px'>⚠️</div>" +
+          "<div style='font-size:18px;font-weight:700;color:#f472b6;margin-bottom:8px'>App failed to load</div>" +
+          "<div style='font-size:13px;color:#8d9ac0;margin-bottom:16px'>Error: " + (err.message||'Unknown') + "</div>" +
+          "<div style='margin-top:20px;font-size:12px;color:#505d7e'>Try: hard refresh · Clear browser cache · Open in Chrome</div>" +
+          "</div>";
+      }
+    }
+  }
+
+  // Kick off deferred loading — gives browser one frame to paint loading screen
+  setTimeout(phase1, 50);
 })();
 
 
@@ -6293,9 +6336,12 @@ window.portQuizNext     = portQuizNext;
 // ── GLOBAL SWIPE DETECTOR ─────────────────────────────────────────────────────
 var swipeState = { startX: 0, startY: 0, startT: 0, active: false };
 
+var _swipeInitDone = false;
 function initSwipeGestures() {
+  if (_swipeInitDone) return;
   var el = document.getElementById('main-content');
   if (!el) { setTimeout(initSwipeGestures, 300); return; }
+  _swipeInitDone = true;
 
   el.addEventListener('touchstart', function(e) {
     var t = e.touches[0];
@@ -6357,34 +6403,22 @@ function getSwipeHints(tab) {
 document.addEventListener('touchstart', function(e) {
   var btn = e.target.closest('button');
   if (!btn || btn.disabled) return;
-  btn.style.opacity = '0.75';
-  btn.style.transform = 'scale(0.97)';
-  setTimeout(function() {
-    btn.style.opacity = '';
-    btn.style.transform = '';
-  }, 120);
+  // Visual feedback only — no state changes
+  requestAnimationFrame(function() {
+    btn.style.opacity = '0.78';
+    btn.style.transform = 'scale(0.97)';
+    setTimeout(function() {
+      btn.style.opacity = '';
+      btn.style.transform = '';
+    }, 110);
+  });
 }, { passive: true });
 
 // ── PREVENT DOUBLE-TAP ZOOM on buttons ───────────────────────────────────────
-document.addEventListener('touchend', function(e) {
-  if (e.target.closest('button, input, select, a')) e.preventDefault();
-}, { passive: false });
+// touchend: native behavior preserved
 
 // ── FIX VIEWPORT on iOS (prevent bounce/scroll issues) ───────────────────────
-document.addEventListener('touchmove', function(e) {
-  // Allow scrolling within scrollable containers, prevent page bounce
-  var el = e.target;
-  var scrollable = false;
-  while (el && el !== document.body) {
-    var style = window.getComputedStyle(el);
-    if (['auto','scroll'].indexOf(style.overflow) >= 0 ||
-        ['auto','scroll'].indexOf(style.overflowY) >= 0) {
-      scrollable = true; break;
-    }
-    el = el.parentElement;
-  }
-  if (!scrollable) e.preventDefault();
-}, { passive: false });
+// touchmove: passive — let native scroll work freely
 
 // ── FIX INPUT FIELDS: add type attributes for better mobile keyboard ──────────
 function fixInputTypes() {
@@ -6409,70 +6443,22 @@ function fixInputTypes() {
 }
 
 // ── FLASHCARD SWIPE VISUAL INDICATOR (inject into card render) ────────────────
-var _origFlipCard = flipCard;
-flipCard = function() {
-  _origFlipCard();
-  // After flip, show swipe hints briefly
-  setTimeout(function() {
-    var hint = document.getElementById('swipe-hints');
-    if (hint && S.cards && S.cards.flipped) {
-      hint.style.opacity = '1';
-    }
-  }, 100);
-};
+
 
 // ── FIX SCROLL TO TOP when tab changes ───────────────────────────────────────
-var _origSetTab = setTab;
-setTab = function(id) {
-  _origSetTab(id);
-  var mc = document.getElementById('main-content');
-  if (mc) mc.scrollTop = 0;
-  // Fix inputs after render
-  setTimeout(fixInputTypes, 200);
-  // Init swipe if not already
-  initSwipeGestures();
-};
-
-// ── BOTTOM NAV: active tab highlight fix ─────────────────────────────────────
-var _origRenderTab = renderTab;
-renderTab = function(id) {
-  _origRenderTab(id);
-  // Update bottom nav active state
-  document.querySelectorAll('.bnt').forEach(function(b) {
-    b.classList.toggle('on', b.dataset.tab === id);
-  });
-  // Fix input attributes after render
-  setTimeout(fixInputTypes, 150);
-};
+// Tab wrappers removed — logic moved into setTab/renderTab directly
 
 // ── EXAM: swipe hint in exam bar ──────────────────────────────────────────────
 // Already handled by swipeState above — swipe left to go next if answered
 
-// ── LONG PRESS on flashcard = mark as hard (accessibility) ───────────────────
-var longPressTimer = null;
-document.addEventListener('touchstart', function(e) {
-  var fc = e.target.closest('.fc');
-  if (!fc) return;
-  longPressTimer = setTimeout(function() {
-    if (S.tab === 'cards' && S.cards.flipped) {
-      cardNext('hard');
-    }
-  }, 600);
-}, { passive: true });
-document.addEventListener('touchend', function() {
-  if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
-}, { passive: true });
-document.addEventListener('touchmove', function() {
-  if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
-}, { passive: true });
+// Long press removed — swipe gestures handle card rating
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
   initSwipeGestures();
   fixInputTypes();
 });
-// Also init now in case DOMContentLoaded already fired
-initSwipeGestures();
+
 
 
 
