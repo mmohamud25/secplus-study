@@ -40,7 +40,7 @@
 [data-theme="dark"]{
   --bg:#0c0f1a;--bg2:#141929;--bg3:#1c2237;--bg4:#232a42;
   --bd:#2a3354;--bd2:#363f62;
-  --tx:#e4e9f8;--tx2:#8b97c0;--tx3:#4f5a82;--tx4:#2e3758;
+  --tx:#e4e9f8;--tx2:#8b97c0;--tx3:#6b7db3;--tx4:#2e3758;
   --cy:#4d8fe8;--pk:#f06292;--gn:#34c77a;--ye:#f0b429;--pu:#9b72f0;--or:#f07840;
   --cy0:rgba(77,143,232,.12);--pk0:rgba(240,98,146,.12);
   --gn0:rgba(52,199,122,.12);--ye0:rgba(240,180,41,.12);--pu0:rgba(155,114,240,.12);
@@ -441,7 +441,7 @@ input:focus,select:focus{outline:none;border-color:var(--cy)!important;box-shado
 .gring.warn{border-color:var(--ye);color:var(--ye)}
 .gring.danger{border-color:var(--pk);color:var(--pk);animation:tpulse .5s infinite}
 @keyframes tpulse{0%,100%{box-shadow:0 0 0 0 var(--pk)}50%{box-shadow:0 0 0 6px rgba(244,114,182,.12)}}
-.gstreak{min-height:20px;text-align:center;font-size:13px;font-weight:700;color:#e65100;margin-bottom:12px}
+.gstreak{text-align:center;font-size:13px;font-weight:700;color:#e65100;margin-bottom:12px}
 .bo{width:100%;border-radius:13px;padding:13px 15px;text-align:left;font-size:14px;font-family:inherit;
     font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:10px;
     border:1.5px solid var(--bd);background:var(--bg2);color:var(--tx);box-shadow:0 1px 3px rgba(0,0,0,.04)}
@@ -576,7 +576,7 @@ input:focus,select:focus{outline:none;border-color:var(--cy)!important;box-shado
       <div id="loading" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;padding:40px 20px;text-align:center">
         <div style="font-size:52px;margin-bottom:16px;animation:spin 2s linear infinite;display:inline-block">🔐</div>
         <div style="font-family:Syne,sans-serif;font-size:20px;font-weight:800;color:#38bdf8;margin-bottom:6px">Security+ Study Hub</div>
-        <div style="font-size:13px;color:#0D9488;margin-bottom:20px;font-weight:600">Loading 1,303 questions...</div>
+        <div style="font-size:13px;color:#0D9488;margin-bottom:20px;font-weight:600">Loading question bank...</div>
         <div style="width:200px;height:4px;background:#1a2235;border-radius:4px;overflow:hidden;margin-bottom:12px">
           <div id="load-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#0D9488,#38bdf8);border-radius:4px;transition:width .4s ease"></div>
         </div>
@@ -1395,80 +1395,80 @@ const LESSONS=[
    cx:[{h:"Categories",b:"Technical = technology enforces. Managerial = policy-driven. Operational = humans do it. Physical = guards physical space."},
        {h:"Types",b:"Preventive stops attacks. Detective identifies them. Corrective fixes damage. Deterrent discourages. Compensating substitutes when primary control unavailable. Directive guides via policy."},
        {h:"Both Together",b:"A locked server door = Physical + Preventive. An antivirus = Technical + Detective/Corrective. Screen-lock policy = Managerial + Directive."}]},
-  {id:"1.2",title:"Core Security Principles",tip:"Separation of Duties = tasks SPLIT across people. Dual Control = both people PRESENT simultaneously. This distinction is a frequent exam trap.",
+  {id:"1.2",title:"Fundamental Security Concepts",tip:"Separation of Duties = tasks SPLIT across people. Dual Control = both people PRESENT simultaneously. This distinction is a frequent exam trap.",
    cx:[{h:"CIA Triad",b:"Confidentiality (authorized access only) + Integrity (data unchanged) + Availability (accessible when needed). Every security decision maps here."},
        {h:"Zero Trust",b:"Never trust, always verify. No implicit trust based on network location. Even internal users re-authenticate to every resource access."},
        {h:"Least Privilege & Need to Know",b:"Least Privilege = minimum access for the job. Need to Know = even WITH clearance, only access data needed for THIS specific task."}]},
-  {id:"1.3",title:"Cryptography",tip:"AES = symmetric. RSA = asymmetric. Sign with PRIVATE key (proves you sent it). Encrypt with PUBLIC key (only recipient can decrypt). Direction matters on every exam question.",
+  {id:"1.4",title:"Cryptography & PKI",tip:"AES = symmetric. RSA = asymmetric. Sign with PRIVATE key (proves you sent it). Encrypt with PUBLIC key (only recipient can decrypt). Direction matters on every exam question.",
    cx:[{h:"Symmetric vs Asymmetric",b:"Symmetric = 1 shared key, FAST, bulk data (AES-256, 3DES). Asymmetric = public/private pair, SLOW, key exchange and signatures (RSA, ECC, Diffie-Hellman)."},
        {h:"Hashing",b:"One-way, fixed-length output, cannot reverse. MD5 = broken. SHA-1 = deprecated. SHA-256 = current standard. bcrypt = passwords. Salt defeats rainbow tables."},
        {h:"Digital Signatures & PKI",b:"Hash encrypted with senders PRIVATE key proves authenticity + integrity + non-repudiation. CA issues certificates. RA verifies identities. CRL/OCSP check revocation status."},
        {h:"Perfect Forward Secrecy",b:"Unique ephemeral keys per session. If server private key is stolen later, past sessions cannot be decrypted."}]},
-  {id:"1.4",title:"Authentication & Access Control",tip:"SAML = enterprise SSO federation. OAuth = delegated authorization (Login with Google). Kerberos = tickets for internal AD resources. RADIUS = VPN and Wi-Fi auth on UDP.",
+  {id:"1.3",title:"Change Management",tip:"SAML = enterprise SSO federation. OAuth = delegated authorization (Login with Google). Kerberos = tickets for internal AD resources. RADIUS = VPN and Wi-Fi auth on UDP.",
    cx:[{h:"MFA Factor Types",b:"Something you KNOW (password, PIN). Something you HAVE (smart card, hardware token, OTP app). Something you ARE (biometric: fingerprint, retina). Somewhere you ARE (GPS/location)."},
        {h:"Access Control Models",b:"DAC = owner decides. MAC = system enforces labels (military). RBAC = job role. ABAC = multiple dynamic attributes (role + location + time + sensitivity). Rule-Based = admin ACLs."},
        {h:"Auth Protocols",b:"Kerberos = tickets + KDC for Active Directory. SAML = enterprise SSO across orgs. OAuth 2.0 = delegated authorization. OpenID Connect = authentication layer on OAuth. RADIUS = VPN/Wi-Fi (UDP). TACACS+ = separates AAA (TCP)."}]}
 ]},
 {domain:2,color:"#f472b6",subs:[
-  {id:"2.1",title:"Social Engineering",tip:"Phishing = mass/generic. Spear Phishing = targeted with personal details. Whaling = executive target. Vishing = voice. Smishing = SMS. These distinctions appear on nearly every exam.",
+  {id:"2.4",title:"Malicious Activity",tip:"Phishing = mass/generic. Spear Phishing = targeted with personal details. Whaling = executive target. Vishing = voice. Smishing = SMS. These distinctions appear on nearly every exam.",
    cx:[{h:"Email Attacks",b:"Phishing (mass, generic Dear Customer), Spear Phishing (targeted, personalized with name/role/project), Whaling (executive target), Business Email Compromise (impersonates exec for wire transfers)."},
        {h:"Other Vectors",b:"Vishing (voice/phone), Smishing (SMS text), Pretexting (fabricated scenario), Baiting (infected USB drives), Tailgating (physical door access), Watering Hole (compromise site target visits)."},
        {h:"Key Indicators",b:"Urgency, fear, authority claims, generic greeting, unexpected attachment, URL mismatch between display text and actual link destination."}]},
-  {id:"2.2",title:"Malware Types",tip:"Rootkit = AV reports clean but system misbehaves. Cryptojacking = 100% CPU + mining pool connections. Ransomware deletes shadow copies BEFORE encrypting to prevent easy recovery.",
+  {id:"2.1",title:"Threat Actors & Motivations",tip:"Rootkit = AV reports clean but system misbehaves. Cryptojacking = 100% CPU + mining pool connections. Ransomware deletes shadow copies BEFORE encrypting to prevent easy recovery.",
    cx:[{h:"Core Malware",b:"Virus (needs user to execute), Worm (self-replicates, no user needed), Trojan (disguised as legitimate), Ransomware (encrypt + demand payment), Rootkit (kernel-level, hides from AV), Cryptojacker (mines crypto using your CPU)."},
        {h:"Advanced Malware",b:"Fileless malware = memory-only, no disk files, evades signature AV completely. Logic Bomb = triggered by condition or date. RAT = remote control of infected system. Botnet = C2-controlled network of infected hosts."},
        {h:"APT Characteristics",b:"Long dwell time (months/years), stealthy, patient, targeted specific victim, nation-state level resources. Uses living-off-the-land tools to blend in."}]},
-  {id:"2.3",title:"Network & Application Attacks",tip:"SYN Flood = half-open TCP. SQL Injection = single quote breaks query. Stored XSS = in database affects all visitors. Reflected XSS = in URL, affects clicker only. Replay = later. Hijacking = live.",
+  {id:"2.2",title:"Threat Vectors & Attack Surfaces",tip:"SYN Flood = half-open TCP. SQL Injection = single quote breaks query. Stored XSS = in database affects all visitors. Reflected XSS = in URL, affects clicker only. Replay = later. Hijacking = live.",
    cx:[{h:"Network DoS",b:"SYN Flood (half-open TCP exhausts connection table), Smurf (ICMP broadcast with spoofed victim IP), DNS Amplification (small query, massive response), Volumetric DDoS (bandwidth exhaustion from botnet)."},
        {h:"Web Attacks",b:"SQL Injection (single quote or OR 1=1 in input), Stored XSS (script saved in DB, affects all visitors), Reflected XSS (script in URL, only affects the clicker), CSRF (forged authenticated request), Directory Traversal (../ escapes web root)."},
        {h:"Credential & Wireless",b:"Password Spray (few passwords, many accounts), Credential Stuffing (breached pairs from other sites), Pass-the-Hash (reuse NTLM without cracking). Evil Twin (fake SSID) vs Rogue AP (unauthorized AP physically plugged into internal network) - different attacks!"}]},
-  {id:"2.4",title:"Vulnerability Management",tip:"Zero-Day = no patch exists yet. CVSS score alone is insufficient - also consider asset criticality and exploitability in the wild. Black Box = no knowledge. White Box = full access.",
+  {id:"2.3",title:"Vulnerabilities",tip:"Zero-Day = no patch exists yet. CVSS score alone is insufficient - also consider asset criticality and exploitability in the wild. Black Box = no knowledge. White Box = full access.",
    cx:[{h:"Vulnerability Types",b:"Zero-Day (no patch, being exploited), Misconfiguration (default creds, verbose errors, open ports), Unpatched (known CVEs with patches available), Improper Input Validation (root cause of SQLi/XSS/buffer overflow)."},
        {h:"Testing Types",b:"Vulnerability Scan = non-invasive, identifies weaknesses, no exploitation. Pen Test = authorized exploitation proving real-world impact. Red Team = full adversarial simulation, all vectors, extended time, stealth."},
        {h:"Threat Intel",b:"IOC = evidence of compromise. TTPs = attacker behavior patterns. OSINT = public-source recon. MITRE ATT&CK = comprehensive TTP knowledge base. Prioritize remediation by CVSS + asset criticality + exploitability."}]}
 ]},
 {domain:3,color:"#34d399",subs:[
-  {id:"3.1",title:"Network Architecture",tip:"DMZ for ALL public-facing servers. IDS = passive alerts only. IPS = active blocks inline. WAF = Layer 7 HTTP only. Zero Trust = verify every request regardless of network location.",
+  {id:"3.1",title:"Architecture Models",tip:"DMZ for ALL public-facing servers. IDS = passive alerts only. IPS = active blocks inline. WAF = Layer 7 HTTP only. Zero Trust = verify every request regardless of network location.",
    cx:[{h:"Network Zones",b:"Internet (untrusted) → Perimeter Firewall → DMZ (public servers) → Internal Firewall → LAN → Secure Zone (databases). Each zone has increasing trust and decreasing attack surface."},
        {h:"Key Devices",b:"Firewall (stateful rules), NGFW (adds DPI + app ID + IPS), IDS (passive/alerts), IPS (active/blocks inline), WAF (Layer 7, HTTP attacks only), Reverse Proxy (hides server IPs), Honeypot (decoy/research)."},
        {h:"Segmentation",b:"VLANs provide logical L2 isolation. Route inter-VLAN traffic through a firewall for policy enforcement. Microsegmentation = granular workload-level isolation. Air Gap = physically isolated with zero network connectivity."}]},
-  {id:"3.2",title:"Cloud & Virtualization",tip:"IaaS customer must patch the OS. SaaS customer only manages data and access config. Client-side encryption = provider CANNOT decrypt even if they are fully compromised.",
+  {id:"3.2",title:"Enterprise Infrastructure",tip:"IaaS customer must patch the OS. SaaS customer only manages data and access config. Client-side encryption = provider CANNOT decrypt even if they are fully compromised.",
    cx:[{h:"Service Models",b:"IaaS: provider owns hardware, customer owns OS+apps+data. PaaS: provider owns OS+runtime, customer owns apps+data. SaaS: provider owns everything, customer only manages data+config."},
        {h:"Shared Responsibility",b:"Physical infrastructure ALWAYS provider responsibility. Customer responsibility increases: SaaS (least) to IaaS (most). OS patching in IaaS = customer. Failure to understand this causes breaches."},
        {h:"Virtualization Risks",b:"VM Escape (break out of VM to host or other VMs), Container Breakout (escape container to shared host kernel), Type 1 hypervisor (bare-metal, more secure), Type 2 (runs on OS, larger attack surface)."}]},
-  {id:"3.3",title:"Resilience & Recovery",tip:"RTO = how long can we be DOWN? RPO = how much DATA can we lose? Hot Site = fastest/most expensive. Cold = slowest/cheapest. Match the site type to the stated RTO requirement.",
+  {id:"3.4",title:"Resilience & Recovery",tip:"RTO = how long can we be DOWN? RPO = how much DATA can we lose? Hot Site = fastest/most expensive. Cold = slowest/cheapest. Match the site type to the stated RTO requirement.",
    cx:[{h:"Key Metrics",b:"RTO = max acceptable downtime. RPO = max acceptable data loss measured in time. MTTR = average repair time after failure. MTBF = average time between failures."},
        {h:"Backup Types",b:"Full = all data, slowest create, fastest restore (1 file). Incremental = changes since last ANYTHING, fastest create, slowest restore (need full + every increment). Differential = changes since last FULL, need only full + latest differential."},
        {h:"Recovery Sites",b:"Hot = fully operational + real-time sync, minutes-hours RTO, most expensive. Warm = partially equipped, hours-days RTO, medium cost. Cold = empty facility with power/cooling, days-weeks RTO, cheapest."}]}
 ]},
 {domain:4,color:"#fbbf24",subs:[
-  {id:"4.1",title:"Incident Response",tip:"CRITICAL: Eradication ALWAYS before Recovery. Restoring into a still-vulnerable environment = immediate reinfection. The correct order is always: Contain, Eradicate, THEN Recover.",
+  {id:"4.8",title:"Incident Response",tip:"CRITICAL: Eradication ALWAYS before Recovery. Restoring into a still-vulnerable environment = immediate reinfection. The correct order is always: Contain, Eradicate, THEN Recover.",
    cx:[{h:"6 Phases In Order",b:"1-Preparation (build IR capability). 2-Detection & Analysis (confirm it is real). 3-Containment (stop the spread immediately). 4-Eradication (remove threat + patch vulnerability). 5-Recovery (restore from clean backup). 6-Lessons Learned (document and improve)."},
        {h:"Exercises",b:"Tabletop = discussion only, no systems touched, tests procedures and communication. Red Team = full adversarial simulation with real attack techniques. Purple Team = Red and Blue collaborate to improve detections. Phishing Sim = tests human controls."},
        {h:"Common IR Mistakes",b:"Restoring before eradicating causes immediate reinfection. Failing to collect volatile evidence before rebooting loses critical forensic data. Not isolating systems allows lateral spread."}]},
-  {id:"4.2",title:"Digital Forensics",tip:"Order of volatility: CPU cache disappears on power-off = collect FIRST. Hard drive persists = collect LAST. RAM is lost on reboot = collect BEFORE rebooting under any circumstances.",
+  {id:"4.9",title:"Data Sources & Forensics",tip:"Order of volatility: CPU cache disappears on power-off = collect FIRST. Hard drive persists = collect LAST. RAM is lost on reboot = collect BEFORE rebooting under any circumstances.",
    cx:[{h:"Order of Volatility",b:"Most to least volatile: 1-CPU registers and cache, 2-RAM and running processes, 3-Swap/temporary files, 4-Hard drive image, 5-Optical media and archived logs. Always collect most volatile first."},
        {h:"Chain of Custody",b:"Documents every person who touched evidence and when. Breaks in chain = evidence inadmissible in court. Hash evidence immediately after collection using SHA-256 to prove no tampering."},
        {h:"Key Controls",b:"Write Blocker prevents any modification to evidence during imaging. Legal Hold overrides all normal retention policies and must be obeyed immediately. eDiscovery = producing evidence for legal proceedings."}]},
-  {id:"4.3",title:"Monitoring & Detection",tip:"SIEM detects and alerts. SOAR automates response. UEBA detects behavioral anomalies impossible travel, off-hours access. EDR = endpoint only. XDR = extends across all vectors.",
+  {id:"4.4",title:"Alerting & Monitoring",tip:"SIEM detects and alerts. SOAR automates response. UEBA detects behavioral anomalies impossible travel, off-hours access. EDR = endpoint only. XDR = extends across all vectors.",
    cx:[{h:"SIEM and SOAR",b:"SIEM aggregates logs from all sources, correlates events, generates prioritized alerts. SOAR automates repetitive IR playbooks - SIEM detects, SOAR responds. Together reduce response from minutes to seconds."},
        {h:"UEBA",b:"Establishes behavioral baselines per user and entity. Flags deviations: impossible travel, off-hours database access, unusual data volumes. Detects insider threats and compromised accounts that evade signature detection."},
        {h:"EDR and XDR",b:"EDR monitors and responds to endpoint threats (processes, files, registry, network connections). XDR extends correlation across endpoints, network traffic, cloud workloads, email, and identity for unified multi-vector detection."}]},
-  {id:"4.4",title:"Identity & Access Management",tip:"Privilege creep = employee who changed roles and kept old access. Deprovisioning failure = ghost accounts of former employees. Fix both with periodic user access reviews.",
+  {id:"4.6",title:"Identity & Access Management",tip:"Privilege creep = employee who changed roles and kept old access. Deprovisioning failure = ghost accounts of former employees. Fix both with periodic user access reviews.",
    cx:[{h:"Privileged Access",b:"JIT = temporary time-limited elevation automatically revoked after task completes. PAM = controls, monitors, and records all privileged sessions. Least Privilege = minimum required, nothing more."},
        {h:"Lifecycle Management",b:"Provisioning (new hire gets correct access) > Role changes (update access immediately) > Departure (deprovisioning IMMEDIATELY, same day). Privilege creep = accumulated permissions from role changes never cleaned up."},
        {h:"Access Reviews",b:"Periodic audits identifying and removing excess permissions. Catch privilege creep before it is abused. Required by most compliance frameworks."}]}
 ]},
 {domain:5,color:"#a78bfa",subs:[
-  {id:"5.1",title:"Risk Management",tip:"ALE = SLE x ARO. Example: SLE $100k x ARO 0.25 = ALE $25k/year. If a control costs $50k/year it is NOT cost-effective. This exact calculation appears on the exam.",
+  {id:"5.2",title:"Risk Management",tip:"ALE = SLE x ARO. Example: SLE $100k x ARO 0.25 = ALE $25k/year. If a control costs $50k/year it is NOT cost-effective. This exact calculation appears on the exam.",
    cx:[{h:"Risk Formula",b:"Risk = Likelihood x Impact. Inherent Risk = before any controls. Residual Risk = after controls applied. Risk Appetite = how much risk the organization is willing to accept and tolerate."},
        {h:"Quantitative Analysis",b:"SLE = Asset Value x Exposure Factor (loss from ONE incident). ARO = expected incidents per year. ALE = SLE x ARO = expected yearly financial loss. Drives cost-benefit decisions for security controls."},
        {h:"Risk Responses",b:"Avoidance = stop the risky activity entirely. Mitigation = implement controls to reduce likelihood or impact. Transference = cyber insurance or outsourcing. Acceptance = formally document and tolerate the risk."}]},
-  {id:"5.2",title:"Compliance & Frameworks",tip:"NIST CSF = voluntary, 5 functions. PCI DSS = mandatory for card processors. HIPAA = US healthcare PHI. GDPR = EU data, 72-hour breach notification. SOC 2 Type II = 6-12 month effectiveness assessment.",
+  {id:"5.4",title:"Security Compliance",tip:"NIST CSF = voluntary, 5 functions. PCI DSS = mandatory for card processors. HIPAA = US healthcare PHI. GDPR = EU data, 72-hour breach notification. SOC 2 Type II = 6-12 month effectiveness assessment.",
    cx:[{h:"Key Frameworks",b:"NIST CSF: Identify, Protect, Detect, Respond, Recover. ISO 27001: ISMS certification standard. PCI DSS: mandatory for credit card data, 12 requirements. HIPAA: US healthcare PHI protection. GDPR: EU data privacy with individual rights."},
        {h:"GDPR Rights",b:"Access (request copy of all data held), Rectification (correct errors), Erasure/Right to be Forgotten (delete when no longer needed), Portability (receive data in usable format). Breach notification required within 72 hours."},
        {h:"Audit Types",b:"SOC 2 Type I = controls exist at one point in time. SOC 2 Type II = controls operated effectively over 6-12 months (much stronger assurance). Penetration Test = authorized exploitation. Vulnerability Assessment = non-invasive scan."}]},
-  {id:"5.3",title:"Data Privacy & Vendor Risk",tip:"Data Controller = legally accountable under GDPR. Data Custodian = IT admin implementing protections. Supply chain attack = compromise trusted vendor to reach real downstream targets (SolarWinds).",
+  {id:"5.3",title:"Third-Party Risk Management",tip:"Data Controller = legally accountable under GDPR. Data Custodian = IT admin implementing protections. Supply chain attack = compromise trusted vendor to reach real downstream targets (SolarWinds).",
    cx:[{h:"Data Classification",b:"Public (no harm if disclosed) > Internal/Private (low sensitivity) > Confidential (significant harm) > Restricted/Top Secret (severe harm). Classification drives every protection decision including encryption, access controls, and retention."},
        {h:"Data Roles",b:"Controller = decides WHY and HOW personal data is processed, legally accountable under GDPR. Processor = processes on behalf of controller. Owner = business person accountable for classification. Custodian = IT role implementing technical protections."},
        {h:"Vendor Risk",b:"Assess security before engaging. Require security controls in contracts. Maintain right-to-audit clauses. Revoke ALL access immediately upon contract termination. Supply chain attacks compromise trusted vendors to reach downstream customers."}]}
@@ -2581,8 +2581,7 @@ function finishExam(timeUp){
       }
     }
     if(isCorrect) correct++;
-    byDomain[q.d].t++;
-    if(isCorrect) byDomain[q.d].c++;
+    if(byDomain[q.d]){byDomain[q.d].t++;if(isCorrect)byDomain[q.d].c++;}
   });
   var pct = Math.round(correct/e.qs.length*100);
   var scaled = Math.round(pct/100*900);  // CompTIA uses 100-900 scale
@@ -2649,7 +2648,7 @@ function renderExamHome(){
           "</div>"+
           "<div style='flex:1'>"+
             "<div style='font-size:15px;font-weight:700;color:"+rdCol+";margin-bottom:6px'>"+rdMsg+"</div>"+
-            "<div style='font-size:12px;color:var(--tx3);margin-bottom:4px'>Pass requires <b style='color:var(--tx)'>83% (750/900)</b></div>"+
+            "<div style='font-size:12px;color:var(--tx3);margin-bottom:4px'>Pass: <b style='color:var(--tx)'>scaled score 750/900</b></div>"+
             "<div style='font-size:12px;color:var(--tx3)'>Trend: <span style='color:"+trendCol+";font-weight:700'>"+trendArrow+" "+Math.abs(ready.trend)+"%</span> over "+ready.sessions+" sessions</div>"+
           "</div>"+
         "</div>"+
@@ -2773,7 +2772,7 @@ function renderExamHome(){
             "<div style='width:44px;height:44px;border-radius:12px;background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0'>🔤</div>"+
             "<div style='flex:1'>"+
               "<div style='font-family:Syne,sans-serif;font-size:15px;font-weight:700;color:#10b981;margin-bottom:3px'>Acronym Drill</div>"+
-              "<div style='font-size:12px;color:var(--tx3)'>100 acronyms · flashcard format · AAA to ZTNA</div>"+
+              "<div style='font-size:12px;color:var(--tx3)'>103 acronyms · flashcard format · AAA to ZTNA</div>"+
             "</div><div style='font-size:20px;color:var(--tx4)'>→</div>"+
           "</div>"+
         "</div>"+
@@ -2968,9 +2967,8 @@ function renderExamResults(){
       }
     }
     if(isCorrect) correct++;
-    else wrong.push({q:q, picked:e.ans[i], idx:i});
-    byDomain[q.d].t++;
-    if(isCorrect) byDomain[q.d].c++;
+    else if(!q.type || q.type !== 'pbq-exam') wrong.push({q:q, picked:e.ans[i], idx:i});
+    if(byDomain[q.d]){byDomain[q.d].t++;if(isCorrect)byDomain[q.d].c++;}
   });
 
   var pct = Math.round(correct/e.qs.length*100);
@@ -3029,11 +3027,11 @@ function renderExamResults(){
               "<div style='font-size:13px;color:var(--tx);font-weight:600;line-height:1.55;margin-bottom:8px'>"+q.q+"</div>"+
               "<div style='font-size:12px;color:var(--pk);margin-bottom:4px'>"+
                 (isMulti(q) ?
-                  (Array.isArray(item.picked) ? "✗ You chose: "+item.picked.map(function(x){return q.o[x];}).join(", ") : "✗ Not answered") :
-                  (item.picked!==undefined?"✗ You chose: "+q.o[item.picked]:"✗ Unanswered"))+
+                  (Array.isArray(item.picked) ? "✗ You chose: "+(q.o?item.picked.map(function(x){return q.o[x]||x;}).join(", "):item.picked.join(", ")) : "✗ Not answered") :
+                  (item.picked!==undefined&&q.o&&q.o[item.picked]!==undefined?"✗ You chose: "+q.o[item.picked]:item.picked!==undefined?"✗ Unanswered":"✗ Unanswered"))+
               "</div>"+
               "<div style='font-size:12px;color:var(--gn);margin-bottom:8px'>"+
-                (isMulti(q) ? "✓ Correct: "+q.a.map(function(x){return q.o[x];}).join(" AND ") : "✓ Correct: "+q.o[q.a])+
+                (isMulti(q) ? "✓ Correct: "+(q.o?q.a.map(function(x){return q.o[x]||x;}).join(" AND "):q.a.join(" AND ")) : (q.o&&q.o[q.a]!==undefined?"✓ Correct: "+q.o[q.a]:"✓ Correct: (see explanation)"))+
               "</div>"+
               "<div style='background:var(--gn0);border:1px solid rgba(52,211,153,.15);border-left:3px solid var(--gn);border-radius:8px;padding:10px;font-size:12px;color:var(--tx2);line-height:1.6'>"+q.e+"</div>"+
             "</div>";
@@ -3207,7 +3205,7 @@ function renderHome(){
     "<h1 style='font-family:Syne,sans-serif;font-size:clamp(26px,5vw,42px);font-weight:800;background:linear-gradient(135deg,var(--tx) 0%,var(--cy) 60%,var(--pu) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:8px'>Study Hub</h1>"+
     "<p style='font-size:14px;color:var(--tx3);margin-bottom:18px'>Interactive exam prep · Kulan Institute of Learning</p>"+
     "<div style='display:flex;gap:8px;flex-wrap:wrap'>"+
-      [["🃏",FC.length+" Cards","#38bdf8"],["🎯",QZ.length+" Questions","#f472b6"],["📖","19 Lessons","#a78bfa"],["🎮","Cyber Blitz","#fbbf24"],["🧪","5 PBQs","#34d399"]].map(function(r){
+      [["🃏",FC.length+" Cards","#38bdf8"],["🎯",QZ.length+" Questions","#f472b6"],["📖","18 Lessons","#a78bfa"],["🎮","Cyber Blitz","#fbbf24"],["🧪","11 PBQs","#34d399"]].map(function(r){
         return "<div style='display:flex;align-items:center;gap:5px;background:"+r[2]+"0d;border:1px solid "+r[2]+"22;border-radius:20px;padding:5px 12px'><span style='font-size:12px'>"+r[0]+"</span><span style='font-size:11px;color:"+r[2]+";font-weight:700'>"+r[1]+"</span></div>";
       }).join("")+
     "</div></div>"+
@@ -3243,7 +3241,7 @@ function renderHome(){
     "<div class='g2 fu3' style='margin-bottom:16px'>"+
       "<div class='card' style='text-align:center'>"+
         "<div style='font-size:11px;color:var(--tx3);margin-bottom:4px'>🔥 Study Streak</div>"+
-        "<div style='font-family:Syne,sans-serif;font-size:28px;font-weight:800;color:var(--or)'>"+STREAK.count+"</div>"+
+        "<div style='font-family:Syne,sans-serif;font-size:28px;font-weight:800;color:var(--or)'>"+(STREAK.count||'0')+"</div>"+
         "<div style='font-size:10px;color:var(--tx3)'>day"+(STREAK.count===1?"":"s")+" · "+STREAK.total+" total sessions</div>"+
       "</div>"+
       "<div class='card' style='text-align:center'>"+
@@ -3254,7 +3252,7 @@ function renderHome(){
     "</div>"+
     "<div class='card'>"+
       "<div class='stitle'>Exam Details</div>"+
-      [["Version","SY0-701 (Current until ~Fall 2026)","var(--cy)"],["Questions","Max 90 — MCQ + PBQ","var(--tx)"],["Time Limit","90 minutes","var(--tx)"],["Passing Score","750 / 900 (83%)","var(--gn)"],["Domains","5 weighted domains","var(--tx)"]].map(function(r){
+      [["Version","SY0-701 (Current until ~Fall 2026)","var(--cy)"],["Questions","Max 90 — MCQ + PBQ","var(--tx)"],["Time Limit","90 minutes","var(--tx)"],["Passing Score","Scaled 750/900","var(--gn)"],["Domains","5 weighted domains","var(--tx)"]].map(function(r){
         return "<div style='display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)'><span style='font-size:13px;color:var(--tx3)'>"+r[0]+"</span><span style='font-size:12px;color:"+r[2]+";font-weight:600;text-align:right;max-width:58%'>"+r[1]+"</span></div>";
       }).join("")+
       "<div style='margin-top:12px;padding:10px;background:var(--cy0);border:1px solid rgba(56,189,248,.15);border-radius:10px;text-align:center'>"+
@@ -4985,7 +4983,7 @@ function resetTriage(){ S.triage={priority:[],checked:false,actionOrder:shuffle(
 
 var SUB_OBJECTIVES = {
   '1.1': {label:'1.1 Security Controls',         d:1},
-  '1.2': {label:'1.2 Security Concepts',          d:1},
+  '1.2': {label:'1.2 Fundamental Security Concepts', d:1},
   '1.3': {label:'1.3 Change Management',          d:1},
   '1.4': {label:'1.4 Cryptography & PKI',         d:1},
   '2.1': {label:'2.1 Threat Actors',              d:2},
@@ -5080,7 +5078,10 @@ function recordSubAnswer(q, correct) {
   saveSubStats(stats);
 }
 function clearSubStats() {
+  if(!confirm('Reset all sub-objective accuracy data? This cannot be undone.')) return;
   localStorage.removeItem('subStats');
+  loadSubStats();
+  renderExam();
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -5999,8 +6000,9 @@ function renderOrdering() {
     return "<div onclick='orderTap(\"" + id + "\")' " +
       "style='display:flex;align-items:center;gap:12px;padding:12px 14px;background:" + bg + ";border:1.5px solid " + border + ";border-radius:12px;margin-bottom:8px;cursor:" + (s.checked?'default':'pointer') + ";transition:all .15s;" + (selId===id&&!s.checked?'box-shadow:0 0 0 2px var(--cy);':'')+"'>"+
       "<div style='width:28px;height:28px;border-radius:8px;background:" + border + "22;border:1px solid " + border + ";display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-size:13px;font-weight:800;color:" + (isCorrect === null ? (selId===id?'var(--cy)':'var(--tx3)') : isCorrect ? '#10b981' : '#ef4444') + ";flex-shrink:0'>" + (idx2 + 1) + "</div>" +
+      "<div style='font-size:16px;color:var(--tx4);flex-shrink:0;cursor:grab;letter-spacing:1px;padding-right:4px'>⠿</div>" +
       "<div style='font-size:13px;color:var(--tx2);line-height:1.5;flex:1'>" + item.text + "</div>" +
-      (isCorrect !== null ? "<div style='font-size:18px;flex-shrink:0'>" + (isCorrect ? '✅' : '❌') + "</div>" : (selId===id&&!s.checked ? "<div style='font-size:14px;color:var(--cy)'>📌</div>" : "<div style='font-size:11px;color:var(--tx4)'>tap</div>")) +
+      (isCorrect !== null ? "<div style='font-size:18px;flex-shrink:0'>" + (isCorrect ? '✅' : '❌') + "</div>" : (selId===id&&!s.checked ? "<div style='font-size:14px;color:var(--cy)'>📌</div>" : "<div style='font-size:10px;color:var(--tx3);background:var(--bg3);border-radius:4px;padding:2px 6px;white-space:nowrap'>tap to move</div>")) +
     "</div>";
   }).join('');;
 
@@ -7263,7 +7265,7 @@ function renderMathDrill() {
           (ms.checked?'readonly':'') + ">" +
       "</div>" +
       (ms.checked ? "<div style='margin-top:14px;padding:12px;border-radius:10px;background:" + (isCorrect?'var(--gn0)':'var(--pk0)') + ";border:1.5px solid " + (isCorrect?'var(--gn)':'var(--pk)') + "'>" +
-        "<div style='font-size:12px;font-weight:700;color:" + (isCorrect?'var(--gn)':'var(--pk)') + ";margin-bottom:4px'>" + (isCorrect?'✅ Correct!':'❌ Incorrect') + " — Answer: $' + q.answer.toLocaleString() + '</div>" +
+        "<div style='font-size:12px;font-weight:700;color:" + (isCorrect?'var(--gn)':'var(--pk)') + ";margin-bottom:4px'>" + (isCorrect ? '✅ Correct! Answer: $' + q.answer.toLocaleString() : '❌ Incorrect — Answer: $' + q.answer.toLocaleString()) + "</div>" +
         "<div style='font-size:12px;color:var(--tx2)'>" + q.formula + "</div>" +
       "</div>" : '') +
     "</div>" +
@@ -7273,7 +7275,7 @@ function renderMathDrill() {
         :
         "<button class='btn btn-gn btn-full' onclick='nextMathDrill()'>Next Question →</button>"
       ) +
-      "<button class='btn btn-s' onclick=\"setTab('home')\" style='flex-shrink:0;padding:13px 18px'>✕</button>" +
+      "<button class='btn btn-s' onclick=\"renderMathDrillExit()\" style='flex-shrink:0;padding:13px 18px'>✕ Exit</button>" +
     "</div>" +
     "<div style='margin-top:16px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:14px'>" +
       "<div style='font-size:11px;font-weight:700;color:var(--tx3);margin-bottom:8px;letter-spacing:.5px'>FORMULAS</div>" +
@@ -8001,29 +8003,6 @@ function getSRStats() {
   Object.values(sr).forEach(function(e) { boxes[e.box-1]++; });
   return boxes;
 }
-
-// Hook into finishExam to update SR boxes
-var _srOrigFinish = finishExam;
-finishExam = function(timeUp) {
-  try {
-    var e = S.exam;
-    if(e && e.qs && e.ans) {
-      e.qs.forEach(function(q, i) {
-        if(e.ans[i] === undefined) return;
-        var correct = false;
-        if(typeof isMulti === 'function' && isMulti(q)) {
-          var got = Array.isArray(e.ans[i]) ? e.ans[i].slice().sort() : [];
-          var exp = q.a.slice().sort();
-          correct = got.length === exp.length && got.every(function(v,x){ return v===exp[x]; });
-        } else {
-          correct = e.ans[i] === q.a;
-        }
-        updateSRBox(qHash(q), correct);
-      });
-    }
-  } catch(err) {}
-  _srOrigFinish(timeUp);
-};
 
 function renderSRDrill() {
   var due = getDueQuestions().slice(0, 30);
@@ -8945,6 +8924,14 @@ window.renderEventLogExhibit    = renderEventLogExhibit;
 // 20 high-quality exhibit questions covering all 4 exhibit types
 
 
+
+function renderMathDrillExit() {
+  // Go back to exam home, not app home
+  S.exam = S.exam || {};
+  S.exam.started = false;
+  setTab('exam');
+}
+window.renderMathDrillExit = renderMathDrillExit;
 </script>
 </body>
 </html>
