@@ -2462,7 +2462,7 @@ function startExam(mode, size){
   clearInterval(S.exam.iv);
   examSessionCount++;
   localStorage.setItem("examSC", examSessionCount);
-  var qs = buildExamSet(mode, size||110);
+  var qs = buildExamSet(mode, size||90);
   var secs = mode==='drill' ? (size||30)*60 : 90*60;
   // Build shuffle map — one shuffled index array per question
   var optMap = qs.map(function(q) {
@@ -2515,6 +2515,10 @@ function examNav(dir){
 }
 
 function examJump(idx){
+  if(isNoGoBack() && idx < S.exam.cur){
+    showToast('No Going Back Mode is ON', 'var(--pk)', 2000);
+    return;
+  }
   S.exam.cur = idx;
   S.exam.sel = !isMulti(S.exam.qs[idx]) && S.exam.ans[idx] !== undefined ? S.exam.ans[idx] : null;
   renderExamQ();
@@ -2583,8 +2587,19 @@ function finishExam(timeUp){
     if(isCorrect) correct++;
     if(byDomain[q.d]){byDomain[q.d].t++;if(isCorrect)byDomain[q.d].c++;}
   });
-  var pct = Math.round(correct/e.qs.length*100);
-  var scaled = Math.round(pct/100*900);  // CompTIA uses 100-900 scale
+  // Weighted: PBQs count 1.5x, MC 1x
+  var mcCorr = correct - pbqCorrect;
+  var mcTot  = totalQ  - pbqTotal;
+  var wCorr  = mcCorr + pbqCorrect * 1.5;
+  var wTot   = mcTot  + pbqTotal  * 1.5;
+  var pct = wTot > 0 ? Math.round(wCorr / wTot * 100) : 0;
+  // IRT-style curve: 83%=750, 90%=800, 95%=830, 100%=900, 70%=680, 50%=550
+  var rp = pct / 100;
+  var scaled = rp >= 0.83 ? Math.round(750 + (rp-0.83)/0.17*150) :
+               rp >= 0.70 ? Math.round(680 + (rp-0.70)/0.13*70)  :
+               rp >= 0.50 ? Math.round(550 + (rp-0.50)/0.20*130) :
+               Math.round(rp / 0.50 * 550);
+  scaled = Math.max(100, Math.min(900, scaled));  // CompTIA uses 100-900 scale
   // Save to history
   saveResult({
     date: new Date().toLocaleDateString(),
@@ -2715,7 +2730,7 @@ function renderExamHome(){
   var rightCol =
     "<div class='stitle'>Choose Exam Mode</div>"+
       // Full Sim
-      "<button onclick='startExam(\"sim\",110)' style='width:100%;background:var(--bg2);border:1.5px solid rgba(56,189,248,.25);border-radius:16px;padding:18px 16px;margin-bottom:12px;text-align:left;cursor:pointer;font-family:inherit;transition:all .2s'>"+
+      "<button onclick='renderExamTutorial()' style='width:100%;background:var(--bg2);border:1.5px solid rgba(56,189,248,.25);border-radius:16px;padding:18px 16px;margin-bottom:12px;text-align:left;cursor:pointer;font-family:inherit;transition:all .2s'>"+
         "<div style='display:flex;align-items:center;gap:14px'>"+
           "<div style='width:44px;height:44px;border-radius:12px;background:rgba(56,189,248,.1);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0'>🎯</div>"+
           "<div style='flex:1'>"+
@@ -2723,6 +2738,15 @@ function renderExamHome(){
             "<div style='font-size:12px;color:var(--tx3)'>110 of "+QZ.length+" questions · 90 min · Freshly randomized every session</div>"+
           "</div>"+
           "<div style='font-size:20px;color:var(--tx4)'>→</div>"+
+        "</div>"+
++
+      "<button onclick='startExam(\"sim\",116)' style='width:100%;background:var(--bg2);border:1.5px solid rgba(168,85,247,.2);border-radius:16px;padding:16px;margin-bottom:10px;text-align:left;cursor:pointer;font-family:inherit'>"+
+        "<div style='display:flex;align-items:center;gap:12px'>"+
+          "<div style='width:40px;height:40px;border-radius:10px;background:rgba(168,85,247,.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0'>&#x1F3CB;</div>"+
+          "<div style='flex:1'>"+
+            "<div style='font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:var(--pu);margin-bottom:3px'>Endurance Mode</div>"+
+            "<div style='font-size:12px;color:var(--tx3)'>116 questions &middot; 90 min &middot; extra stamina training</div>"+
+          "</div><div style='font-size:18px;color:var(--tx4)'>&rarr;</div>"+
         "</div>"+
       "</button>"+
       // Weak Area
@@ -7633,7 +7657,8 @@ window.getDueQuestions  = getDueQuestions;
 // scIdx: which scenario, state: the sim's working state, scored: bool, score: 0-1
 
 function buildExamPBQs() {
-  // Pick one of each type, randomized scenario
+  // Randomize PBQ count 3-5 to mirror real exam
+  var pbqCount = 3 + Math.floor(Math.random() * 3);
   var items = [];
 
   // 1. Ordering PBQ
@@ -7968,7 +7993,7 @@ function renderExamPBQPage(examIdx) {
       "<div style='display:flex;gap:10px;margin-bottom:20px'>" +
         (isNoGoBack() ? "" : "<button class='btn btn-s' style='flex:1' onclick='examNav(-1)' " + (examIdx===0?'disabled':'') + ">← Prev</button>") +
         (examIdx < e.qs.length-1 ?
-          "<button class='btn btn-p' style='flex:1' onclick='examNav(1)'" + (!q.checked?' disabled style="flex:1;opacity:.4"':'') + ">" + (q.checked?'Next →':'Complete PBQ to continue') + "</button>"
+          "<button class='btn btn-p' style='flex:1' onclick='examNav(1)'" + (!q.checked&&isNoGoBack()?' disabled style="flex:1;opacity:.4"':'') + ">" + (q.checked?(q.checked?'Next →':''):(!q.checked&&isNoGoBack()?'Complete PBQ to continue':'Skip PBQ →')) + "</button>"
         : "<button class='btn btn-gn' style='flex:1' onclick='submitExam()'>Submit &amp; Review 🚩</button>") +
       "</div>" +
 
@@ -9333,6 +9358,50 @@ function renderRiskRegister() {
 window.renderRiskRegister = renderRiskRegister;
 
 
+
+function renderExamTutorial() {
+  render(
+    "<div class='pg' style='max-width:680px;margin:0 auto'>" +
+    "<div class='card2' style='text-align:center;padding:36px 20px;margin-bottom:18px'>" +
+      "<div style='font-size:40px;margin-bottom:12px'>&#x1F4CB;</div>" +
+      "<div style='font-family:Syne,sans-serif;font-size:20px;font-weight:800;color:var(--tx);margin-bottom:6px'>Before You Begin</div>" +
+      "<div style='font-size:13px;color:var(--tx3)'>Read the instructions below. This mirrors the Pearson VUE exam interface.</div>" +
+    "</div>" +
+    "<div class='card' style='margin-bottom:14px;padding:18px'>" +
+      "<div style='font-size:11px;font-weight:700;color:var(--cy);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px'>Exam Format</div>" +
+      "<div style='font-size:13px;color:var(--tx2);line-height:1.9'>" +
+        "This exam contains <b style='color:var(--tx)'>90 questions</b> including <b style='color:var(--tx)'>3-5 Performance-Based Questions (PBQs)</b>.<br>" +
+        "You have <b style='color:var(--tx)'>90 minutes</b> to complete all questions.<br>" +
+        "Passing scaled score: <b style='color:var(--tx)'>750 / 900</b>.<br>" +
+        "You may flag questions and return to them before final submission." +
+      "</div>" +
+    "</div>" +
+    "<div class='card' style='margin-bottom:14px;padding:18px'>" +
+      "<div style='font-size:11px;font-weight:700;color:var(--ye);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px'>Performance-Based Questions</div>" +
+      "<div style='font-size:13px;color:var(--tx2);line-height:1.9'>" +
+        "PBQs appear <b style='color:var(--tx)'>first</b> in the exam.<br>" +
+        "You may skip a PBQ and return to it later.<br>" +
+        "Complete as much as possible for partial credit.<br>" +
+        "Enable <b style='color:var(--tx)'>No Going Back Mode</b> for strict lockdown." +
+      "</div>" +
+    "</div>" +
+    "<div class='card' style='margin-bottom:20px;padding:18px'>" +
+      "<div style='font-size:11px;font-weight:700;color:var(--gn);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px'>Tips</div>" +
+      "<div style='font-size:13px;color:var(--tx2);line-height:1.9'>" +
+        "Read each question carefully before reading the options.<br>" +
+        "Eliminate obviously wrong answers first.<br>" +
+        "Flag uncertain questions and revisit before submitting.<br>" +
+        "49 seconds per question on average — keep moving." +
+      "</div>" +
+    "</div>" +
+    "<div style='display:flex;gap:10px'>" +
+      "<button onclick='startExam(\"sim\",90)' class='btn btn-p' style='flex:2;padding:15px;font-size:15px;border:none;border-radius:12px;cursor:pointer'>Start Exam &rarr;</button>" +
+      "<button onclick='renderExamHome()' class='btn btn-s' style='flex:1;padding:15px'>Cancel</button>" +
+    "</div>" +
+    "</div>"
+  );
+}
+window.renderExamTutorial = renderExamTutorial;
 </script>
 </body>
 </html>
