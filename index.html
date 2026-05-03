@@ -2735,11 +2735,10 @@ function renderExamHome(){
           "<div style='width:44px;height:44px;border-radius:12px;background:rgba(56,189,248,.1);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0'>🎯</div>"+
           "<div style='flex:1'>"+
             "<div style='font-family:Syne,sans-serif;font-size:15px;font-weight:700;color:var(--cy);margin-bottom:3px'>Full Simulation</div>"+
-            "<div style='font-size:12px;color:var(--tx3)'>110 of "+QZ.length+" questions · 90 min · Freshly randomized every session</div>"+
+            "<div style='font-size:12px;color:var(--tx3)'>90 of "+QZ.length+" questions · 90 min · Freshly randomized every session</div>"+
           "</div>"+
           "<div style='font-size:20px;color:var(--tx4)'>→</div>"+
         "</div>"+
-+
       "<button onclick='startExam(\"sim\",116)' style='width:100%;background:var(--bg2);border:1.5px solid rgba(168,85,247,.2);border-radius:16px;padding:16px;margin-bottom:10px;text-align:left;cursor:pointer;font-family:inherit'>"+
         "<div style='display:flex;align-items:center;gap:12px'>"+
           "<div style='width:40px;height:40px;border-radius:10px;background:rgba(168,85,247,.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0'>&#x1F3CB;</div>"+
@@ -7657,65 +7656,43 @@ window.getDueQuestions  = getDueQuestions;
 // scIdx: which scenario, state: the sim's working state, scored: bool, score: 0-1
 
 function buildExamPBQs() {
-  // Randomize PBQ count 3-5 to mirror real exam
-  var pbqCount = 3 + Math.floor(Math.random() * 3);
-  var items = [];
+  // Randomize PBQ count 3-5 to mirror real exam variation
+  var pbqCount = 3 + Math.floor(Math.random() * 3); // 3, 4, or 5
 
-  // 1. Ordering PBQ
-  var ordIdx = Math.floor(Math.random() * ORDERING_SCENARIOS.length);
-  var ordSc   = ORDERING_SCENARIOS[ordIdx];
-  items.push({
-    type: 'pbq-exam',
-    sim:  'ordering',
-    d:    4,  // Domain 4 (Operations — IR)
-    scIdx: ordIdx,
-    title: ordSc.title,
-    instruction: ordSc.instruction,
-    q: 'PBQ — ' + ordSc.title + ': Arrange the items in the correct order.',
-    // state for this PBQ
-    order:   shuffle(ordSc.items.map(function(i){ return i.id; })),
-    checked: false,
-    selId:   null,
-    score:   0,
-    maxScore: ordSc.items.length,
-    e: ordSc.explanation
-  });
+  // Helper to make a PBQ item
+  function makeOrdering() {
+    var idx = Math.floor(Math.random() * ORDERING_SCENARIOS.length);
+    var sc  = ORDERING_SCENARIOS[idx];
+    return {type:'pbq-exam',sim:'ordering',d:4,scIdx:idx,title:sc.title,
+      instruction:sc.instruction,q:'PBQ — '+sc.title+': Arrange the items in the correct order.',
+      order:shuffle(sc.items.map(function(i){return i.id;})),checked:false,selId:null,
+      score:0,maxScore:sc.items.length,e:sc.explanation};
+  }
+  function makeMatching() {
+    var idx = Math.floor(Math.random() * MATCHING_SCENARIOS.length);
+    var sc  = MATCHING_SCENARIOS[idx];
+    return {type:'pbq-exam',sim:'matching',d:2,scIdx:idx,title:sc.title,
+      instruction:sc.instruction,q:'PBQ — '+sc.title+': Match each item to its correct pair.',
+      pairs:{},selLeft:null,checked:false,score:0,maxScore:sc.left.length,
+      e:'Matching PBQ — see explanations above.'};
+  }
+  function makeLogs() {
+    var idx = Math.floor(Math.random() * LOG_SCENARIOS.length);
+    var sc  = LOG_SCENARIOS[idx];
+    return {type:'pbq-exam',sim:'logs',d:4,scIdx:idx,title:sc.title,
+      q:'PBQ — '+sc.title+': Analyze the log output and answer the questions.',
+      answers:{},checked:false,score:0,maxScore:sc.qs.length,
+      e:'Log Analysis PBQ — see explanations above.'};
+  }
 
-  // 2. Matching PBQ
-  var matchIdx = Math.floor(Math.random() * MATCHING_SCENARIOS.length);
-  var matchSc  = MATCHING_SCENARIOS[matchIdx];
-  items.push({
-    type: 'pbq-exam',
-    sim:  'matching',
-    d:    2,  // Domain 2 (Threats)
-    scIdx: matchIdx,
-    title: matchSc.title,
-    instruction: matchSc.instruction,
-    q: 'PBQ — ' + matchSc.title + ': Match each item to its correct pair.',
-    pairs: {},
-    selLeft: null,
-    checked: false,
-    score:   0,
-    maxScore: matchSc.left.length,
-    e: 'Matching PBQ — see individual explanations above.'
-  });
+  // Always include one of each base type
+  var items = [makeOrdering(), makeMatching(), makeLogs()];
 
-  // 3. Log Analysis PBQ
-  var logIdx = Math.floor(Math.random() * LOG_SCENARIOS.length);
-  var logSc  = LOG_SCENARIOS[logIdx];
-  items.push({
-    type: 'pbq-exam',
-    sim:  'logs',
-    d:    4,
-    scIdx: logIdx,
-    title: logSc.title,
-    q: 'PBQ — ' + logSc.title + ': Analyze the log output and answer the questions.',
-    answers: {},
-    checked: false,
-    score:   0,
-    maxScore: logSc.qs.length,
-    e: 'Log Analysis PBQ — see explanations above.'
-  });
+  // Add extras if pbqCount > 3
+  var makers = [makeOrdering, makeMatching, makeLogs];
+  while(items.length < pbqCount) {
+    items.push(makers[Math.floor(Math.random() * makers.length)]());
+  }
 
   return items;
 }
