@@ -1483,7 +1483,7 @@ const MQ=[
   {type:"multi",choose:2,q:"Which TWO of the following are examples of 'Something You Have' authentication factors?",o:["Password","Hardware token","Fingerprint scan","Smart card"],a:[1,3],d:1,e:"Something You Have = physical objects you possess. Hardware token and smart card are both possession factors. Password=Know, Fingerprint=Are."},
   {type:"multi",choose:2,q:"Which TWO algorithms use asymmetric (public/private key) cryptography?",o:["AES-256","RSA","3DES","ECC"],a:[1,3],d:1,e:"RSA and ECC are asymmetric algorithms using key pairs. AES-256 and 3DES are symmetric — they use a single shared key."},
   {type:"multi",choose:3,q:"Which THREE are components of the CIA Triad?",o:["Confidentiality","Authentication","Integrity","Authorization","Availability"],a:[0,2,4],d:1,e:"CIA Triad = Confidentiality, Integrity, Availability. Authentication and Authorization are important concepts but are NOT part of the CIA Triad itself."},
-  {type:"multi",choose:2,q:"Which TWO access control models use labels and clearances enforced by the SYSTEM rather than the data owner?",o:["DAC","MAC","RBAC","Rule-Based AC"],a:[1,3],d:1,e:"MAC (Mandatory) and Rule-Based AC both have access enforced by the system through labels and admin-defined rules — not at the discretion of the resource owner."},
+  {type:"multi",choose:2,q:"Which TWO access control models use labels and clearances enforced by the SYSTEM rather than the data owner?",o:["DAC — owner sets permissions","MAC — system enforces labels/clearances","RBAC — roles determine access","MLS — hierarchical classification labels"],a:[1,3],d:1,e:"MAC (Mandatory) and Rule-Based AC both have access enforced by the system through labels and admin-defined rules — not at the discretion of the resource owner."},
   {type:"multi",choose:2,q:"Which TWO of the following provide non-repudiation?",o:["Symmetric encryption","Digital signatures","TLS in transit","PKI certificates with private key signing"],a:[1,3],d:1,e:"Digital signatures (hash encrypted with private key) and PKI certificate-based private key signing both provide non-repudiation. Symmetric encryption uses a shared key — either party could have sent the message."},
   {type:"multi",choose:2,q:"A security team wants to implement MFA. Which TWO factor combinations represent TRUE multi-factor authentication?",o:["Password + PIN","Fingerprint + Retina scan","Password + Hardware token","Smart card + PIN"],a:[2,3],d:1,e:"True MFA requires DIFFERENT factor types. Password+Hardware token = Know+Have. Smart card+PIN = Have+Know. Password+PIN = Know+Know (same type = NOT MFA). Fingerprint+Retina = Are+Are (same type = NOT MFA)."},
   {type:"multi",choose:2,q:"Which TWO of the following are PKI components responsible for verifying identity before a certificate is issued?",o:["Certificate Authority (CA)","Registration Authority (RA)","Certificate Revocation List (CRL)","OCSP Responder"],a:[0,1],d:1,e:"CA issues and signs certificates. RA verifies the identity of requestors on behalf of the CA. CRL and OCSP check revocation status — they do not verify identity before issuance."},
@@ -2587,40 +2587,8 @@ function finishExam(timeUp){
     if(isCorrect) correct++;
     if(byDomain[q.d]){byDomain[q.d].t++;if(isCorrect)byDomain[q.d].c++;}
   });
-  // Weighted: PBQs count 1.5x, MC 1x
-  var mcCorr = correct - pbqCorrect;
-  var mcTot  = totalQ  - pbqTotal;
-  var wCorr  = mcCorr + pbqCorrect * 1.5;
-  var wTot   = mcTot  + pbqTotal  * 1.5;
-  var pct = wTot > 0 ? Math.round(wCorr / wTot * 100) : 0;
-  // IRT-style curve: 83%=750, 90%=800, 95%=830, 100%=900, 70%=680, 50%=550
-  var rp = pct / 100;
-  var scaled = rp >= 0.83 ? Math.round(750 + (rp-0.83)/0.17*150) :
-               rp >= 0.70 ? Math.round(680 + (rp-0.70)/0.13*70)  :
-               rp >= 0.50 ? Math.round(550 + (rp-0.50)/0.20*130) :
-               Math.round(rp / 0.50 * 550);
-  scaled = Math.max(100, Math.min(900, scaled));  // CompTIA uses 100-900 scale
-  // Save to history
-  saveResult({
-    date: new Date().toLocaleDateString(),
-    mode: e.mode,
-    pct: pct,
-    scaled: scaled,
-    correct: correct,
-    total: e.qs.length,
-    byDomain: {
-      1:{c:byDomain[1].c,t:byDomain[1].t},
-      2:{c:byDomain[2].c,t:byDomain[2].t},
-      3:{c:byDomain[3].c,t:byDomain[3].t},
-      4:{c:byDomain[4].c,t:byDomain[4].t},
-      5:{c:byDomain[5].c,t:byDomain[5].t}
-    },
-    timeUsed: e.maxTimer - e.timer
-  });
-  renderExam();
+      renderExam();
 }
-
-// ── Main Exam render dispatcher ──────────────────────────────────────────────
 function renderExam(){
   var e = S.exam;
   if(e.reviewing)   { renderFlagReview(); return; }
@@ -3006,8 +2974,16 @@ function renderExamResults(){
 
   var totalQ = e.qs.length;
   var mcQ    = totalQ - pbqTotal;
-  var pct    = Math.round(correct / totalQ * 100);
-  var scaled = Math.round(pct / 100 * 900);
+  // Weighted score: PBQs 1.5x, IRT curve
+  var wCorr = (correct - pbqCorrect) + pbqCorrect * 1.5;
+  var wTot  = mcQ + pbqTotal * 1.5;
+  var pct   = wTot > 0 ? Math.round(wCorr / wTot * 100) : 0;
+  var rp    = pct / 100;
+  var scaled = rp >= 0.83 ? Math.round(750 + (rp-0.83)/0.17*150) :
+               rp >= 0.70 ? Math.round(680 + (rp-0.70)/0.13*70)  :
+               rp >= 0.50 ? Math.round(550 + (rp-0.50)/0.20*130) :
+               Math.round(rp / 0.50 * 550);
+  scaled = Math.max(100, Math.min(900, scaled));
   var pass = scaled >= 750;
   var timeUsed = e.maxTimer - e.timer;
   var unanswered = e.qs.filter(function(q,i){ return q.type!=='pbq-exam' && e.ans[i]===undefined; }).length;
@@ -7090,18 +7066,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ── SUBMIT EXAM — clean single entry point ────────────────────────────────────
 function submitExam() {
-  // Check for uncompleted PBQs first
-  var unfinishedPBQs = (S.exam.qs||[]).filter(function(q,i){
-    return q && q.type==='pbq-exam' && !q.checked;
-  });
-  if(unfinishedPBQs.length > 0) {
-    if(!confirm('You have ' + unfinishedPBQs.length + ' uncompleted PBQ(s) that will score 0. Submit anyway?')) {
-      // Jump to first uncompleted PBQ
-      var firstIdx = S.exam.qs.findIndex(function(q){ return q && q.type==='pbq-exam' && !q.checked; });
-      if(firstIdx >= 0) examJump(firstIdx);
-      return;
-    }
-  }
+  // Submit exam — unanswered questions score 0 (same as real CompTIA exam)
   S.exam.reviewing = true;
   var flagged = S.exam.flagged || [];
   if (!flagged.length) {
