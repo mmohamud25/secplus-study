@@ -7067,10 +7067,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ── SUBMIT EXAM — clean single entry point ────────────────────────────────────
 function submitExam() {
+  // Check for uncompleted PBQs first
+  var unfinishedPBQs = (S.exam.qs||[]).filter(function(q,i){
+    return q && q.type==='pbq-exam' && !q.checked;
+  });
+  if(unfinishedPBQs.length > 0) {
+    if(!confirm('You have ' + unfinishedPBQs.length + ' uncompleted PBQ(s) that will score 0. Submit anyway?')) {
+      // Jump to first uncompleted PBQ
+      var firstIdx = S.exam.qs.findIndex(function(q){ return q && q.type==='pbq-exam' && !q.checked; });
+      if(firstIdx >= 0) examJump(firstIdx);
+      return;
+    }
+  }
   S.exam.reviewing = true;
   var flagged = S.exam.flagged || [];
   if (!flagged.length) {
-    // No flagged questions — go straight to finish
     S.exam.reviewing = false;
     finishExam(false);
   } else {
